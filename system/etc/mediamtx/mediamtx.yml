@@ -1,0 +1,60 @@
+# MediaMTX Configuration for CCTV Monitoring
+# Place this file at /etc/mediamtx/mediamtx.yml or ~/.config/mediamtx/mediamtx.yml
+
+# Logging
+logLevel: info
+logDestinations: [stdout]
+logFile: /var/log/mediamtx.log
+
+# API
+api: yes
+apiAddress: :9997
+#apiAuthMethod: none
+
+
+# Metrics
+metrics: yes
+metricsAddress: :9998
+
+# Playback
+playback: yes
+
+# RTSP
+rtspAddress: :8554
+protocols: [tcp]
+
+# HTTP (for HLS)
+# httpAddress: :8888  # Commented out - using hlsAddress only
+hlsAddress: :8888
+hlsAlwaysRemux: yes
+hlsSegmentCount: 3
+hlsSegmentDuration: 1s
+hlsAllowOrigin: "*"
+
+# WebRTC
+webrtcAddress: 127.0.0.1:8889
+webrtcEncryption: no  # Changed from 'strict' to 'no' for compatibility
+webrtcAllowOrigin: "*"
+webrtcICEHostNAT1To1IPs: [103.210.52.66]
+
+# Authentication
+# Token-based authentication will be handled by backend
+# MediaMTX will receive stream tokens from backend
+
+# Paths configuration
+# Paths will be configured dynamically via API
+paths:
+
+# Custom authentication hook
+# You can use runOnInit with a script that calls backend API to verify tokens
+# Example: runOnInit: "curl -H 'Authorization: Bearer $MTX_QUERY' http://localhost:3000/api/stream/verify"
+
+  stream_356:
+    source: rtsp://admin:mamurA123@192.168.34.11:554/H.265
+    sourceProtocol: tcp
+    rtspTransport: tcp
+    record: true
+    recordPath: /mnt/cctv-storage/recordings/MRI/MIM_MRI_1/%path/%Y-%m-%d_%H-%M-%S-%f
+    recordFormat: fmp4
+    recordSegmentDuration: 1h
+    recordDeleteAfter: 168h

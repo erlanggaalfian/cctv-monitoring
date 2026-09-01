@@ -1,0 +1,26 @@
+# Artefak Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Basis data lokal (bukan sumber kebenaran; DB asli di MariaDB)
+*.db
+*.sqlite3
+
+# Log
+*.log
+
+# Cadangan bertahap dari kerja desain
+*.pre-*
+*.bak
+*.orig
+
+# Berkas sementara editor
+*.swp
+*~
+.DS_Store
+
+# Media unggahan runtime (poster kamera & iklan dibuat ulang otomatis)
+backend/static/posters/
+backend/static/ads/

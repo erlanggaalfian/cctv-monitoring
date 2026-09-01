@@ -1,0 +1,239 @@
+================================================================================
+                    MAMURA STREAM - CCTV MONITORING WEB PORTAL
+                          BLUEPRINT SYSTEM (v2.0)
+                         Terakhir diperbarui: Juli 2026
+================================================================================
+
+A. SPESIFIKASI TEKNIS & STACK TEKNOLOGI
+--------------------------------------------------------------------------------
+1. Sistem Operasi : Debian 12 (Bookworm)
+2. Database       : MySQL / MariaDB (user, stream, access control)
+3. Backend Server : Python FastAPI (REST API, JWT Auth, Admin CRUD, Background Workers)
+4. Frontend Engine: PHP 8.2 (Modular Template) + Tailwind CSS + global.css design tokens
+5. Media Server   : MediaMTX (RTSP ingest → WebRTC/WHEP output)
+6. Reverse Proxy  : Apache (ProxyPass /api → :8000, /media/ → :8889)
+7. Font Stack     : Plus Jakarta Sans (UI) + JetBrains Mono (label teknis/kamera)
+
+Port & Service:
+  - FastAPI Backend    : 8000
+  - MediaMTX WebRTC    : 8889  (proxied sebagai /media/)
+  - MediaMTX API       : 9997
+  - MediaMTX RTSP relay: 8554  (poster capture lokal)
+  - Apache HTTP/HTTPS  : 80 / 443
+
+
+B. ARSITEKTUR ALIRAN DATA
+--------------------------------------------------------------------------------
+
+[ CCTV Camera (RTSP) ]
+        |
+        v
+[ MediaMTX — preloaded 24/7 ]
+   stream_{id}      (main stream)
+   stream_{id}_sub  (sub-stream, jika URL mendukung)
+        |
+        +--- RTSP relay localhost:8554  ---> ffmpeg poster capture
+        |
+        v (WHEP / WebRTC)
+[ Apache /media/ ] ---> [ Browser WebRTC Client (app.js) ]
+        ^
+        |
+[ FastAPI /api ] <--- JWT Auth ---> [ MySQL/MariaDB ]
+
+Background Workers (FastAPI startup):
+  1. background_status_monitor  — cek status via MediaMTX API (45s interval)
+  2. background_frame_capturer  — poster JPG dari MediaMTX relay (5 menit)
+
+
+C. POHON STRUKTUR FILE
+--------------------------------------------------------------------------------
+cctv-monitoring/
+│
+├── database/
+│   └── schema.sql              # Skema MySQL & seed data awal
+│
+├── backend/
+│   ├── main.py                 # FastAPI: API, JWT, MediaMTX, workers, poster
+│   ├── requirements.txt        # Dependensi Python
+│   └── static/posters/         # Poster JPG per kamera (stream_{id}.jpg)
+│
+├── frontend/
+│   ├── index.php               # Router halaman (monitor, custom, maps, admin)
+│   ├── login.php               # Login & guest access
+│   ├── logout.php
+│   │
+│   ├── includes/
+│   │   ├── header.php          # Head, Tailwind, font, theme anti-flicker
+│   │   ├── sidebar.php         # Sidebar desktop + bottom nav mobile
+│   │   └── footer.php          # Load app.js
+│   │
+│   ├── views/
+│   │   ├── live-monitor.php    # Semua Kamera — grid 1x1–4x4 + pagination
+│   │   ├── custom-monitor.php  # Screen — playlist kustom, gruping layar, fullscreen
+│   │   ├── admin-console.php   # CRUD kamera, user permission, network scan
+│   │   ├── maps.php            # Peta Leaflet + sidebar kamera
+│   │   └── viewer.php          # Legacy viewer (redirect ke monitor)
+│   │
+│   └── assets/
+│       ├── css/global.css      # Design tokens, layout, dark/light, fullscreen
+│       └── js/app.js           # WebRTC WHEP, lazy load, popup, admin, maps
+│
+├── install.sh                  # Auto-installer Debian 12
+├── update.sh                   # Auto-updater
+└── blueprint.txt               # Dokumentasi ini
+
+
+D. SKEMA DATABASE (MySQL/MariaDB)
+--------------------------------------------------------------------------------
+Database Name: `cctv_monitoring`
+
+1. Tabel `users`
+   - id, username (unique), password_hash, role (admin|user|guest)
+
+2. Tabel `cctv_streams`
+   - id, name, rtsp_url, group_name, coordinates, is_active
+
+3. Tabel Pivot `user_cctv_access`
+   - user_id, stream_id (Many-to-Many akses kamera per user)
+
+
+E. API ENDPOINTS UTAMA
+--------------------------------------------------------------------------------
+Auth:
+  POST /api/auth/login          — Login JWT
+  POST /api/auth/guest          — Guest token
+
+Streams (User):
+  GET  /api/streams             — Paginated list (page, limit, group)
+                                  Status dari RTSP_STATUS_CACHE (background)
+  POST /api/streams/{id}/reconnect — Soft reconnect MediaMTX (paths/restart)
+
+Admin:
+  GET  /api/admin/streams       — CRUD list dengan rtsp_url
+  POST /api/admin/streams       — Tambah kamera
+  PUT  /api/admin/streams/{id}  — Update kamera
+  DELETE /api/admin/streams/{id}
+  POST /api/admin/scan          — Network scan RTSP
+  POST /api/admin/scan/preview  — Preview kamera sementara
+
+Static:
+  GET  /api/posters/stream_{id}.jpg   — Poster terakhir kamera (via Apache /api proxy)
+  GET  /static/posters/stream_{id}.jpg — Poster langsung (butuh ProxyPass /static)
+
+
+F. LOGIKA STREAMING & PERFORMANCE
+--------------------------------------------------------------------------------
+
+1. MediaMTX Registration (Preloaded Mode)
+   - Semua kamera aktif didaftarkan ke MediaMTX saat startup monitor
+   - sourceOnDemand: false → RTSP selalu connect (instant WHEP)
+   - Sub-stream otomatis jika URL cocok pola (_main/_sub, /stream1/stream2, dll)
+   - REGISTERED_PATHS cache mencegah PATCH berulang
+
+2. Status Monitoring (Optimized)
+   - Cek status via MediaMTX API paths/get (TIDAK RTSP DESCRIBE ke kamera)
+   - Fallback: TCP port reachable saja
+   - Interval: 45 detik, sequential (bukan burst paralel)
+   - Cache: RTSP_STATUS_CACHE (TTL 45s)
+
+3. Poster Capture (Optimized)
+   - Capture dari MediaMTX relay rtsp://127.0.0.1:8554/stream_{id}_sub
+   - TIDAK membuka koneksi RTSP langsung ke kamera (cegah freeze)
+   - Semaphore max 2 capture paralel, stagger 0.75s antar kamera
+   - Frontend: localStorage cache + server JPG fallback
+   - Poster ditampilkan sebelum WebRTC playing (cegah layar hitam)
+
+4. Frontend WebRTC (app.js)
+   - Native WHEP via fetch POST SDP → MediaMTX
+   - Lazy load: IntersectionObserver (connect saat tile visible)
+   - connectVisibleGridStreams(): eager connect tile yang sudah terlihat
+   - peerConnections key konsisten: video-feed-{streamId}
+   - Grid default pakai webrtc_url_sub (bitrate lebih rendah)
+   - Auto-reconnect silent via /api/streams/{id}/reconnect
+   - Popup kamera: double-click tile, navigasi prev/next, theater/fullscreen
+
+5. Reconnect (Soft)
+   - POST /reconnect: paths/restart (BUKAN delete path)
+   - Viewer tidak putus total saat reconnect
+   - Frontend retry WHEP 6×350ms max
+
+
+G. HALAMAN & FITUR FRONTEND
+--------------------------------------------------------------------------------
+
+1. Semua Kamera (page=monitor)
+   - Grid 1x1, 2x2, 3x3, 4x4
+   - Filter grup kamera
+   - Pagination numerik (Prev | 1 2 3 | Next)
+   - Lazy WebRTC per tile visible
+
+2. Screen (page=custom)
+   - Mode Kustom: pilih & urutkan kamera manual
+   - Mode Per Grup: auto-load semua kamera dalam grup
+   - Gruping Layar: simpan/muat layout ke localStorage
+   - Fullscreen web: sembunyikan UI, perbesar grid (layout grid tidak berubah)
+   - Pagination numerik sama seperti Semua Kamera
+
+3. Peta Kamera (page=maps)
+   - Leaflet OSM + marker online/offline
+   - Sidebar searchable per grup
+   - Popup info + link live feed
+
+4. Admin Console (page=admin)
+   - CRUD kamera + koordinat GPS
+   - Matriks permission user ↔ kamera per grup
+   - Network scan RTSP + preview
+
+5. UI/UX & Tema
+   - Dark mode default, light mode toggle
+   - Brand colors: #3081d1 (blue), #F26935 (orange), #2F578E (navy)
+   - CSS variables di global.css (BRAND CONFIG block)
+   - Font: Plus Jakarta Sans (UI) + JetBrains Mono (overlay kamera/label teknis)
+   - Responsive: sidebar desktop, bottom nav mobile
+   - Glass header, animated transitions
+
+
+H. KEAMANAN
+--------------------------------------------------------------------------------
+1. RTSP URL masking — rtsp_url hanya exposed ke admin API
+2. JWT Bearer token di localStorage, guard di index.php & login.php
+3. Role-based access: admin (full), user (assigned cameras), guest (limited)
+4. Apache proxy — MediaMTX & FastAPI tidak exposed langsung ke internet
+
+
+I. ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME  — Database
+JWT_SECRET                                      — JWT signing key
+MEDIA_SERVER_URL=/media/                        — Base URL WHEP di frontend
+MEDIAMTX_API_HOST=127.0.0.1                    — MediaMTX control API
+MEDIAMTX_API_PORT=9997
+MEDIAMTX_RTSP_URL=rtsp://127.0.0.1:8554        — Relay untuk poster capture
+
+
+J. DEPLOYMENT & OPERATIONS
+--------------------------------------------------------------------------------
+Install:
+  sudo bash install.sh
+
+Update:
+  sudo bash update.sh
+
+Restart services:
+  sudo systemctl restart cctv-backend.service
+  sudo systemctl restart mediamtx        # jika ada service terpisah
+  sudo systemctl restart apache2
+
+Logs:
+  journalctl -u cctv-backend.service -f
+
+Development lokal:
+  cd backend && python main.py          # :8000
+  cd frontend && php -S localhost:8080  # :8080
+
+Default credentials (seed):
+  admin / password123
+  operator / password123
+  viewer / password123
+
+================================================================================

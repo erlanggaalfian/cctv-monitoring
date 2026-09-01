@@ -1,0 +1,2288 @@
+/* ============================================================
+   MAMURA STREAM -- global.css
+   Pewarnaan: edit hanya blok BRAND CONFIG + token turunan di bawah.
+   Layout/style di bawah format horizontal (satu baris per rule).
+   ============================================================ */
+
+/* ==============================================================
+   [EDIT DI SINI] BRAND CONFIG
+   Semua warna aplikasi didefinisikan di sini.
+   Warna lain di bawah otomatis diturunkan dari variabel ini.
+   ============================================================== */
+:root {
+
+  /* ---------------------------------------------------------
+     WARNA BRAND UTAMA
+     Ubah 3 hex ini untuk ganti tema secara keseluruhan.
+     --------------------------------------------------------- */
+  --brand-blue:   #3081d1;   /* Primer  -- tombol, link, aksen aktif  */
+  --brand-orange: #F26935;   /* Sekunder-- logout, warning, highlight */
+  --brand-navy:   #1a2a4a;   /* Gelap   -- header dark mode, gradient */
+
+  /* Channel RGB (samakan dengan hex di atas, dipakai untuk rgba()) */
+  --rgb-blue:   48, 129, 209;
+  --rgb-orange: 242, 105, 53;
+  --rgb-navy:   26, 42, 74;
+
+  /* ---------------------------------------------------------
+     WARNA STATUS KAMERA
+     --------------------------------------------------------- */
+  --color-online:  #10b981;   /* Hijau -- kamera online / live  */
+  --color-offline: #ef4444;   /* Merah -- kamera offline / mati */
+  --rgb-online:    16, 185, 129;
+  --rgb-offline:   239, 68, 68;
+
+  /* ---------------------------------------------------------
+     WARNA TEKS NETRAL
+     --------------------------------------------------------- */
+  --color-text-base:      #0a1120;   /* Teks gelap (light mode)         */
+  --color-text-dark-base: #d4d8e0;   /* Teks terang abu-biru (dark mode)*/
+  --color-text-dark-muted:#878d98;   /* Teks redup abu (dark mode)      */
+  --color-gray-400:       #9ca3af;   /* Abu terang  (dim light)         */
+  --color-gray-500:       #6b7280;   /* Abu medium  (muted light)       */
+  --color-gray-700:       #374151;   /* Abu gelap   (muted dark)        */
+  --rgb-text-base:        10, 17, 32;/* Channel RGB --color-text-base   */
+
+  /* ---------------------------------------------------------
+     WARNA LATAR KAMERA & KOMPONEN GELAP
+     --------------------------------------------------------- */
+  --color-cam-dark: #0a0e15;   /* BG placeholder kamera / mode gelap  */
+  --color-cam-mid:  #131a26;   /* Radial gradient tengah kamera       */
+  --color-dark-base:#090a0c;   /* Hitam pekat dasar dark mode         */
+  --color-dark-neutral:#101214;/* Abu gelap netral (tanpa biru)       */
+  --color-fs-light: #f4f7fc;   /* BG fullscreen mode terang           */
+  --color-map-tile-light: #dbeafe; /* BG tile peta (light)            */
+  --color-map-tile-dark:  #0f1520; /* BG tile peta (dark)             */
+  --c-white:              #ffffff;
+  --c-black:              #000000;
+  --c-overlay:            rgba(0, 0, 0, 0.32);
+  --c-chrome-fg:          rgba(255, 255, 255, 0.82);
+  --c-chrome-fg-dim:      rgba(255, 255, 255, 0.62);
+  --c-chrome-fg-muted:    rgba(255, 255, 255, 0.52);
+  --c-chrome-glass:       rgba(255, 255, 255, 0.12);
+  --c-chrome-glass-mid:   rgba(255, 255, 255, 0.14);
+  --c-chrome-glass-hover: rgba(255, 255, 255, 0.22);
+  --c-chrome-border:      rgba(255, 255, 255, 0.18);
+  --c-chrome-border-hi:   rgba(255, 255, 255, 0.28);
+  --c-chrome-inset:       rgba(255, 255, 255, 0.08);
+  --c-chrome-inset-soft:  rgba(255, 255, 255, 0.04);
+  --c-chrome-line:        rgba(255, 255, 255, 0.22);
+  --c-chrome-line-soft:   rgba(255, 255, 255, 0.18);
+  --c-chrome-line-faint:  rgba(255, 255, 255, 0.16);
+  --c-chrome-ghost:       rgba(255, 255, 255, 0.06);
+  --c-shadow-nav:         rgba(0, 0, 0, 0.22);
+  --c-shadow-dark-sm:     rgba(0, 0, 0, 0.45);
+  --c-shadow-dark-md:     rgba(0, 0, 0, 0.55);
+
+  /* ---------------------------------------------------------
+     DIMENSI LAYOUT
+     --------------------------------------------------------- */
+  --hdr-h:     64px;    /* Tinggi header fixed    */
+  --sidebar-w: 220px;   /* Lebar sidebar desktop  */
+  --mob-nav-h: 58px;    /* Tinggi bottom nav HP   */
+  --hdr-safe-top: 0px;  /* Safe area (mobile)     */
+  --page-gap: 1rem;
+  --layout-sidebar-w: 280px;
+  --maps-mobile-h: 240px;
+
+  /* ---------------------------------------------------------
+     TYPOGRAPHY
+     --------------------------------------------------------- */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  /* ---------------------------------------------------------
+     BORDER RADIUS & TRANSISI
+     --------------------------------------------------------- */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --t:    0.2s ease;
+
+  /* ---------------------------------------------------------
+     CUSTOM COMPONENT COLORS (EMBED, LOGIN, MAPS)
+     --------------------------------------------------------- */
+  --embed-bg: #020617;
+  --embed-err-start: #0f172a;
+  --embed-err-end: #020617;
+  --spinner-border-color: rgba(14, 165, 233, 0.1);
+  --spinner-left-color: #0ea5e9;
+  --ad-banner-border-color: rgba(255, 255, 255, 0.05);
+
+  --login-bg-dark: #080d1a;
+  --login-grad-sky-dark: rgba(14, 165, 233, 0.12);
+  --login-grad-indigo-dark: rgba(99, 102, 241, 0.1);
+  --login-card-bg-dark: rgba(17, 25, 46, 0.65);
+  --login-card-border-dark: rgba(255, 255, 255, 0.05);
+
+  --login-bg-light: #f8fafc;
+  --login-grad-sky-light: rgba(14, 165, 233, 0.06);
+  --login-grad-indigo-light: rgba(99, 102, 241, 0.05);
+  --login-card-bg-light: rgba(255, 255, 255, 0.85);
+  --login-card-border-light: rgba(226, 232, 240, 0.8);
+
+  --maps-popup-bg-light: rgba(255, 255, 255, 0.95);
+  --maps-popup-shadow-color-light: rgba(0, 0, 0, 0.2);
+  --maps-popup-bg-dark: rgba(15, 23, 42, 0.95);
+  --maps-popup-text-dark: #e2e8f0;
+  --maps-popup-border-dark: rgba(14, 165, 233, 0.3);
+  --maps-popup-shadow-color-dark: rgba(14, 165, 233, 0.15);
+}
+
+
+/* ==============================================================
+   LIGHT MODE -- Token turunan (jangan diedit)
+   ============================================================== */
+:root {
+  --c-blue:     var(--brand-blue);
+  --c-blue-h:   color-mix(in srgb, var(--brand-blue)   80%, black);
+  --c-orange:   var(--brand-orange);
+  --c-orange-h: color-mix(in srgb, var(--brand-orange) 80%, black);
+  --c-navy:     var(--brand-navy);
+  --c-navy-h:   color-mix(in srgb, var(--brand-navy)   80%, black);
+
+  --c-bg:       color-mix(in srgb, var(--brand-blue)  7%,  white);
+  --c-surface:  white;
+  --c-surface2: color-mix(in srgb, var(--brand-blue)  11%, white);
+  --c-border:   color-mix(in srgb, var(--brand-blue)  22%, white);
+
+  --c-text:          var(--color-text-base);
+  --c-text-muted:    color-mix(in srgb, var(--brand-navy) 65%, var(--color-gray-500));
+  --c-text-dim:      color-mix(in srgb, var(--brand-navy) 35%, var(--color-gray-400));
+
+  --c-header-bg:     var(--brand-blue);
+  --c-nav-bg:        var(--brand-blue);
+  --c-nav-border:    rgba(255, 255, 255, 0.16);
+  --c-primary-muted: rgba(var(--rgb-blue), 0.08);
+  --c-map-tile:      var(--color-map-tile-light);
+
+  --shadow-sm:  0 1px 4px rgba(var(--rgb-text-base), 0.07), 0 1px 2px rgba(var(--rgb-text-base), 0.04);
+  --shadow-md:  0 4px 18px rgba(var(--rgb-text-base), 0.09), 0 2px 5px rgba(var(--rgb-text-base), 0.05);
+  --shadow-hdr: 0 4px 24px rgba(var(--rgb-blue), 0.22);
+}
+
+
+/* ==============================================================
+   DARK MODE -- Token turunan (jangan diedit)
+   ============================================================== */
+.dark {
+  --c-map-tile:      var(--color-map-tile-dark);
+  --c-bg:       color-mix(in srgb, var(--brand-blue)  2%,  var(--color-dark-neutral));
+  --c-surface:  color-mix(in srgb, var(--brand-blue)  3%,  #161719);
+  --c-surface2: color-mix(in srgb, var(--brand-blue)  5%,  #1c1e21);
+  --c-border:   rgba(255, 255, 255, 0.07);
+
+  --c-text:          var(--color-text-dark-base);
+  --c-text-muted:    var(--color-text-dark-muted);
+  --c-text-dim:      color-mix(in srgb, #fff 30%, var(--color-gray-700));
+
+  --c-header-bg:     var(--brand-navy);
+  --c-nav-bg:        var(--brand-navy);
+  --c-nav-border:    rgba(255, 255, 255, 0.08);
+  --c-primary-muted: rgba(var(--rgb-blue), 0.10);
+
+  --shadow-sm:  0 1px 4px var(--c-shadow-dark-sm);
+  --shadow-md:  0 4px 18px var(--c-shadow-dark-md);
+  --shadow-hdr: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+
+/* ==============================================================
+   RESET & BASE
+   ============================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; height: 100%; font-family: var(--font-sans); }
+body { font-family: var(--font-sans); font-size: 14px; font-weight: 400; line-height: 1.65; letter-spacing: -0.011em; background-color: var(--c-bg); color: var(--c-text); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-feature-settings: "kern" 1, "liga" 1, "calt" 1; transition: background-color var(--t), color var(--t); min-height: 100dvh; display: flex; flex-direction: column; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; font-weight: 400; letter-spacing: normal; text-shadow: none; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; text-rendering: auto; }
+input::placeholder, textarea::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; font-weight: 400; letter-spacing: normal; }
+.font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono); letter-spacing: normal; }
+.font-sans, [class*="font-sans"] { font-family: var(--font-sans); letter-spacing: -0.011em; }
+h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-sans); font-weight: 700; letter-spacing: -0.025em; }
+@media (max-width: 768px) { html { font-size: 13px; } }
+@media (min-width: 768px) { :root { --page-gap: 1.25rem; } }
+/* ==============================================================
+   SCROLLBAR
+   ============================================================== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--rgb-blue), 0.22); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-blue); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(var(--rgb-blue), 0.32); }
+/* ==============================================================
+   APP LAYOUT -- Shell, Sidebar, Main, Mobile
+   ============================================================== */
+.app-shell { display: flex; flex: 1 1 auto; margin-top: var(--hdr-h); min-height: calc(100dvh - var(--hdr-h)); position: relative; overflow: hidden; }
+/* Sidebar Desktop */
+.app-sidebar { position: fixed; top: var(--hdr-h); left: 0; bottom: 0; width: var(--sidebar-w); z-index: 40; display: flex; flex-direction: column; background: #ffffff !important; border-right: 1px solid var(--c-border) !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important; overflow: hidden; transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color var(--t), border-color var(--t); }
+.app-sidebar::before { display: none !important; }
+.sidebar-inner { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 1rem 0.75rem; display: flex; flex-direction: column; }
+.sidebar-footer { flex-shrink: 0; padding: 0.625rem 0.875rem; border-top: 1px solid var(--c-border); background-color: var(--c-surface); transition: background-color var(--t), border-color var(--t); }
+.sidebar-nav-section { margin-bottom: 1.25rem; }
+/* Main Content */
+.app-main { flex: 1 1 auto; margin-left: var(--sidebar-w); overflow-y: auto; overflow-x: hidden; padding: 1.5rem; min-height: 0; background-color: var(--c-bg); transition: background-color var(--t); }
+/* Mobile Overrides */
+@media (max-width: 767px) {
+  :root { --hdr-safe-top: env(safe-area-inset-top, 0px); }
+  .app-shell { margin-top: calc(var(--hdr-h) + var(--hdr-safe-top)); min-height: calc(100dvh - var(--hdr-h) - var(--hdr-safe-top)); }
+  .app-sidebar { display: none !important; }
+  .app-main { margin-left: 0; padding: 0.875rem; padding-bottom: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 1rem); }
+  .glass-header { height: calc(var(--hdr-h) + var(--hdr-safe-top)); padding-top: var(--hdr-safe-top); padding-left: max(0.75rem, env(safe-area-inset-left, 0px)); padding-right: max(0.75rem, env(safe-area-inset-right, 0px)); }
+  .hdr-brand { min-width: 0; flex: 1 1 auto; gap: 0.5rem; }
+  .hdr-brand-text { min-width: 0; }
+  .hdr-title { font-size: 0.8125rem; }
+  .hdr-actions { display: flex; align-items: center; gap: 0.375rem; flex-shrink: 0; }
+  .hdr-icon-btn { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  .hdr-logout-btn { height: 32px; padding: 0 0.625rem; width: auto; justify-content: center; gap: 0.25rem; }
+  .hdr-logout-btn span { display: inline; font-size: 0.6875rem; }
+  .mobile-bottom-nav { height: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px)); padding-left: max(0.25rem, env(safe-area-inset-left, 0px)); padding-right: max(0.25rem, env(safe-area-inset-right, 0px)); }
+  .tab-view-bottom-space { padding-bottom: 0; }
+  .tab-intro-box { padding: 0.75rem 0.875rem 0.75rem 1rem; gap: 0.625rem; }
+  .tab-intro-icon { width: 2.25rem; height: 2.25rem; }
+  .tab-intro-icon svg { width: 1.125rem; height: 1.125rem; }
+  .tab-intro-title { font-size: 0.9375rem; }
+  .tab-intro-desc { font-size: 0.6875rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .layout-toolbar .control-bar, .panel-card > .admin-filter-bar { padding: 0.625rem 0.75rem; }
+  .admin-filter-bar { flex-wrap: nowrap; }
+  .admin-filter-bar .app-search-wrap { flex: 1 1 10rem; min-width: 10rem; }
+  .admin-filter-bar .app-field-wrap { width: 8.5rem; min-width: 8.5rem; }
+  .layout-body-split > .layout-sidebar .panel-card { padding: 1rem; }
+  .layout-body-split > .layout-sidebar .field-scroll.max-h-96 { max-height: 14rem; }
+  .layout-pagination-wrap .layout-pagination, .layout-pagination-wrap .monitor-pagination { padding-left: 0; padding-right: 0; }
+  .monitor-controls select { width: 100%; min-width: 0; }
+  .monitor-grid-controls { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .monitor-grid-controls::-webkit-scrollbar { display: none; }
+  .monitor-camera-grid, #custom-cctv-grid { gap: 0.75rem; }
+  .monitor-pagination { padding-left: 0.875rem; padding-right: 0.875rem; }
+  #api-error-banner, #api-success-banner { top: calc(var(--hdr-h) + var(--hdr-safe-top) + 0.5rem); left: 0.75rem; right: 0.75rem; transform: none; max-width: none; font-size: 0.75rem; padding: 0.625rem 0.875rem; }
+  .panel-card { padding: 1rem !important; }
+}
+/* ==============================================================
+   HEADER — chrome bar (desktop & mobile)
+   ============================================================== */
+.glass-header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: var(--hdr-h); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: var(--brand-blue) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; box-shadow: 0 4px 20px rgba(48, 129, 209, 0.15) !important; transition: background var(--t); }
+.glass-header::after { display: none !important; }
+.hdr-brand { display: flex; align-items: center; gap: 0.625rem; min-width: 0; }
+.hdr-brand-text { min-width: 0; }
+.hdr-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.hdr-logo-box { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: var(--c-chrome-glass-mid); border-radius: var(--r-md); border: 1px solid var(--c-chrome-line); box-shadow: inset 0 1px 0 var(--c-chrome-glass); flex-shrink: 0; }
+.hdr-title { font-size: 0.9375rem; font-weight: 700; color: var(--c-white); letter-spacing: -0.02em; }
+.hdr-sub { font-size: 0.5625rem; color: var(--c-chrome-fg-dim); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
+.hdr-clock { font-size: 0.6875rem; font-weight: 600; color: var(--c-chrome-fg); font-variant-numeric: tabular-nums; margin-right: 0.25rem; padding: 0.375rem 0.625rem; border-radius: var(--r-sm); background: var(--c-chrome-inset); border: 1px solid var(--c-chrome-glass); }
+.hdr-icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-sm); background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.35); color: var(--c-white); transition: all var(--t); }
+.hdr-icon-btn:hover { background: rgba(255, 255, 255, 0.35); border-color: rgba(255, 255, 255, 0.5); transform: translateY(-1px); }
+.hdr-icon-btn:active { transform: translateY(0) scale(0.96); }
+.dark .hdr-icon-btn { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.16); }
+.dark .hdr-icon-btn:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.28); }
+/* Tombol logout -- warna oranye brand */
+.hdr-logout-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0 0.875rem; height: 34px; border-radius: var(--r-sm); background: linear-gradient(135deg, rgba(var(--rgb-orange), 0.92), rgba(var(--rgb-orange), 0.78)); border: 1px solid var(--c-chrome-glass-mid); color: var(--c-white); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; box-shadow: 0 2px 8px rgba(var(--rgb-orange), 0.28); transition: background var(--t), transform var(--t), box-shadow var(--t); }
+.hdr-logout-btn:hover { background: var(--c-orange); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--rgb-orange), 0.36); }
+.hdr-logout-btn:active { transform: translateY(0) scale(0.97); }
+/* Hamburger removed — mobile uses bottom nav only */
+.hdr-menu-btn { display: none !important; }
+/* ==============================================================
+   SIDEBAR & NAVIGATION BUTTONS
+   ============================================================== */
+.glass-sidebar { background-color: var(--c-surface); border-right: 1px solid var(--c-border); transition: background-color var(--t), border-color var(--t); }
+.sidebar-profile-card { display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; background: rgba(48, 129, 209, 0.05) !important; border: 1px solid rgba(48, 129, 209, 0.12) !important; border-radius: var(--r-md); margin-bottom: 0px !important; margin-top: auto !important; box-shadow: none !important; }
+.sidebar-profile-meta { min-width: 0; flex: 1 1 auto; }
+.sidebar-profile-name { font-size: 0.875rem; font-weight: 600; color: var(--c-text) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-avatar { width: 42px; height: 42px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--c-blue), var(--brand-navy)); display: flex; align-items: center; justify-content: center; color: var(--c-white); font-size: 1.125rem; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 10px rgba(var(--rgb-blue), 0.28); }
+.sidebar-role-badge { font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--c-blue) !important; background: rgba(var(--rgb-blue), 0.10) !important; border: 1px solid rgba(var(--rgb-blue), 0.20) !important; padding: 2px 7px; border-radius: 999px; display: inline-block; margin-top: 3px; }
+.sidebar-section-lbl { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-text-muted) !important; padding: 0 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--c-border) !important; padding-bottom: 0.375rem; }
+
+/* Tactile Button-Style Nav Links */
+.sidebar-nav-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.sidebar-nav-link, .sidebar-btn-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--c-blue) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+.dark .sidebar-nav-link, .dark .sidebar-btn-card {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.sidebar-btn-card:hover, .sidebar-nav-link:hover {
+  background: rgba(48, 129, 209, 0.06) !important;
+  color: var(--c-blue-h) !important;
+  border-color: rgba(48, 129, 209, 0.12) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(48, 129, 209, 0.06) !important;
+}
+.dark .sidebar-btn-card:hover, .dark .sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+.sidebar-btn-card:active, .sidebar-nav-link:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+}
+.sidebar-btn-card.active, .sidebar-nav-link.active {
+  background: var(--c-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--c-blue) !important;
+  box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
+  transform: none !important;
+}
+.dark .sidebar-btn-card.active, .dark .sidebar-nav-link.active {
+  background: var(--c-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--c-blue) !important;
+  box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
+  transform: none !important;
+}
+.nav-btn-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  background: rgba(48, 129, 209, 0.06) !important;
+  color: var(--c-blue) !important;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.sidebar-btn-card.active .nav-btn-icon-wrap, .sidebar-nav-link.active .nav-btn-icon-wrap {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.sidebar-btn-card:hover .nav-btn-icon-wrap, .sidebar-nav-link:hover .nav-btn-icon-wrap {
+  background: rgba(48, 129, 209, 0.12) !important;
+  color: var(--c-blue-h) !important;
+}
+.sidebar-nav-icon { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
+.nav-btn-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-btn-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-orange);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+.sidebar-btn-card.active .nav-btn-indicator, .sidebar-nav-link.active .nav-btn-indicator {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--c-orange);
+}
+
+/* ==============================================================
+   MOBILE BOTTOM NAV — Floating Segmented Pill Bar (Android)
+   ============================================================== */
+.mobile-bottom-nav-wrap {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 60;
+  pointer-events: auto;
+}
+@media (min-width: 768px) {
+  .mobile-bottom-nav-wrap { display: none; }
+}
+.mobile-bottom-nav {
+  height: var(--mob-nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.375rem;
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(48, 129, 209, 0.12) !important;
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+.mob-nav-item, .mob-nav-btn {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0.375rem 0.25rem;
+  color: var(--c-blue) !important;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.mob-nav-icon { width: 1.35rem; height: 1.35rem; transition: transform 0.2s ease; }
+.mob-nav-item.active, .mob-nav-btn.active {
+  color: #ffffff !important;
+  background: var(--c-blue) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.35) !important;
+}
+.mob-nav-item.active .mob-nav-icon, .mob-nav-btn.active .mob-nav-icon { transform: translateY(-1px) scale(1.06); }
+.mob-nav-item:not(.active):hover, .mob-nav-btn:not(.active):hover { color: var(--c-blue-h) !important; background: rgba(48, 129, 209, 0.06) !important; }
+.mob-nav-item:active, .mob-nav-btn:active { transform: scale(0.94); }
+.mob-nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--c-orange); opacity: 0; transition: opacity 0.2s ease; }
+.mob-nav-item.active .mob-nav-dot, .mob-nav-btn.active .mob-nav-dot { opacity: 1; box-shadow: 0 0 6px var(--c-orange); }
+
+/* ==============================================================
+   LOGIN PAGE DARK & LIGHT MODE SUPPORTS
+   ============================================================== */
+.login-body {
+  background-color: #f8fafc;
+  background-image: radial-gradient(circle at 50% 30%, rgba(48, 129, 209, 0.08) 0%, transparent 70%);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.dark .login-body {
+  background-color: #080d1a;
+  background-image: radial-gradient(circle at 50% 30%, rgba(48, 129, 209, 0.14) 0%, transparent 70%);
+}
+.login-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.dark .login-card {
+  background-color: rgba(17, 25, 46, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+}
+.app-input {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: var(--r-md);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+}
+.app-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+.dark .app-input {
+  background-color: rgba(8, 13, 26, 0.75);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+.dark .app-input:focus {
+  border-color: #38bdf8;
+  background-color: rgba(8, 13, 26, 0.95);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+  border-color: var(--c-blue);
+  box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.3);
+}
+
+/* ==============================================================
+   CARDS
+   ============================================================== */
+.glass-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+.glass-card:hover { border-color: rgba(var(--rgb-blue), 0.22); }
+.dashboard-shadow { box-shadow: var(--shadow-sm); }
+.dark .dashboard-shadow { box-shadow: var(--shadow-md); }
+/* Panel cards — unified content blocks across all tabs */
+.panel-card { position: relative; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: 1.25rem 1.5rem; transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; overflow: hidden; }
+.panel-card::before { display: none !important; }
+.dark .panel-card { box-shadow: var(--shadow-md); }
+.panel-card:hover { border-color: rgba(var(--rgb-blue), 0.16); }
+.panel-card-header { margin-bottom: 1rem; }
+.panel-card-title { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-text); }
+.panel-card-desc { margin-top: 0.25rem; font-size: 0.6875rem; line-height: 1.45; color: var(--c-text-muted); }
+.field-label { display: block; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-dim); margin-bottom: 0.5rem; }
+.field-input, .app-input, .panel-card select, .panel-card input[type="text"], .panel-card input[type="number"], .panel-card input[type="password"] { width: 100%; padding: 0.5rem 0.75rem; font-size: 0.75rem; line-height: 1.45; font-weight: 400; letter-spacing: normal; text-shadow: none; -webkit-font-smoothing: auto; color: var(--c-text); background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm); transition: border-color var(--t), box-shadow var(--t); }
+.field-input::placeholder, .app-input::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; }
+.field-input:focus, .app-input:focus, .panel-card select:focus, .panel-card input:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.12); }
+.app-search-wrap, .app-field-wrap { display: flex; align-items: center; width: 100%; min-width: 0; background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm); transition: border-color var(--t), box-shadow var(--t), background var(--t); }
+.app-field-wrap.app-select-field, .app-field-wrap:has(select) { border-radius: var(--r-md); background: linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 88%, white) 0%, var(--c-surface2) 100%); box-shadow: inset 0 1px 0 var(--c-chrome-inset-soft); min-height: 2.375rem; }
+.dark .app-field-wrap.app-select-field, .dark .app-field-wrap:has(select) { background: linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 92%, var(--c-blue)) 0%, var(--c-surface2) 100%); box-shadow: inset 0 1px 0 var(--c-chrome-inset); }
+.app-field-wrap.app-select-field:hover, .app-field-wrap:has(select):hover { border-color: rgba(var(--rgb-blue), 0.32); box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.08); }
+.app-search-wrap:focus-within, .app-field-wrap:focus-within { border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.14); }
+.app-field-wrap.app-select-field:focus-within, .app-field-wrap:has(select):focus-within { background: linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 82%, rgba(var(--rgb-blue), 0.08)) 0%, var(--c-surface2) 100%); }
+.app-search-icon, .app-field-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2.25rem; color: var(--c-text-dim); pointer-events: none; transition: color var(--t), background var(--t), transform var(--t); }
+.app-field-wrap:has(select) .app-field-icon-left { width: 1.75rem; height: 1.75rem; margin-left: 0.4375rem; border-radius: calc(var(--r-sm) + 1px); background: rgba(var(--rgb-blue), 0.1); color: var(--c-blue); }
+.app-field-wrap:has(select):focus-within .app-field-icon-left { background: rgba(var(--rgb-blue), 0.16); color: var(--c-blue); }
+.app-field-wrap:has(select) .app-field-icon-right { width: 1.75rem; margin-right: 0.375rem; color: var(--c-text-dim); }
+.app-field-wrap:has(select):focus-within .app-field-icon-right { color: var(--c-blue); }
+.app-field-wrap:has(select) .app-field-icon-right svg { transition: transform 0.2s ease; }
+.app-field-wrap:has(select):focus-within .app-field-icon-right svg { transform: rotate(180deg); }
+.app-search-icon svg, .app-field-icon svg { width: 0.875rem; height: 0.875rem; display: block; }
+.app-field-icon-right { width: 2rem; }
+.app-search-wrap .app-input, .app-field-wrap .app-input, .app-field-wrap select { flex: 1 1 auto; min-width: 0; width: auto; border: none; background: transparent; box-shadow: none; padding-left: 0; padding-right: 0.625rem; }
+.app-search-wrap .app-input:focus, .app-field-wrap .app-input:focus, .app-field-wrap select:focus { outline: none; border: none; box-shadow: none; }
+.app-select, select.app-input, select.field-input { appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; font-weight: 500; color: var(--c-text); }
+.app-field-wrap select.app-select, .app-field-wrap select.app-input, .app-field-wrap select.field-input { padding-top: 0.5rem; padding-bottom: 0.5rem; padding-right: 0.375rem; font-size: 0.75rem; line-height: 1.35; background-image: none; }
+.app-field-wrap:not(:has(.app-field-icon-left)) select { padding-left: 0.75rem; }
+select.app-select-block,
+select.field-input { appearance: none; -webkit-appearance: none; cursor: pointer; font-weight: 500; padding-right: 2.25rem; background-color: var(--c-surface2); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.625rem center; background-size: 0.875rem; border: 1px solid var(--c-border); border-radius: var(--r-md); transition: border-color var(--t), box-shadow var(--t), background-color var(--t); }
+.app-field-wrap select.field-input, .app-field-wrap select.app-select-block, .app-field-wrap select.app-input { background-image: none; background-color: transparent; border: none; border-radius: 0; padding-right: 0.375rem; }
+select.app-select-block:hover, select.field-input:hover { border-color: rgba(var(--rgb-blue), 0.32); }
+select.app-select-block:focus, select.field-input:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.14); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233081d1' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); }
+.app-field-wrap select:focus { box-shadow: none; }
+.dark select.app-select-block, .dark select.field-input { background-color: var(--c-surface2); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); }
+.dark .app-field-wrap select { background-image: none; }
+select.app-select option, select.app-input option, select.field-input option { background: var(--c-surface); color: var(--c-text); font-weight: 500; padding: 0.5rem; }
+.app-select-icon-left { cursor: pointer; }
+.admin-filter-bar { display: flex; flex-wrap: nowrap; align-items: stretch; gap: 0.625rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.admin-filter-bar::-webkit-scrollbar { display: none; }
+.admin-filter-bar .app-search-wrap { flex: 1 1 14rem; min-width: 14rem; }
+.admin-filter-bar .app-field-wrap { flex: 0 0 auto; width: 10.75rem; min-width: 10.75rem; }
+.admin-filter-bar .app-field-wrap:has(#stream-status-filter) { width: 12rem; min-width: 12rem; }
+.admin-filter-bar .admin-filter-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: 0.5rem; flex-shrink: 0; margin-left: auto; }
+.app-input-sm { padding-top: 0.375rem; padding-bottom: 0.375rem; font-size: 0.6875rem; }
+.field-scroll { border: 1px solid var(--c-border); border-radius: var(--r-sm); padding: 0.5rem; background: color-mix(in srgb, var(--c-surface2) 65%, transparent); overflow-y: auto; }
+.control-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.625rem; padding: 0.75rem 1rem; background: color-mix(in srgb, var(--c-surface) 92%, transparent); border: 1px solid var(--c-border); border-radius: var(--r-md); box-shadow: var(--shadow-sm); }
+.dark .control-bar { background: color-mix(in srgb, var(--c-surface) 78%, transparent); backdrop-filter: blur(8px); }
+.control-bar-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.control-bar-label { font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-dim); flex-shrink: 0; }
+.grid-picker { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.monitor-toolbar-bar { display: flex; flex-wrap: nowrap; align-items: center; gap: 0.625rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
+.monitor-toolbar-bar::-webkit-scrollbar { display: none; }
+.monitor-toolbar-bar .app-field-wrap { flex: 0 0 auto; width: 11rem; min-width: 11rem; }
+.monitor-toolbar-bar .control-bar-group { flex: 0 0 auto; flex-wrap: nowrap; white-space: nowrap; }
+.monitor-toolbar-bar .grid-picker { flex-wrap: nowrap; }
+.monitor-toolbar-bar .btn-elegant { white-space: nowrap; }
+/* CCTV Cards -- warna diturunkan dari --color-online / --color-offline */
+.cctv-card-online { border: 1px solid rgba(var(--rgb-online), 0.20) !important; background: var(--c-surface) !important; border-radius: var(--r-md) !important; transition: all 0.25s ease !important; }
+.dark .cctv-card-online { border-color: rgba(var(--rgb-online), 0.28) !important; }
+.cctv-card-online:hover { border-color: var(--color-online) !important; box-shadow: 0 8px 30px rgba(var(--rgb-online), 0.2), 0 0 15px rgba(var(--rgb-online), 0.1) !important; transform: translateY(-2px); }
+.cctv-card-offline { border: 1px solid rgba(var(--rgb-offline), 0.20) !important; background: var(--c-surface) !important; border-radius: var(--r-md) !important; transition: all 0.25s ease !important; }
+.dark .cctv-card-offline { border-color: rgba(var(--rgb-offline), 0.28) !important; }
+.cctv-card-offline:hover { border-color: var(--color-offline) !important; box-shadow: 0 8px 30px rgba(var(--rgb-offline), 0.15), 0 0 15px rgba(var(--rgb-offline), 0.08) !important; transform: translateY(-2px); }
+.video-card-selected { box-shadow: 0 0 0 2px var(--c-blue), 0 0 20px rgba(var(--rgb-blue), 0.25) !important; border-color: var(--c-blue) !important; }
+/* ==============================================================
+   BUTTONS
+   ============================================================== */
+.btn-elegant { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; font-family: inherit; font-size: 0.75rem; font-weight: 600; padding: 0.4375rem 0.875rem; border-radius: var(--r-sm); border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text-muted); transition: all var(--t); cursor: pointer; }
+.btn-elegant:hover { border-color: var(--c-blue); color: var(--c-blue); background: var(--c-primary-muted); transform: translateY(-1px); }
+.btn-elegant:active { transform: translateY(0) scale(0.97); }
+.dark .btn-elegant { background: var(--c-surface2); border-color: var(--c-border); color: var(--c-text-muted); }
+.dark .btn-elegant:hover { background: rgba(var(--rgb-blue), 0.12); }
+.btn-elegant-primary { background: var(--c-blue) !important; color: var(--c-white) !important; border-color: var(--c-blue) !important; box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.28); }
+.btn-elegant-primary:hover { background: var(--c-blue-h) !important; border-color: var(--c-blue-h) !important; box-shadow: 0 4px 16px rgba(var(--rgb-blue), 0.36) !important; }
+/* ==============================================================
+   MISC COMPONENTS
+   ============================================================== */
+.title-frame { padding: 0.875rem 1.125rem; background: var(--c-primary-muted); border: 1px solid rgba(var(--rgb-blue), 0.16); border-radius: var(--r-md); margin-bottom: 1.25rem; }
+.dark .title-frame { border-color: rgba(var(--rgb-blue), 0.20); }
+/* Camera feed placeholder -- warna dari --color-cam-dark / --color-cam-mid */
+.cam-placeholder-bg { background-color: var(--color-cam-dark); background-image: linear-gradient(to right, rgba(var(--rgb-blue), 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(var(--rgb-blue), 0.05) 1px, transparent 1px), radial-gradient(circle at center, var(--color-cam-mid) 0%, var(--color-cam-dark) 100%); background-size: 20px 20px; position: relative; }
+.cam-placeholder-bg::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at center, rgba(var(--rgb-blue), 0.04) 0%, transparent 70%); pointer-events: none; }
+.cam-poster-skeleton { background-color: var(--color-cam-mid); background-image: linear-gradient(to right, rgba(var(--rgb-blue), 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(var(--rgb-blue), 0.06) 1px, transparent 1px), linear-gradient(110deg, transparent 40%, rgba(var(--rgb-blue), 0.08) 50%, transparent 60%); background-size: 20px 20px, 20px 20px, 200% 100%; animation: cam-poster-shimmer 1.4s ease-in-out infinite; }
+@keyframes cam-poster-shimmer { 0% { background-position: 0 0, 0 0, 200% 0; } 100% { background-position: 0 0, 0 0, -200% 0; } }
+.cam-stream-error-overlay { background: var(--c-overlay); backdrop-filter: blur(2px); border: 1px solid rgba(var(--rgb-offline), 0.22); border-radius: 0.375rem; }
+.cam-tile-media { background-color: transparent; }
+/* Single-click reveals tile controls overlay (touch + mouse) */
+.tile-controls-visible .group-hover\:opacity-100,
+.tile-controls-visible [class*="group-hover:opacity-100"],
+.tile-controls-visible .opacity-0 { opacity: 1 !important; transition: opacity 0.2s ease !important; }
+#api-error-banner, #api-success-banner { top: 1rem; left: 50%; transform: translateX(-50%); max-width: min(92vw, 36rem); }
+/* ==============================================================
+   TAB INTRO BOX — judul & deskripsi singkat per tab
+   ============================================================== */
+.tab-intro-box { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.125rem 1rem 1.25rem; border-radius: var(--r-lg); border: 1px solid var(--c-border); background: linear-gradient(135deg, color-mix(in srgb, var(--c-surface) 96%, var(--c-blue)) 0%, var(--c-surface) 55%); box-shadow: var(--shadow-sm); overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.tab-intro-box:hover { transform: translateY(-1px); border-color: rgba(var(--rgb-blue), 0.32); box-shadow: var(--shadow-md); }
+.dark .tab-intro-box { background: linear-gradient(135deg, color-mix(in srgb, var(--c-surface) 88%, var(--c-blue)) 0%, var(--c-surface) 60%); box-shadow: var(--shadow-md); }
+.tab-intro-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--c-blue) 0%, var(--c-orange) 100%); border-radius: 3px 0 0 3px; }
+.tab-intro-icon { position: relative; z-index: 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 2.625rem; height: 2.625rem; border-radius: var(--r-md); background: linear-gradient(145deg, rgba(var(--rgb-blue), 0.16), rgba(var(--rgb-blue), 0.06)); border: 1px solid rgba(var(--rgb-blue), 0.22); color: var(--c-blue); box-shadow: inset 0 1px 0 var(--c-chrome-inset); transition: transform 0.25s ease, border-color 0.25s ease; }
+.tab-intro-box:hover .tab-intro-icon { transform: scale(1.04); border-color: rgba(var(--rgb-blue), 0.38); }
+.tab-intro-content { position: relative; z-index: 1; flex: 1 1 12rem; min-width: 0; }
+.tab-intro-actions { position: relative; z-index: 1; flex-shrink: 0; margin-left: auto; align-self: center; }
+.tab-intro-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.tab-intro-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--c-text); line-height: 1.3; }
+@media (min-width: 768px) { .tab-intro-title { font-size: 1.0625rem; } }
+.tab-intro-desc { margin-top: 0.375rem; font-size: 0.75rem; line-height: 1.55; color: var(--c-text-muted); max-width: 52rem; }
+.tab-intro-badge { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 999px; font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-blue); background: var(--c-primary-muted); border: 1px solid rgba(var(--rgb-blue), 0.18); }
+@media (max-width: 639px) { .tab-intro-actions { width: 100%; margin-left: 0; margin-top: 0.125rem; } .tab-intro-actions .btn-elegant { width: 100%; justify-content: center; } }
+.layout-intro { margin-bottom: 0; flex-shrink: 0; }
+.layout-panel { min-width: 0; }
+.layout-toolbar, .layout-grid, .layout-pagination-wrap, .layout-empty { min-width: 0; }
+/* ==============================================================
+   PAGE LAYOUT — section wrappers per view
+   ============================================================== */
+.page-layout { display: flex; flex-direction: column; gap: var(--page-gap); width: 100%; min-width: 0; }
+.page-layout--fill { flex: 1 1 auto; min-height: calc(100dvh - var(--hdr-h) - 3rem); height: calc(100dvh - var(--hdr-h) - 3rem); overflow: hidden; }
+#tab-maps.page-layout--fill .layout-body-maps { flex: 1 1 auto; min-height: 0; }
+@media (max-width: 767px) { .page-layout--fill { min-height: calc(100dvh - var(--hdr-h) - var(--hdr-safe-top) - var(--mob-nav-h) - env(safe-area-inset-bottom, 0px) - 1.75rem); height: calc(100dvh - var(--hdr-h) - var(--hdr-safe-top) - var(--mob-nav-h) - env(safe-area-inset-bottom, 0px) - 1.75rem); } }
+@media (min-width: 768px) { .page-layout { gap: var(--page-gap); } }
+.view-layout { width: 100%; min-width: 0; }
+.layout-section { width: 100%; min-width: 0; }
+.layout-body { flex: 1 1 auto; min-width: 0; min-height: 0; }
+.layout-body-split { display: flex; flex-direction: column; gap: var(--page-gap); align-items: stretch; min-width: 0; }
+.layout-body-split > .layout-sidebar { width: 100%; min-width: 0; }
+.layout-body-split > .layout-main { flex: 1 1 auto; min-width: 0; }
+@media (min-width: 1024px) { .layout-body-split { flex-direction: row; align-items: flex-start; } .layout-body-split > .layout-sidebar { width: var(--layout-sidebar-w); max-width: var(--layout-sidebar-w); flex-shrink: 0; } }
+.layout-main { display: flex; flex-direction: column; gap: var(--page-gap); }
+.layout-tabs { flex-shrink: 0; }
+.admin-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.375rem;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+}
+.dark .admin-tab-nav {
+  background: rgba(15, 21, 32, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.admin-tab-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: 1 1 0;
+  min-width: 140px;
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-lg);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.admin-tab-box:hover {
+  background: var(--c-surface2);
+  border-color: rgba(var(--rgb-blue), 0.2);
+}
+.dark .admin-tab-box:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.admin-tab-box.is-active {
+  background: var(--c-surface);
+  border-color: rgba(var(--rgb-blue), 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.dark .admin-tab-box.is-active {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(48, 129, 209, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.admin-tab-box-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-md);
+  background: rgba(var(--rgb-blue), 0.08);
+  border: 1px solid rgba(var(--rgb-blue), 0.15);
+  color: var(--c-blue);
+  transition: all 0.2s ease;
+}
+.dark .admin-tab-box-icon {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #a8bcdb;
+}
+.admin-tab-box.is-active .admin-tab-box-icon {
+  background: var(--c-blue);
+  border-color: var(--c-blue);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.3);
+}
+.admin-tab-box-icon svg { width: 1.125rem; height: 1.125rem; display: block; }
+.admin-tab-box-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.375rem;
+}
+.admin-tab-box-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-tab-box.is-active .admin-tab-box-title {
+  color: var(--c-text);
+  font-weight: 700;
+}
+.admin-tab-box-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: var(--c-blue);
+  background: rgba(var(--rgb-blue), 0.1);
+  border: 1px solid rgba(var(--rgb-blue), 0.2);
+}
+.admin-tab-box.is-active .admin-tab-box-badge {
+  background: rgba(var(--rgb-blue), 0.18);
+}
+.layout-header-text { min-width: 0; }
+.layout-header-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; flex-shrink: 0; }
+.layout-pagination, .monitor-pagination.layout-pagination { display: flex; flex-direction: column; align-items: stretch; gap: 0.75rem; padding: 0.75rem 1rem; background: color-mix(in srgb, var(--c-surface) 88%, transparent); border: 1px solid var(--c-border); border-radius: var(--r-md); box-shadow: var(--shadow-sm); font-size: 0.6875rem; }
+.dark .layout-pagination, .dark .monitor-pagination.layout-pagination { background: color-mix(in srgb, var(--c-surface) 72%, transparent); backdrop-filter: blur(8px); }
+.pagination-bar { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.375rem; }
+.pagination-nav { display: flex; align-items: center; gap: 0.375rem; }
+.pagination-pages { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.375rem; min-width: 0; }
+.pagination-meta { text-align: center; }
+.pagination-indicator { color: var(--c-text-muted); font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.pagination-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 2rem; height: 2rem; padding: 0 0.625rem; border-radius: var(--r-sm); border: 1px solid var(--c-border); background: var(--c-surface2); color: var(--c-text-muted); font-size: 0.75rem; font-weight: 700; transition: background var(--t), transform var(--t), opacity var(--t); }
+.pagination-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--c-blue) 10%, var(--c-surface2)); color: var(--c-text); }
+.pagination-btn:active:not(:disabled) { transform: scale(0.95); }
+.pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (min-width: 640px) { .layout-pagination, .monitor-pagination.layout-pagination { flex-direction: row; align-items: center; justify-content: space-between; } .pagination-meta { text-align: right; flex-shrink: 0; } }
+/* ==============================================================
+   MONITOR PAGES
+   ============================================================== */
+.monitor-page .title-frame { margin-bottom: 0; }
+/* ==============================================================
+   FULLSCREEN / THEATER MODE
+   -- bg gelap dari --color-cam-dark, bg terang dari --color-fs-light
+   ============================================================== */
+#cctv-grid:fullscreen, #custom-cctv-grid:fullscreen { background-color: var(--color-cam-dark); padding: 24px; overflow-y: auto; }
+html:not(.dark) #cctv-grid:fullscreen, html:not(.dark) #custom-cctv-grid:fullscreen { background-color: var(--color-fs-light); }
+body.web-fullscreen { overflow: hidden !important; }
+body.web-fullscreen header, body.web-fullscreen aside, body.web-fullscreen .mobile-bottom-nav { display: none !important; }
+body.web-fullscreen .app-shell { margin-top: 0 !important; min-height: 100dvh !important; height: 100dvh !important; }
+body.web-fullscreen .app-main { margin-left: 0 !important; padding: 0 !important; min-height: 100dvh !important; height: 100dvh !important; overflow-x: hidden !important; overflow-y: auto !important; }
+body.web-fullscreen #view-custom { height: 100% !important; min-height: 100% !important; }
+body.web-fullscreen .layout-intro, body.web-fullscreen #tab-custom .layout-toolbar, body.web-fullscreen #tab-custom .layout-header, body.web-fullscreen #custom-monitor-header, body.web-fullscreen #custom-monitor-sidebar, body.web-fullscreen .layout-pagination-wrap, body.web-fullscreen #custom-cctv-pagination, body.web-fullscreen #custom-empty-state, body.web-fullscreen .layout-empty { display: none !important; }
+body.web-fullscreen #tab-custom { margin: 0 !important; padding: 0.75rem !important; gap: 0 !important; height: 100% !important; min-height: 100% !important; width: 100% !important; align-items: stretch !important; }
+body.web-fullscreen #tab-custom > .layout-body { flex: 1 1 auto !important; min-height: 0 !important; height: 100% !important; gap: 0 !important; margin: 0 !important; }
+body.web-fullscreen #tab-custom > *, body.web-fullscreen #custom-monitor-content-wrapper > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+body.web-fullscreen #custom-monitor-content-wrapper { padding: 0 !important; margin: 0 !important; height: 100% !important; width: 100% !important; flex: 1 1 auto !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }
+body.web-fullscreen #custom-monitor-content-wrapper .layout-grid { flex: 1 1 auto !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
+body.web-fullscreen #custom-cctv-grid { width: 100% !important; flex: 1 1 auto !important; min-height: 0 !important; }
+body.web-fullscreen .fs-exit-btn { display: inline-flex !important; }
+/* Fullscreen hanya untuk tab Screen */
+#tab-viewer .tab-intro-actions, #tab-maps .tab-intro-actions, #tab-admin .tab-intro-actions { display: none !important; }
+.fs-exit-btn { display: none; position: fixed; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); right: 1.25rem; z-index: 9999; align-items: center; gap: 0.375rem; padding: 0.625rem 1rem; border-radius: 999px; border: 1px solid rgba(var(--rgb-blue), 0.35); background: color-mix(in srgb, var(--c-surface) 88%, transparent); backdrop-filter: blur(10px); color: var(--c-text); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; box-shadow: var(--shadow-md); cursor: pointer; transition: transform var(--t), box-shadow var(--t), border-color var(--t); }
+.fs-exit-btn:hover { transform: translateY(-2px); border-color: var(--c-blue); box-shadow: 0 6px 24px rgba(var(--rgb-blue), 0.28); }
+.dark .fs-exit-btn { background: color-mix(in srgb, var(--c-surface) 82%, transparent); color: var(--c-text); }
+body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fullscreen #custom-cctv-grid > div > .absolute.bottom-2\.5, body.web-fullscreen #custom-cctv-grid > div > .absolute.inset-0.flex { display: none !important; }
+/* ==============================================================
+   CAMERA POPUP MODAL
+   ============================================================== */
+/* Old fullscreen rules (kept for fallback if modal is fullscreen element) */
+#camera-popup-modal:fullscreen, #camera-popup-modal:-webkit-full-screen { padding: 0 !important; background-color: #000 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+#camera-popup-modal:fullscreen #camera-popup-modal-panel, #camera-popup-modal:-webkit-full-screen #camera-popup-modal-panel { width: 100vw !important; height: 100dvh !important; max-width: 100vw !important; max-height: 100dvh !important; border-radius: 0 !important; border: none !important; background-color: #000 !important; display: flex !important; flex-direction: column !important; }
+#camera-popup-modal:fullscreen #popup-prev-btn, #camera-popup-modal:fullscreen #popup-next-btn { opacity: 1 !important; }
+/* New fullscreen rules — fullscreen is on #popup-player-wrapper */
+#popup-player-wrapper:fullscreen, #popup-player-wrapper:-webkit-full-screen { background-color: #000 !important; background-image: none !important; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; height: 100dvh !important; }
+#popup-player-wrapper:fullscreen *:not(#popup-stream-container), #popup-player-wrapper:-webkit-full-screen *:not(#popup-stream-container) { background-image: none !important; }
+#popup-player-wrapper:fullscreen #popup-stream-container, #popup-player-wrapper:-webkit-full-screen #popup-stream-container { background-color: #000 !important; flex: 1 1 0% !important; width: 100% !important; height: 100% !important; }
+#popup-player-wrapper:fullscreen #popup-stream-container > div, #popup-player-wrapper:-webkit-full-screen #popup-stream-container > div { background-color: #000 !important; background-image: none !important; width: 100% !important; height: 100% !important; }
+#popup-player-wrapper:fullscreen video, #popup-player-wrapper:-webkit-full-screen video { object-fit: contain !important; width: 100% !important; height: 100% !important; background-color: #000 !important; }
+/* Poster img and background in fullscreen must use contain, not cover, to match video aspect ratio */
+#popup-player-wrapper:fullscreen #popup-stream-container img,
+#popup-player-wrapper:-webkit-full-screen #popup-stream-container img { object-fit: contain !important; background-color: #000 !important; }
+#popup-player-wrapper:fullscreen #popup-stream-container,
+#popup-player-wrapper:-webkit-full-screen #popup-stream-container { background-size: contain !important; background-repeat: no-repeat !important; background-color: #000 !important; }
+/* In fullscreen, always show nav buttons and control bar — touch devices have no hover state */
+#popup-player-wrapper:fullscreen #popup-prev-btn:not(.hidden),
+#popup-player-wrapper:-webkit-full-screen #popup-prev-btn:not(.hidden),
+#popup-player-wrapper:fullscreen #popup-next-btn:not(.hidden),
+#popup-player-wrapper:-webkit-full-screen #popup-next-btn:not(.hidden) { opacity: 1 !important; }
+#popup-player-wrapper:fullscreen .popup-controls-bar,
+#popup-player-wrapper:-webkit-full-screen .popup-controls-bar { opacity: 1 !important; }
+/* Touch-tap: when controls are toggled visible */
+#popup-player-wrapper.touch-controls-visible #popup-prev-btn:not(.hidden),
+#popup-player-wrapper.touch-controls-visible #popup-next-btn:not(.hidden) { opacity: 1 !important; }
+#popup-player-wrapper.touch-controls-visible .popup-controls-bar { opacity: 1 !important; }
+/* Nav buttons base */
+#popup-prev-btn, #popup-next-btn { transition: opacity 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
+#popup-prev-btn:hover, #popup-next-btn:hover { box-shadow: 0 0 16px rgba(var(--rgb-blue), 0.45); }
+#popup-cam-name, #popup-cam-status { transition: opacity 0.25s ease; }
+#popup-cam-name.fading, #popup-cam-status.fading { opacity: 0; }
+#popup-stream-container video { transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1); }
+/* ==============================================================
+   ANIMASI
+   ============================================================== */
+@keyframes viewFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes logoBounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+@keyframes techPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+@keyframes popupFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes popupFadeOut { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(0.95) translateY(10px); } }
+.view-section { animation: viewFadeIn 0.30s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animated-header { animation: slideDown 0.40s cubic-bezier(0.16,1,0.3,1); }
+.logo-bounce { animation: logoBounce 0.5s ease; }
+.scanline { animation: scanline 6s linear infinite; }
+#camera-popup-modal:not(.hidden) { animation: popupFadeIn 0.22s cubic-bezier(0.34,1.12,0.64,1) forwards; }
+#camera-popup-modal.closing { animation: popupFadeOut 0.18s ease-in forwards; }
+/* ==============================================================
+   DARK MODE -- Override Tailwind classes ke token CSS
+   ============================================================== */
+.dark .bg-white, .dark .bg-white\/70, .dark .bg-white\/90, .dark .bg-white\/95 { background-color: var(--c-surface) !important; }
+.dark .bg-slate-50 { background-color: var(--c-bg) !important; }
+.dark .bg-slate-100, .dark .bg-slate-100\/60 { background-color: var(--c-surface2) !important; }
+.dark .bg-slate-200 { background-color: var(--c-surface2) !important; }
+.dark .bg-slate-800, .dark .bg-slate-900, .dark .bg-slate-900\/90, .dark .bg-slate-900\/95 { background-color: var(--c-surface) !important; }
+.bg-slate-100 { background-color: var(--c-surface2); }
+.bg-slate-50 { background-color: var(--c-bg); }
+.dark .text-slate-800, .dark .text-slate-900 { color: var(--c-text) !important; }
+.dark .text-slate-600, .dark .text-slate-700 { color: var(--c-text-muted) !important; }
+.dark .text-slate-400, .dark .text-slate-500 { color: var(--c-text-dim) !important; }
+.dark .text-slate-300 { color: var(--c-text-muted) !important; }
+.text-slate-800 { color: var(--c-text); }
+.text-slate-600 { color: var(--c-text-muted); }
+.text-slate-500 { color: var(--c-text-dim); }
+.dark .border-slate-200, .dark .border-slate-200\/60, .dark .border-slate-200\/80 { border-color: var(--c-border) !important; }
+.dark aside, .dark .glass-sidebar { background-color: var(--c-surface) !important; }
+.dark input, .dark select, .dark textarea { background-color: var(--c-surface2); border-color: var(--c-border); color: var(--c-text); text-shadow: none; }
+.dark input::placeholder, .dark textarea::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; }
+.dark input:focus, .dark select:focus, .dark textarea:focus { border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.15); }
+.dark main { background-color: var(--c-bg) !important; color: var(--c-text) !important; }
+/* ==============================================================
+   MAPS PAGE — pakai layout-body-split yang sama dengan Screen
+   Desktop : sidebar kiri 280px | peta kanan (mengisi sisa lebar + tinggi)
+   Mobile  : peta atas 240px | daftar kamera bawah scrollable
+   ============================================================== */
+.layout-body-maps { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: var(--page-gap); }
+.layout-body-maps .maps-sidebar.panel-card { display: flex; flex-direction: column; overflow: hidden; padding: 1.25rem; min-height: 0; }
+.layout-body-maps .maps-sidebar-header { flex-shrink: 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--c-border); margin-bottom: 0.75rem; }
+.layout-body-maps .maps-camera-list { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 2px; }
+.layout-body-maps .maps-canvas.panel-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
+.layout-body-maps .maps-leaflet-host { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; min-width: 0; z-index: 10; }
+.layout-body-maps .maps-canvas .leaflet-container { width: 100% !important; height: 100% !important; min-height: inherit; background: var(--c-map-tile); }
+.dark .layout-body-maps .maps-canvas .leaflet-container { background: var(--c-map-tile); }
+@media (min-width: 768px) { .layout-body-maps { flex-direction: row; align-items: stretch; flex: 1 1 auto; min-height: 0; } .layout-body-maps .maps-sidebar { order: 1; flex: 0 0 var(--layout-sidebar-w); width: var(--layout-sidebar-w); max-width: var(--layout-sidebar-w); align-self: stretch; } .layout-body-maps .maps-canvas { order: 2; flex: 1 1 0; min-width: 0; width: auto; align-self: stretch; } .layout-body-maps .maps-leaflet-host { min-height: 100%; } }
+@media (max-width: 767px) { .layout-body-maps { flex-direction: column; gap: 0.5rem; } .layout-body-maps .maps-canvas { order: 1; flex: 1 1 55%; width: 100%; height: 55%; min-height: 240px; } .layout-body-maps .maps-leaflet-host, .layout-body-maps #main-cctv-map { width: 100% !important; height: 100% !important; min-height: 100% !important; } .layout-body-maps .maps-sidebar { order: 2; flex: 1 1 45%; min-height: 0; width: 100%; padding: 0.75rem; } .layout-body-maps .maps-sidebar-header { padding-bottom: 0.5rem; margin-bottom: 0.5rem; } }
+/* ==============================================================
+   SAN FRANCISCO — enforce di seluruh app (Tailwind CDN, Leaflet, modal)
+   ============================================================== */
+html, body, #app-main, .font-sans, [class*="font-sans"], button, table, thead, tbody, tr, th, td, h1, h2, h3, h4, h5, h6, p, span, a, label, li, div, nav, header, footer, .leaflet-container, .leaflet-popup, .leaflet-popup-content, .leaflet-popup-content-wrapper { font-family: var(--font-sans) !important; font-feature-settings: "kern" 1, "liga" 1, "calt" 1; }
+.font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono) !important; letter-spacing: normal !important; }
+input, select, textarea, optgroup { font-family: inherit !important; font-feature-settings: normal; letter-spacing: normal; text-shadow: none !important; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
+.hidden { display: none !important; }
+#theme-sun {
+  display: none !important;
+}
+.dark #theme-sun {
+  display: block !important;
+}
+#theme-moon {
+  display: block !important;
+}
+.dark #theme-moon {
+  display: none !important;
+}
+
+/* ==============================================================
+   MIGRATED CUSTOM STYLES (EMBED, LOGIN, MAPS, FOOTER, RADAR)
+   ============================================================== */
+body.embed-body { font-family: var(--font-sans); background-color: var(--embed-bg); margin: 0; padding: 0; overflow: hidden; width: 100vw; height: 100vh; }
+#error-screen { background: linear-gradient(135deg, var(--embed-err-start) 0%, var(--embed-err-end) 100%); }
+.spinner { border: 3px solid var(--spinner-border-color); width: 50px; height: 50px; border-radius: 50%; border-left-color: var(--spinner-left-color); animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes marquee-scroll { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
+.marquee-container { display: flex; overflow: hidden; width: 100%; white-space: nowrap; position: relative; }
+.marquee-content { display: inline-flex; animation: marquee-scroll linear infinite; padding-left: 20px; }
+.marquee-item { display: inline-flex; align-items: center; padding-right: 3rem; }
+.ad-banner-overlay { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 30; transition: all 0.3s ease; border-radius: 6px; border: 1px solid var(--ad-banner-border-color); padding: 4px 8px; min-height: 24px; display: flex; align-items: center; overflow: hidden; }
+#camera-info-overlay { opacity: 0; transition: opacity 0.25s ease-in-out; }
+#player-container:hover #camera-info-overlay { opacity: 1 !important; }
+
+body.login-body { font-family: var(--font-sans); font-weight: 400; letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; background-color: var(--login-bg-dark); background-image: radial-gradient(at 0% 0%, var(--login-grad-sky-dark) 0px, transparent 50%), radial-gradient(at 100% 100%, var(--login-grad-indigo-dark) 0px, transparent 50%); background-size: 100% 100%, 100% 100%; }
+.login-card { background: var(--login-card-bg-dark); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--login-card-border-dark); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.login-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); }
+html:not(.dark) body.login-body { background-color: var(--login-bg-light); background-image: radial-gradient(at 0% 0%, var(--login-grad-sky-light) 0px, transparent 50%), radial-gradient(at 100% 100%, var(--login-grad-indigo-light) 0px, transparent 50%); background-size: 100% 100%, 100% 100%; }
+html:not(.dark) .login-card { background: var(--login-card-bg-light); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--login-card-border-light); }
+html:not(.dark) .login-card:hover { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); }
+
+.leaflet-popup-content-wrapper { background: var(--maps-popup-bg-light); border-radius: 6px; box-shadow: 0 10px 25px -5px var(--maps-popup-shadow-color-light); }
+.dark .leaflet-popup-content-wrapper { background: var(--maps-popup-bg-dark) !important; color: var(--maps-popup-text-dark) !important; border: 1px solid var(--maps-popup-border-dark) !important; box-shadow: 0 0 15px var(--maps-popup-shadow-color-dark) !important; }
+.dark .leaflet-popup-tip { background: var(--maps-popup-bg-dark) !important; border-left: 1px solid var(--maps-popup-border-dark) !important; border-bottom: 1px solid var(--maps-popup-border-dark) !important; }
+
+html, body, #app-main, #tab-admin, #tab-viewer, #tab-custom, #tab-maps, .font-sans, [class*="font-sans"], button, table, thead, tbody, tr, th, td, h1, h2, h3, h4, h5, h6, p, span, a, label, li, div, nav, header, footer, .leaflet-container, .leaflet-popup, .leaflet-popup-content, #camera-popup-modal, #camera-popup-modal-panel { font-family: var(--font-sans) !important; }
+.font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono) !important; letter-spacing: normal !important; }
+input, select, textarea, optgroup { font-family: inherit !important; letter-spacing: normal; text-shadow: none !important; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
+input::placeholder, textarea::placeholder { opacity: 1; text-shadow: none !important; }
+
+@keyframes radar-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.animate-radar { animation: radar-sweep 2.5s linear infinite; }
+
+/* ==============================================================
+   DARK MODE SHELL OVERRIDES (frosted glass)
+   ============================================================== */
+.dark .glass-header {
+  background: rgba(0, 0, 0, 0.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: none !important;
+}
+.dark .app-sidebar {
+  background: rgba(0, 0, 0, 0.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: none !important;
+}
+.dark .sidebar-profile-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+.dark .sidebar-profile-name {
+  color: #ffffff !important;
+}
+.dark .sidebar-role-badge {
+  color: var(--c-blue) !important;
+  background: rgba(var(--rgb-blue), 0.15) !important;
+  border-color: rgba(var(--rgb-blue), 0.25) !important;
+}
+.dark .sidebar-section-lbl {
+  color: rgba(255, 255, 255, 0.40) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark .sidebar-nav-link,
+.dark .sidebar-btn-card {
+  color: rgba(255, 255, 255, 0.70) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+.dark .sidebar-nav-link:hover,
+.dark .sidebar-btn-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+.dark .sidebar-nav-link.active,
+.dark .sidebar-btn-card.active {
+  background: var(--c-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--c-blue) !important;
+  box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
+}
+.dark .nav-btn-icon-wrap {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.70) !important;
+}
+.dark .sidebar-btn-card.active .nav-btn-icon-wrap,
+.dark .sidebar-nav-link.active .nav-btn-icon-wrap {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.dark .sidebar-btn-card:hover .nav-btn-icon-wrap,
+.dark .sidebar-nav-link:hover .nav-btn-icon-wrap {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+/* Mobile Bottom Navigation Dark Mode Override */
+.dark .mobile-bottom-nav {
+  background: rgba(0, 0, 0, 0.70) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+.dark .mob-nav-item, .dark .mob-nav-btn {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+.dark .mob-nav-item:not(.active):hover, .dark .mob-nav-btn:not(.active):hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+
+/* ==============================================================
+   MODERN REFINEMENT LAYER  (appended 2026-09-02)
+   Tujuan:
+   1. Monospace hanya untuk DATA (angka, jam, key, telemetri) —
+      bukan untuk nama kamera, judul, label, atau kalimat.
+   2. Rapikan bayangan, radius, dan transisi agar lebih modern.
+   Semua di sini override aman: tidak ada file view yang diubah.
+   ============================================================== */
+
+/* --- 1. TIPOGRAFI: kembalikan teks naratif ke font sans -------- */
+
+/* Default: apa pun yang ditandai font-mono ikut sans dulu... */
+.font-mono:not(input):not(select):not(textarea),
+[class*="font-mono"]:not(input):not(select):not(textarea) {
+  font-family: var(--font-sans) !important;
+  letter-spacing: -0.006em !important;
+  font-variant-numeric: normal;
+}
+
+/* ...lalu HANYA data numerik/teknis yang benar-benar dikembalikan
+   ke monospace. Tambahkan selector baru di sini bila perlu.      */
+.font-data,
+.font-data *,
+[id^="cam-telemetry-"],
+#pb-clock,
+#pb-range-label,
+#pb-tl-start,
+#pb-tl-end,
+#pb-timeline-ticks,
+#pb-timeline-ticks *,
+.api-key-value,
+code, kbd, samp, pre, pre * {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: 0 !important;
+}
+
+/* Judul & nama: bobot tegas, jarak huruf rapat, bukan uppercase-mono */
+.panel-card-title,
+.tab-intro-title,
+#pb-modal-title,
+#modal-title,
+h1, h2, h3, h4 {
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.022em !important;
+  text-transform: none !important;
+}
+
+/* Label kecil tetap uppercase, tapi pakai sans + tracking lega */
+.field-label,
+.control-bar-label,
+.sidebar-section-lbl {
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+}
+
+/* Nama kamera di tile: sans, jelas, tidak "kode" */
+.cam-tile-name,
+[id^="pb-tile-"] p {
+  font-family: var(--font-sans) !important;
+  letter-spacing: -0.012em !important;
+}
+
+/* --- 2. PERMUKAAN: bayangan berlapis + radius lebih lembut ----- */
+
+:root {
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 15px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-soft: 0 1px 2px rgba(var(--rgb-text-base), 0.05), 0 4px 12px -2px rgba(var(--rgb-text-base), 0.07);
+  --shadow-lift: 0 2px 4px rgba(var(--rgb-text-base), 0.05), 0 12px 28px -6px rgba(var(--rgb-text-base), 0.12);
+}
+.dark {
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 36px -8px rgba(0, 0, 0, 0.6);
+}
+
+.panel-card, .glass-card {
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+.panel-card:hover, .glass-card:hover {
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(var(--rgb-blue), 0.24);
+}
+
+/* --- 3. TOMBOL: pantulan halus, fokus jelas ------------------- */
+
+.btn-elegant {
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  transition: background 0.18s var(--ease-out), border-color 0.18s var(--ease-out),
+              color 0.18s var(--ease-out), box-shadow 0.18s var(--ease-out), transform 0.12s var(--ease-out);
+}
+.btn-elegant:hover { transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+.btn-elegant:active { transform: translateY(0) scale(0.98); }
+.btn-elegant-primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c-blue) 92%, white) 0%, var(--c-blue) 100%);
+  border-color: color-mix(in srgb, var(--c-blue) 78%, black);
+  color: #fff;
+}
+.btn-elegant-primary:hover { box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.34); }
+
+/* Fokus keyboard terlihat di semua kontrol (aksesibilitas) */
+.btn-elegant:focus-visible,
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--c-blue);
+  outline-offset: 2px;
+}
+
+/* --- 4. TILE KAMERA: hover lebih hidup ------------------------ */
+
+[id^="cam-tile-"], [id^="custom-cam-tile-"], [id^="pb-tile-"] {
+  border-radius: var(--r-md);
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+[id^="cam-tile-"]:hover, [id^="custom-cam-tile-"]:hover, [id^="pb-tile-"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(var(--rgb-blue), 0.4);
+}
+
+/* --- 5. MODAL: masuk halus, panel lebih empuk ----------------- */
+
+@keyframes modalPop { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+#pb-modal:not(.hidden) > div,
+#stream-modal:not(.hidden) > div {
+  animation: modalPop 0.22s var(--ease-out) both;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lift);
+}
+
+/* --- 6. TIMELINE PLAYBACK: batang lebih tegas ----------------- */
+
+#pb-timeline { border-radius: var(--r-md); }
+#pb-timeline-ranges > div {
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--color-online) 0%, color-mix(in srgb, var(--color-online) 78%, black) 100%);
+  box-shadow: 0 1px 3px rgba(var(--rgb-online), 0.35);
+  transition: filter 0.18s var(--ease-out);
+}
+#pb-timeline-ranges > div:hover { filter: brightness(1.18); }
+
+/* --- 7. TABEL: baris lebih terbaca ---------------------------- */
+
+table tbody tr { transition: background 0.15s var(--ease-out); }
+table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
+.dark table tbody tr:hover { background: rgba(var(--rgb-blue), 0.10); }
+
+/* --- 8. Hormati preferensi kurangi-gerak (aksesibilitas) ------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .btn-elegant:hover,
+  [id^="cam-tile-"]:hover, [id^="custom-cam-tile-"]:hover, [id^="pb-tile-"]:hover { transform: none; }
+}
+
+
+/* ==============================================================
+   DESIGN SYSTEM v1  —  TAHAP 1 (token) + TAHAP 2 (komponen)
+   Ditambahkan 2026-09-02.
+
+   TAHAP 1 murni token: tidak ada view yang diubah, tampilan lama
+   tetap. TAHAP 2 menambah kelas .ms-* yang belum dipakai siapa pun
+   sampai TAHAP 3. Jadi berkas ini aman: menambah, tidak mencabut.
+   ============================================================== */
+
+/* ==============================================================
+   TAHAP 1 — FONDASI TOKEN
+   ============================================================== */
+
+:root {
+  /* --- Skala teks: 6 langkah. Tidak ada lagi text-[8px]. ------ */
+  --text-2xs: 0.6875rem;  /* 11px — batas bawah keterbacaan      */
+  --text-xs:  0.75rem;    /* 12px — label, badge                 */
+  --text-sm:  0.8125rem;  /* 13px — teks tabel, isi sekunder     */
+  --text-md:  0.875rem;   /* 14px — teks utama                   */
+  --text-lg:  1rem;       /* 16px — judul kartu                  */
+  --text-xl:  1.25rem;    /* 20px — judul halaman                */
+
+  --lh-tight: 1.25;
+  --lh-base:  1.55;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semi:   600;
+  --fw-bold:   700;
+
+  /* --- Radius: 3 langkah (+ pill) ----------------------------- */
+  --radius-sm:   8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-pill: 9999px;
+
+  /* --- Spasi: kelipatan 4px ---------------------------------- */
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+
+  /* --- Tangga z-index bernama --------------------------------
+     Menggantikan 11 nilai campur (z-[4], z-[20], z-[9999], dst). */
+  --z-base:    0;
+  --z-raised: 10;
+  --z-sticky: 30;
+  --z-nav:    40;
+  --z-overlay:100;
+  --z-toast: 200;
+
+  /* --- Gerak ------------------------------------------------- */
+  --dur-fast: 0.15s;
+  --dur-base: 0.22s;
+  --dur-slow: 0.32s;
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Target sentuh ----------------------------------------- */
+  --touch-min: 44px;   /* minimum nyaman untuk jari (mobile)     */
+  --control-h: 34px;   /* tinggi kontrol di desktop              */
+}
+
+/* Breakpoint disederhanakan jadi 3 ambang:
+     < 640px   HP
+     640-1024  tablet
+     > 1024px  desktop
+   Nilai ini dipakai konsisten oleh komponen .ms-* di bawah.      */
+
+/* Di layar sentuh, kontrol naik ke ambang 44px. */
+@media (max-width: 639px) {
+  :root { --control-h: var(--touch-min); }
+}
+
+/* ==============================================================
+   TAHAP 2 — KOMPONEN DASAR (.ms-*)
+   Belum dipakai view mana pun. Dipasang bertahap mulai TAHAP 3.
+   ============================================================== */
+
+/* --- Tombol --------------------------------------------------- */
+
+.ms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: -0.008em;
+  line-height: 1;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out-soft),
+              border-color var(--dur-fast) var(--ease-out-soft),
+              color var(--dur-fast) var(--ease-out-soft),
+              box-shadow var(--dur-fast) var(--ease-out-soft),
+              transform var(--dur-fast) var(--ease-out-soft);
+}
+.ms-btn:hover  { background: var(--c-surface2); border-color: rgba(var(--rgb-blue), 0.32); transform: translateY(-1px); }
+.ms-btn:active { transform: translateY(0) scale(0.98); }
+.ms-btn:disabled,
+.ms-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.ms-btn--primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand-blue) 92%, white) 0%, var(--brand-blue) 100%);
+  border-color: color-mix(in srgb, var(--brand-blue) 78%, black);
+  color: #fff;
+}
+.ms-btn--primary:hover { box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.34); }
+
+.ms-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--c-text-muted);
+}
+.ms-btn--ghost:hover { background: rgba(var(--rgb-blue), 0.08); color: var(--c-text); }
+
+.ms-btn--danger {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-offline) 92%, white) 0%, var(--color-offline) 100%);
+  border-color: color-mix(in srgb, var(--color-offline) 78%, black);
+  color: #fff;
+}
+.ms-btn--danger:hover { box-shadow: 0 4px 14px rgba(var(--rgb-offline), 0.34); }
+
+.ms-btn--icon { width: var(--control-h); padding: 0; }
+
+/* Fokus keyboard — tidak boleh dihilangkan (aksesibilitas). */
+.ms-btn:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+/* --- Kartu ---------------------------------------------------- */
+
+.ms-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-soft, 0 1px 2px rgba(0,0,0,0.05));
+  transition: border-color var(--dur-base) var(--ease-out-soft),
+              box-shadow var(--dur-base) var(--ease-out-soft);
+}
+.ms-card--flat  { box-shadow: none; }
+.ms-card--hover:hover { border-color: rgba(var(--rgb-blue), 0.28); box-shadow: var(--shadow-lift, 0 8px 24px rgba(0,0,0,0.10)); }
+
+.ms-card__title {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.022em;
+  color: var(--c-text);
+  margin: 0 0 var(--space-1);
+}
+.ms-card__desc {
+  font-size: var(--text-sm);
+  line-height: var(--lh-base);
+  color: var(--c-text-muted);
+  margin: 0;
+}
+
+/* --- Badge ---------------------------------------------------- */
+
+.ms-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.ms-badge--online  { background: rgba(var(--rgb-online), 0.12);  color: var(--color-online);  border-color: rgba(var(--rgb-online), 0.30); }
+.ms-badge--offline { background: rgba(var(--rgb-offline), 0.12); color: var(--color-offline); border-color: rgba(var(--rgb-offline), 0.30); }
+.ms-badge--info    { background: rgba(var(--rgb-blue), 0.12);    color: var(--brand-blue);    border-color: rgba(var(--rgb-blue), 0.30); }
+.ms-badge--neutral { background: rgba(var(--rgb-text-base), 0.07); color: var(--c-text-muted); border-color: var(--c-border); }
+
+/* --- Field (input, select, textarea) -------------------------- */
+
+.ms-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.ms-field__label {
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+.ms-field__input,
+.ms-input {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--c-text);
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-out-soft),
+              box-shadow var(--dur-fast) var(--ease-out-soft);
+}
+.ms-field__input:focus,
+.ms-input:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.16);
+}
+.ms-field__hint  { font-size: var(--text-2xs); color: var(--c-text-muted); }
+.ms-field__error { font-size: var(--text-2xs); color: var(--color-offline); }
+
+/* --- Tabel ---------------------------------------------------- */
+
+.ms-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.ms-table thead th {
+  padding: var(--space-3);
+  text-align: left;
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  border-bottom: 1px solid var(--c-border);
+  white-space: nowrap;
+}
+.ms-table tbody td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text);
+  vertical-align: middle;
+}
+.ms-table tbody tr { transition: background var(--dur-fast) var(--ease-out-soft); }
+.ms-table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
+.ms-table tbody tr:last-child td { border-bottom: none; }
+
+/* --- Modal ----------------------------------------------------
+   Satu kelas menggantikan 10 salinan.
+   Desktop: kotak di tengah. Mobile: sheet naik dari bawah.       */
+
+.ms-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.ms-modal.hidden,
+.ms-modal[hidden] { display: none; }
+
+.ms-modal__panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100dvh - var(--space-8));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift, 0 20px 50px rgba(0,0,0,0.35));
+  animation: msModalIn var(--dur-base) var(--ease-out-soft) both;
+}
+.ms-modal__panel--wide { max-width: 960px; }
+
+.ms-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--c-border);
+  flex-shrink: 0;
+}
+.ms-modal__title {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.022em;
+  color: var(--c-text);
+  margin: 0;
+}
+.ms-modal__body { padding: var(--space-4); overflow-y: auto; flex: 1 1 auto; }
+.ms-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--c-border);
+  flex-shrink: 0;
+}
+
+@keyframes msModalIn {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes msSheetIn {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile: modal jadi sheet menempel bawah, hormat safe-area iPhone */
+@media (max-width: 639px) {
+  .ms-modal { align-items: flex-end; padding: 0; }
+  .ms-modal__panel {
+    max-width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation-name: msSheetIn;
+  }
+  /* Pegangan tarik, penanda visual bahwa panel bisa ditutup */
+  .ms-modal__head::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 50%;
+    width: 36px; height: 4px;
+    transform: translateX(-50%);
+    border-radius: var(--radius-pill);
+    background: var(--c-border);
+  }
+  .ms-modal__head { position: relative; padding-top: var(--space-5); }
+}
+
+/* --- Skeleton (pengganti spinner kosong saat memuat) ---------- */
+
+.ms-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(var(--rgb-text-base), 0.07);
+  border-radius: var(--radius-sm);
+}
+.dark .ms-skeleton { background: rgba(255, 255, 255, 0.06); }
+.ms-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.13), transparent);
+  animation: msShimmer 1.4s infinite;
+}
+@keyframes msShimmer { to { transform: translateX(100%); } }
+
+.ms-skeleton--text  { height: 0.75rem; margin-bottom: var(--space-2); }
+.ms-skeleton--title { height: 1.125rem; width: 45%; margin-bottom: var(--space-3); }
+.ms-skeleton--tile  { aspect-ratio: 16 / 9; width: 100%; border-radius: var(--radius-md); }
+
+/* --- Utilitas kecil ------------------------------------------- */
+
+.ms-stack   { display: flex; flex-direction: column; gap: var(--space-3); }
+.ms-row     { display: flex; align-items: center; gap: var(--space-2); }
+.ms-spacer  { flex: 1 1 auto; }
+.ms-truncate{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* --- Hormati preferensi kurangi-gerak ------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-modal__panel { animation: none; }
+  .ms-skeleton::after { animation: none; }
+  .ms-btn:hover { transform: none; }
+}
+
+/* --- TAHAP 3: penyesuaian saat .ms-modal dipakai view lama ----- */
+
+/* Panel yang isinya belum bersekat head/body/foot butuh padding
+   sendiri (dulu dibawa oleh .p-6 pada markup lama).              */
+.ms-modal__panel--pad { padding: var(--space-6); }
+@media (max-width: 639px) { .ms-modal__panel--pad { padding: var(--space-4); } }
+
+/* Panel yang markup lamanya mengandalkan scroll di panel itu
+   sendiri, bukan di .ms-modal__body.                             */
+.ms-modal__panel--scroll { overflow-y: auto; }
+
+/* Judul modal lama memakai .font-mono + uppercase; samakan dengan
+   sistem baru tanpa menyentuh markup tiap modal.                 */
+.ms-modal__panel h3 {
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.022em;
+  text-transform: none;
+}
+
+/* Modal lama menaruh isi langsung di panel; pastikan tetap bisa
+   digulir bila lebih tinggi dari layar.                          */
+.ms-modal__panel > form,
+.ms-modal__panel > div:only-child { min-height: 0; }
+
+/* ==============================================================
+   TAHAP 4 — SYSTEM ADMIN
+   Desktop: tabel tetap tabel.
+   Mobile (<640px): tiap baris jadi kartu, tidak ada geser samping.
+
+   Label kolom disuntik lewat CSS ::before, jadi TIDAK ada satu pun
+   baris JS yang perlu diubah — baris tabel tetap dibangun admin.js
+   seperti biasa.
+   ============================================================== */
+
+/* --- Desktop: rapikan tabel yang ada --------------------------- */
+
+@media (min-width: 640px) {
+  #admin-streams-table-body,
+  #admin-users-table-body,
+  #scan-results-table-body,
+  #api-keys-table-body,
+  #api-log-table-body { font-size: var(--text-sm); }
+
+  /* Nama kamera & username: sans, bukan monospace */
+  #admin-streams-table-body td:nth-child(3),
+  #admin-users-table-body   td:nth-child(2),
+  #api-keys-table-body      td:nth-child(1) {
+    font-family: var(--font-sans);
+    font-weight: var(--fw-semi);
+  }
+  /* Data teknis tetap monospace */
+  #admin-streams-table-body td:nth-child(5),
+  #admin-streams-table-body td:nth-child(6),
+  #scan-results-table-body  td:nth-child(2),
+  #scan-results-table-body  td:nth-child(5),
+  #api-log-table-body       td:nth-child(1),
+  #api-log-table-body       td:nth-child(3) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* --- Mobile: tabel jadi daftar kartu --------------------------- */
+
+@media (max-width: 639px) {
+
+  /* Wadah tabel tidak perlu geser samping lagi */
+  .admin-table-wrap,
+  #admin-streams-table-body, #admin-users-table-body,
+  #scan-results-table-body,  #api-keys-table-body,
+  #api-log-table-body { overflow-x: visible !important; }
+
+  .admin-table-wrap { border: none !important; background: transparent !important; }
+
+  /* Sembunyikan baris judul — label pindah ke tiap sel */
+  .admin-table-wrap thead { display: none; }
+
+  .admin-table-wrap table,
+  .admin-table-wrap tbody { display: block; width: 100%; }
+
+  /* Satu baris = satu kartu */
+  .admin-table-wrap tbody tr {
+    display: block;
+    margin-bottom: var(--space-3);
+    padding: var(--space-3);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft, 0 1px 2px rgba(0,0,0,0.05));
+  }
+  .admin-table-wrap tbody tr:hover { background: var(--c-surface); }
+
+  /* Satu sel = satu baris label/nilai */
+  .admin-table-wrap tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--c-border);
+    text-align: right;
+    white-space: normal;
+    word-break: break-word;
+    min-width: 0;
+  }
+  .admin-table-wrap tbody td:last-child { border-bottom: none; padding-bottom: 0; }
+
+  /* Label kolom, diambil dari data-label bila ada */
+  .admin-table-wrap tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 38%;
+    text-align: left;
+    font-family: var(--font-sans);
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-semi);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  /* Sel tanpa label (checkbox, aksi) tampil penuh */
+  .admin-table-wrap tbody td:not([data-label])::before { display: none; }
+  .admin-table-wrap tbody td:not([data-label]) { justify-content: flex-start; text-align: left; }
+
+  /* Tombol aksi di kartu: cukup besar untuk jari */
+  .admin-table-wrap tbody td button,
+  .admin-table-wrap tbody td a {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Toolbar & filter menumpuk, tidak berdesakan */
+  .layout-toolbar, .layout-filter-status {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+  .layout-toolbar > *, .layout-filter-status > * { width: 100%; }
+
+  /* Kontrol di admin ikut ambang sentuh 44px */
+  .layout-toolbar input, .layout-toolbar select, .layout-toolbar button,
+  .app-input, .btn-elegant { min-height: var(--touch-min); }
+
+  /* Pagination: rata tengah, tombol cukup besar */
+  .layout-pagination-wrap { justify-content: center; flex-wrap: wrap; gap: var(--space-2); }
+  .layout-pagination-wrap button { min-height: var(--touch-min); min-width: var(--touch-min); }
+
+  /* Teks terlalu kecil dinaikkan ke ambang keterbacaan */
+  .admin-table-wrap tbody td { font-size: var(--text-sm); }
+}
+
+/* ==============================================================
+   TAHAP 5 — MONITOR / SEMUA KAMERA
+   Desktop: grid 2x2 / 3x3 / 4x4 tetap seperti sekarang.
+   Mobile:  1 kolom tegak, 2 kolom saat landscape.
+   ============================================================== */
+
+@media (max-width: 639px) {
+
+  /* Potret: satu kolom, apa pun pilihan grid di toolbar.
+     Kamera kecil di layar HP tidak ada gunanya.               */
+  .monitor-camera-grid,
+  #cctv-grid,
+  #custom-cctv-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3) !important;
+  }
+
+  /* Landscape: dua kolom, layar cukup lebar dan tinggi terbatas */
+  @media (orientation: landscape) {
+    .monitor-camera-grid,
+    #cctv-grid,
+    #custom-cctv-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: var(--space-2) !important;
+    }
+  }
+
+  /* Toolbar jadi baris gulir mendatar, tidak menumpuk tinggi.
+     Pengguna geser samping untuk kontrol lain.                 */
+  .monitor-toolbar-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    gap: var(--space-2);
+    padding-bottom: var(--space-1);
+    scrollbar-width: none;
+  }
+  .monitor-toolbar-bar::-webkit-scrollbar { display: none; }
+  .monitor-toolbar-bar > * { flex: 0 0 auto; scroll-snap-align: start; }
+
+  /* Kontrol di toolbar cukup besar untuk jari */
+  .monitor-toolbar-bar button,
+  .monitor-toolbar-bar select,
+  .monitor-toolbar-bar input { min-height: var(--touch-min); }
+
+  /* Nama kamera dan telemetri jangan terlalu kecil di HP */
+  .cam-tile-name { font-size: var(--text-sm); }
+  [id^="cam-telemetry-"] { font-size: var(--text-2xs); }
+
+  /* Tombol overlay di tile (fullscreen, audio, dsb) */
+  [id^="cam-tile-"] button,
+  [id^="custom-cam-tile-"] button { min-width: 36px; min-height: 36px; }
+}
+
+/* Tablet: 3x3 dan 4x4 tetap terbaca, jangan dipaksa 4 kolom */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .monitor-camera-grid, #cctv-grid, #custom-cctv-grid { gap: var(--space-3); }
+}
+
+/* ==============================================================
+   TAHAP 6 — PLAYBACK
+   Desktop: grid poster + modal tengah, seperti sekarang.
+   Mobile:  1 kolom, timeline lebih tinggi agar bisa di-scrub jari,
+            tombol transport ambang 44px.
+   ============================================================== */
+
+/* Timeline tidak boleh menggeser halaman saat jari menyeret bar. */
+#pb-timeline {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Playhead sedikit lebih tebal agar terlihat saat digeser */
+#pb-playhead { width: 2px; }
+
+@media (max-width: 639px) {
+
+  /* Grid poster: satu kolom di potret */
+  #pb-camera-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3) !important;
+  }
+  @media (orientation: landscape) {
+    #pb-camera-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  }
+
+  /* Timeline lebih tinggi: 48px sulit dikenai jari dengan tepat */
+  #pb-timeline { height: 4.5rem; }
+  #pb-timeline-ticks { height: 1.125rem; }
+
+  /* Tombol transport ambang sentuh, tidak lagi teks 10px */
+  #pb-play-btn,
+  #pb-transport .btn-elegant,
+  .pb-transport-btn {
+    min-height: var(--touch-min);
+    min-width: 4.25rem;
+    font-size: var(--text-xs) !important;
+  }
+
+  /* Jam dan label rentang naik ke ambang terbaca */
+  #pb-clock { font-size: var(--text-lg); }
+  #pb-range-label { font-size: var(--text-2xs); }
+
+  /* Toolbar playback ikut pola gulir mendatar seperti Monitor */
+  .pb-toolbar,
+  #view-playback .control-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: var(--space-2);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pb-toolbar::-webkit-scrollbar,
+  #view-playback .control-bar::-webkit-scrollbar { display: none; }
+  .pb-toolbar > *,
+  #view-playback .control-bar > * { flex: 0 0 auto; }
+
+  /* Pemilih tanggal dan grup cukup besar untuk jari */
+  #pb-group-filter, #pb-date-select { min-height: var(--touch-min); }
+
+  /* Video di sheet: jangan melebihi layar */
+  #playback-video { max-height: 42dvh; }
+}
+
+/* Tablet: dua kolom, poster masih terbaca */
+@media (min-width: 640px) and (max-width: 1023px) {
+  #pb-camera-grid { gap: var(--space-3); }
+}
+
+/* ==============================================================
+   TAHAP 7 — PETA
+   Desktop: peta + sidebar kiri (tidak berubah).
+   Mobile:  peta atas, daftar kamera bawah, batas bisa ditarik.
+
+   Ambang lama 767px disamakan ke 639px agar konsisten dengan
+   sistem 3 breakpoint. Aturan 767px yang sudah ada dibiarkan
+   sebagai lapis tablet.
+   ============================================================== */
+
+/* Pegangan tarik: hanya tampil di HP */
+.maps-drag-handle { display: none; }
+
+@media (max-width: 639px) {
+
+  .layout-body-maps { flex-direction: column; gap: var(--space-2); }
+
+  /* Peta di atas, daftar di bawah. Tinggi awal 55/45,
+     lalu bisa diubah pengguna lewat pegangan.                  */
+  .layout-body-maps .maps-canvas {
+    order: 1;
+    flex: 1 1 55%;
+    width: 100%;
+    min-height: 200px;
+  }
+  .layout-body-maps .maps-sidebar {
+    order: 2;
+    flex: 0 0 45%;
+    width: 100%;
+    min-height: 0;
+    padding: 0 var(--space-3) var(--space-3);
+    position: relative;
+  }
+
+  /* Pegangan tarik */
+  .maps-drag-handle {
+    display: block;
+    position: relative;
+    height: 22px;
+    margin: 0 calc(var(--space-3) * -1) var(--space-1);
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+  }
+  .maps-drag-handle::before {
+    content: "";
+    position: absolute;
+    top: 9px; left: 50%;
+    width: 40px; height: 4px;
+    transform: translateX(-50%);
+    border-radius: var(--radius-pill);
+    background: var(--c-border);
+    transition: background var(--dur-fast) var(--ease-out-soft),
+                width var(--dur-fast) var(--ease-out-soft);
+  }
+  .maps-drag-handle:hover::before,
+  .maps-drag-handle:focus-visible::before { background: var(--brand-blue); }
+  .maps-drag-handle.is-dragging { cursor: grabbing; }
+  .maps-drag-handle.is-dragging::before { background: var(--brand-blue); width: 56px; }
+  .maps-drag-handle:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: -2px; border-radius: var(--radius-sm); }
+
+  /* Kotak cari cukup besar untuk jari */
+  #map-search-input { min-height: var(--touch-min); font-size: var(--text-sm); }
+
+  /* Daftar kamera: baris cukup tinggi untuk disentuh */
+  .maps-camera-list > * { min-height: var(--touch-min); }
+  .maps-camera-list { font-size: var(--text-sm); }
+
+  /* Kontrol zoom Leaflet: bawaan 26px, terlalu kecil untuk jari */
+  .layout-body-maps .leaflet-control-zoom a {
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 38px !important;
+    font-size: var(--text-lg) !important;
+  }
+}
+
+/* ==============================================================
+   TAHAP 8 — WARNA & SKALA TEKS
+
+   Palet sky/emerald/rose/red/amber/indigo/blue sudah diikat ke
+   warna brand lewat tailwind.config (includes/header.php), jadi
+   463 pemakaian warna lepas itu kini mengikuti token tanpa satu
+   pun berkas view disunting. slate (526x) memang sudah dipetakan
+   sejak awal.
+
+   Sisanya: 209 ukuran teks arbitrer. Dinaikkan ke ambang terbaca
+   di sini, juga tanpa menyentuh markup.
+   ============================================================== */
+
+/* text-[8px] dan text-[9px] di bawah ambang keterbacaan.
+   Dinaikkan ke 11px; di mobile ke 12px.                        */
+.text-\[8px\], .text-\[9px\] { font-size: var(--text-2xs) !important; }
+.text-\[10px\] { font-size: var(--text-xs) !important; }
+.text-\[11px\] { font-size: var(--text-xs) !important; }
+
+@media (max-width: 639px) {
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\] {
+    font-size: var(--text-xs) !important;
+  }
+}
+
+/* Badge status: warna kini dari token, jadi kontras terjaga
+   di kedua mode tanpa pasangan dark: manual.                   */
+.dark .text-emerald-400, .dark .text-emerald-500 { color: var(--color-online); }
+.dark .text-rose-400,    .dark .text-rose-500    { color: var(--color-offline); }
+.dark .text-sky-400,     .dark .text-sky-500     { color: color-mix(in srgb, var(--brand-blue) 82%, white); }
+
+/* ==============================================================
+   TAHAP 4b — Perbaikan layout System Admin di HP (2026-09-02)
+
+   Tahap 4 menargetkan .layout-toolbar, padahal kelas yang dipakai
+   markup adalah .admin-filter-bar — aturan itu tidak pernah kena.
+   Diperbaiki di sini, sekalian tab strip dan panel.
+   ============================================================== */
+
+@media (max-width: 639px) {
+
+  /* --- Tab strip -----------------------------------------------
+     5 tab dengan flex-wrap + min-width 140px jadi 3 baris di layar
+     390px. Diubah jadi satu baris yang digulir mendatar.        */
+  .admin-tab-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+  }
+  .admin-tab-nav::-webkit-scrollbar { display: none; }
+
+  .admin-tab-box {
+    flex: 0 0 auto;
+    min-width: 0;
+    scroll-snap-align: start;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    min-height: var(--touch-min);
+  }
+  /* Ikon disembunyikan: di HP judul lebih berguna daripada ikon */
+  .admin-tab-box-icon { display: none; }
+  .admin-tab-box-title { font-size: var(--text-xs); white-space: nowrap; }
+  .admin-tab-box-body { flex-direction: row; align-items: center; gap: var(--space-2); }
+  .admin-tab-box-badge { font-size: var(--text-2xs); }
+
+  /* --- Filter bar ----------------------------------------------
+     Menumpuk jadi satu kolom penuh, tidak lagi digulir samping
+     dengan lebar tetap 14rem yang terpotong di layar sempit.    */
+  .admin-filter-bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: var(--space-2);
+  }
+  .admin-filter-bar .app-search-wrap {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+  .admin-filter-bar .app-field-wrap,
+  .admin-filter-bar .app-field-wrap:has(#stream-status-filter) {
+    flex: 1 1 calc(50% - var(--space-1));
+    width: auto;
+    min-width: 0;
+  }
+  .admin-filter-bar .admin-filter-actions {
+    flex: 1 1 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+  .admin-filter-bar .admin-filter-actions > * { flex: 1 1 auto; }
+
+  /* Semua kontrol filter ambang sentuh */
+  .admin-filter-bar .app-input,
+  .admin-filter-bar .app-select,
+  .admin-filter-bar button { min-height: var(--touch-min); }
+
+  /* --- Panel ---------------------------------------------------
+     Padding kartu dikurangi agar isi tidak terjepit di layar HP. */
+  #tab-admin .panel-card { padding: var(--space-3); border-radius: var(--radius-md); }
+  #tab-admin .layout-section { gap: var(--space-3); }
+
+  /* Judul panel tidak perlu sebesar desktop */
+  #tab-admin .panel-card-title { font-size: var(--text-md); }
+
+  /* --- Intro box ----------------------------------------------- */
+  #tab-admin .tab-intro-title { font-size: var(--text-lg); }
+  #tab-admin .layout-intro { margin-bottom: var(--space-2); }
+}
+
+/* --- TAHAP 4b lanjutan: dua target yang luput ------------------ */
+
+@media (max-width: 639px) {
+
+  /* whitespace-nowrap di sel tabel memaksa kartu melebar dan
+     memunculkan geser samping lagi. Di mode kartu, teks boleh
+     membungkus.                                                  */
+  .admin-table-wrap tbody td.whitespace-nowrap,
+  .admin-table-wrap tbody td .whitespace-nowrap {
+    white-space: normal !important;
+  }
+  /* Kecuali tombol aksi — biar tidak pecah jadi dua baris */
+  .admin-table-wrap tbody td button.whitespace-nowrap,
+  .admin-table-wrap tbody td a.whitespace-nowrap { white-space: nowrap !important; }
+
+  /* Nilai panjang (RTSP, embed URL) dipotong rapi, bukan meluber */
+  .admin-table-wrap tbody td { overflow-wrap: anywhere; }
+
+  /* Pagination: kelas sebenarnya .pagination-bar, bukan
+     .layout-pagination-wrap yang ditarget tahap 4.               */
+  .pagination-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    row-gap: var(--space-2);
+  }
+  .pagination-btn {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+  }
+  .pagination-pages { order: 3; flex: 1 1 100%; justify-content: center; }
+  .pagination-nav { flex: 0 0 auto; }
+
+  /* Info "menampilkan x dari y" jangan mendorong tata letak */
+  .pagination-info { flex: 1 1 100%; text-align: center; font-size: var(--text-2xs); }
+}
+
+/* ==============================================================
+   TAHAP 4c — CCTV Directory & API Keys di HP (2026-09-02)
+
+   Dua tabel ini selnya padat dan bertingkat: badge, tombol, nilai
+   panjang (RTSP, embed URL), dan pembatas lebar Tailwind
+   (max-w-36, max-w-xs, truncate). Pola label-kiri/nilai-kanan
+   dari tahap 4 tidak cocok untuk sel seperti itu.
+
+   Solusi: sel padat memakai susunan tegak — label di atas, isi
+   penuh di bawah. Sel sederhana tetap label-kiri/nilai-kanan.
+   ============================================================== */
+
+@media (max-width: 639px) {
+
+  /* --- Batalkan pembatas lebar Tailwind di dalam kartu ---------
+     max-w-36 / max-w-xs / truncate dibuat untuk kolom tabel
+     desktop; di kartu mereka memotong nilai jadi sangat sempit. */
+  .admin-table-wrap tbody td.max-w-36,
+  .admin-table-wrap tbody td.max-w-xs,
+  .admin-table-wrap tbody td .max-w-xs,
+  .admin-table-wrap tbody td .max-w-36 {
+    max-width: 100% !important;
+  }
+  .admin-table-wrap tbody td.truncate,
+  .admin-table-wrap tbody td .truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* --- Sel padat: label di atas, isi penuh di bawah ------------
+     Dikenali dari isinya: mengandung tombol, tautan, kode, atau
+     beberapa baris <div>.                                       */
+  .admin-table-wrap tbody td:has(button),
+  .admin-table-wrap tbody td:has(a),
+  .admin-table-wrap tbody td:has(code),
+  .admin-table-wrap tbody td:has(> div + div),
+  .admin-table-wrap tbody td.space-y-1,
+  .admin-table-wrap tbody td.space-y-1\.5,
+  .admin-table-wrap tbody td.space-y-2 {
+    display: block;
+    text-align: left;
+    padding: var(--space-3) 0;
+  }
+  .admin-table-wrap tbody td:has(button)::before,
+  .admin-table-wrap tbody td:has(a)::before,
+  .admin-table-wrap tbody td:has(code)::before,
+  .admin-table-wrap tbody td:has(> div + div)::before,
+  .admin-table-wrap tbody td.space-y-1::before,
+  .admin-table-wrap tbody td.space-y-1\.5::before,
+  .admin-table-wrap tbody td.space-y-2::before {
+    display: block;
+    margin-bottom: var(--space-2);
+    flex: none;
+  }
+
+  /* --- Baris aksi: tombol berjajar, bukan menumpuk -------------
+     space-x-* tidak berlaku saat elemen membungkus, jadi jarak
+     diberikan lewat gap.                                        */
+  .admin-table-wrap tbody td[class*="text-right"] {
+    display: block;
+    text-align: left;
+  }
+  .admin-table-wrap tbody td[class*="space-x-"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .admin-table-wrap tbody td[class*="space-x-"] > * { margin-left: 0 !important; }
+  .admin-table-wrap tbody td[class*="space-x-"]::before { flex: 1 1 100%; }
+
+  /* Tautan aksi (Test Player / Edit / Revoke) jadi tombol nyata */
+  .admin-table-wrap tbody td a[class*="uppercase"],
+  .admin-table-wrap tbody td button[class*="uppercase"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: var(--text-2xs) !important;
+  }
+
+  /* --- Nilai panjang: RTSP, embed URL, API key ---------------- */
+  .admin-table-wrap tbody td code,
+  .admin-table-wrap tbody td .select-all {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: var(--lh-base);
+  }
+
+  /* --- Badge tetap sebaris, tidak melar penuh ----------------- */
+  .admin-table-wrap tbody td .inline-block { width: auto; }
+
+  /* --- Baris kosong / pesan ("Memuat...", "Tidak ada data") ----
+     Jangan diperlakukan sebagai kartu.                          */
+  .admin-table-wrap tbody tr:has(td[colspan]) {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+  .admin-table-wrap tbody td[colspan] {
+    display: block;
+    text-align: center;
+    border-bottom: none;
+  }
+  .admin-table-wrap tbody td[colspan]::before { display: none; }
+
+  /* --- Checkbox pilih-baris: sebaris dengan labelnya ---------- */
+  .admin-table-wrap tbody td:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+  }
+  .admin-table-wrap tbody td input[type="checkbox"] {
+    width: 20px; height: 20px; flex-shrink: 0;
+  }
+}
+
+/* ==============================================================
+   EMBED — layar kecil (2026-09-02)
+
+   embed.php adalah halaman yang dilihat klien API, dan sebelumnya
+   tidak punya satu pun media query. Tiga masalah nyata:
+   - 100vh terpotong bar browser HP  -> pakai 100dvh
+   - target sentuh 28-32px            -> naikkan ke 40px+
+   - banner iklan makan tinggi video  -> rampingkan
+   ============================================================== */
+
+/* 100vh salah di HP: bar alamat menutupi bagian bawah video.
+   dvh mengikuti tinggi tampak sebenarnya. */
+@supports (height: 100dvh) {
+  body.embed-body { height: 100dvh; }
+}
+
+@media (max-width: 639px) {
+
+  /* --- Tombol stop & info kamera: cukup besar untuk jari ------ */
+  body.embed-body #stop-button {
+    top: var(--space-2); right: var(--space-2);
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.embed-body #camera-info-overlay {
+    top: var(--space-2); left: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-2xs);
+    max-width: calc(100% - 60px);      /* jangan tabrakan tombol stop */
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Di HP tidak ada hover — info kamera harus terlihat langsung */
+  body.embed-body #camera-info-overlay { opacity: 1 !important; }
+
+  /* --- Overlay putar: area ketuk lebih lapang ----------------- */
+  body.embed-body #play-overlay-text {
+    font-size: var(--text-2xs);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  /* --- Toast keep-alive: jangan menutupi video --------------- */
+  body.embed-body #keep-alive-toast {
+    left: var(--space-2); right: var(--space-2);
+    bottom: var(--space-2);
+    transform: none;                    /* batalkan -translate-x-1/2 */
+    width: auto; max-width: none;
+    font-size: var(--text-2xs);
+  }
+  body.embed-body #keep-alive-btn {
+    min-height: 40px; width: 100%;
+  }
+
+  /* --- Banner iklan: lebih ramping di layar kecil ------------- */
+  body.embed-body .ad-banner-overlay {
+    bottom: 6px; left: 6px; right: 6px;
+    padding: 4px 6px;
+    font-size: var(--text-3xs, 10px);
+  }
+  body.embed-body #ad-image { height: 16px !important; }
+
+  /* --- Pesan galat: muat di layar sempit ---------------------- */
+  body.embed-body #error-screen { padding: var(--space-4); }
+  body.embed-body #error-message { font-size: var(--text-2xs); }
+}
+
+/* Layar sangat pendek (HP mendatar): sembunyikan banner supaya
+   video tidak tergencet. */
+@media (max-height: 420px) and (orientation: landscape) {
+  body.embed-body .ad-banner-overlay { display: none !important; }
+}

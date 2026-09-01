@@ -1,0 +1,20 @@
+[Unit]
+Description=Mamura Stream CCTV Backend Service
+After=network.target mysql.service mariadb.service
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/cctv.netbackup.web.id/backend
+Environment="DB_HOST=localhost"
+Environment="DB_PORT=3306"
+Environment="DB_USER=cctv_user"
+Environment="DB_PASS=db99edae6682a5b65d01b98bfe817252"
+Environment="DB_NAME=cctv_monitoring"
+Environment="JWT_SECRET=8bd54ecd87dbe57a17d56e06f4b42552bbc121e486d7a7b7d1d0c431b089a300"
+Environment="PUBLIC_BASE_URL=https://cctv.netbackup.web.id"
+ExecStart=/var/www/cctv.netbackup.web.id/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
