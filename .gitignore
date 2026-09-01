@@ -25,3 +25,4 @@ venv/
 backend/static/posters/
 backend/static/ads/
 docs/
+blueprint.txt

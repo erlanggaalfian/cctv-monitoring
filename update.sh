@@ -325,7 +325,6 @@ cp -v "$SCRIPT_DIR/backend"/*.py "$TARGET_DIR/backend/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/backend/requirements.txt" "$TARGET_DIR/backend/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/install.sh" "$TARGET_DIR/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/update.sh" "$TARGET_DIR/" 2>/dev/null || true
-cp -v "$SCRIPT_DIR/blueprint.txt" "$TARGET_DIR/" 2>/dev/null || true
 
 # Buat folder media/uploads jika belum ada dan atur ownership
 mkdir -p "$TARGET_DIR/backend/static/posters"

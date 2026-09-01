@@ -651,7 +651,6 @@ cp -r "$SCRIPT_DIR/database"/* "$TARGET_DIR/database/"
 cp -r "$SCRIPT_DIR/backend"/* "$TARGET_DIR/backend/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/install.sh" "$TARGET_DIR/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/update.sh" "$TARGET_DIR/" 2>/dev/null || true
-cp -v "$SCRIPT_DIR/blueprint.txt" "$TARGET_DIR/" 2>/dev/null || true
 
 mkdir -p "$TARGET_DIR/backend/static/posters"
 mkdir -p "$TARGET_DIR/backend/static/ads"
