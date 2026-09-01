@@ -24,3 +24,4 @@ venv/
 # Media unggahan runtime (poster kamera & iklan dibuat ulang otomatis)
 backend/static/posters/
 backend/static/ads/
+docs/
