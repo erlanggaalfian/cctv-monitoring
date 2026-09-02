@@ -35,8 +35,8 @@
                 const isDark = document.documentElement.classList.contains("dark");
                 window.leafletTileLayerModal = L.tileLayer(
                     isDark 
-                        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", 
+                        ? window.CARTO_DARK
+                        : window.CARTO_LIGHT, 
                     {
                         attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/attributions'>CARTO</a>",
                         maxZoom: 19
@@ -48,8 +48,8 @@
                 if (window.leafletTileLayerModal) {
                     window.leafletTileLayerModal.setUrl(
                         isDark 
-                            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                            ? window.CARTO_DARK
+                            : window.CARTO_LIGHT
                     );
                 }
             }

@@ -355,7 +355,7 @@
 <!-- MODAL: API Setup Guide (Cara Set di Server Lain)             -->
 <!-- ============================================================ -->
 <div id="api-setup-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel ms-modal__panel--scroll ms-modal__panel--pad" style="max-width: 32rem;">
+    <div class="ms-modal__panel ms-modal__panel--scroll ms-modal__panel--pad" style="max-width: 40rem;">
         <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-4">
             <div>
                 <h3 class="font-bold text-sm uppercase tracking-wider font-mono text-slate-955 dark:text-white">Panduan Integrasi API</h3>
@@ -372,33 +372,81 @@
                 <strong>Catatan Keamanan:</strong> <span id="api-setup-security-text"></span>
             </div>
 
+            <!-- Ringkasan kunci -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/60 dark:border-cyber-outline/30">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-400 dark:text-cyber-dim/70">Kamera</div>
+                    <div id="api-setup-stat-cam" class="text-sm font-bold text-sky-600 dark:text-cyber-primary mt-0.5">-</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/60 dark:border-cyber-outline/30">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-400 dark:text-cyber-dim/70">Playback</div>
+                    <div id="api-setup-stat-playback" class="text-sm font-bold mt-0.5">-</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/60 dark:border-cyber-outline/30">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-400 dark:text-cyber-dim/70">Domain</div>
+                    <div id="api-setup-stat-domain" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text mt-0.5 truncate">-</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/60 dark:border-cyber-outline/30">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-400 dark:text-cyber-dim/70">Sandi</div>
+                    <div id="api-setup-stat-pass" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text mt-0.5">-</div>
+                </div>
+            </div>
+
+            <!-- Mode: stream langsung atau rekaman -->
+                <div id="api-setup-mode-wrap" class="space-y-2">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Mode</span>
+                        <span id="api-setup-mode-hint" class="text-[9px] text-slate-400 dark:text-cyber-dim/70">Semua contoh di bawah mengikuti mode ini</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button type="button" id="api-setup-mode-stream" onclick="window.setApiSetupMode('stream')"
+                            class="api-setup-mode px-3 py-2.5 rounded-lg text-[10px] font-mono border transition-colors min-h-[44px]">
+                            Stream Langsung
+                        </button>
+                        <button type="button" id="api-setup-mode-playback" onclick="window.setApiSetupMode('playback')"
+                            class="api-setup-mode px-3 py-2.5 rounded-lg text-[10px] font-mono border transition-colors min-h-[44px]">
+                            Rekaman (Playback)
+                        </button>
+                    </div>
+                    <p id="api-setup-mode-note" class="text-[10px] text-slate-400 dark:text-cyber-dim hidden"></p>
+                </div>
+
+                <!-- Pemilih kamera: URL di bawah ikut berubah -->
+            <div id="api-setup-camera-picker" class="hidden space-y-2">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Pilih Kamera</span>
+                    <span class="text-[9px] text-slate-400 dark:text-cyber-dim/70">Dipanggil dengan &amp;camera=NOMOR</span>
+                </div>
+                <div id="api-setup-camera-tabs" class="flex flex-wrap gap-1.5"></div>
+            </div>
+
             <!-- Metode 1: Embed Iframe -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Metode 1: Pemutar Embed (Iframe HTML)</span>
+                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]" id="api-setup-m1-title">Metode 1: Pemutar Embed (Iframe HTML)</span>
                     <button onclick="window.copySetupCode('api-setup-iframe-code', 'btn-copy-iframe')" id="btn-copy-iframe" class="text-[10px] text-sky-500 hover:underline font-bold">Salin Code</button>
                 </div>
-                <p class="text-[10px] text-slate-400 dark:text-cyber-dim">Gunakan kode HTML berikut untuk menyematkan pemutar video langsung di halaman web Anda.</p>
+                <p class="text-[10px] text-slate-400 dark:text-cyber-dim" id="api-setup-m1-desc">Gunakan kode HTML berikut untuk menyematkan pemutar video langsung di halaman web Anda.</p>
                 <textarea id="api-setup-iframe-code" readonly class="w-full h-16 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
             <!-- Metode 2: REST API Endpoint -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Metode 2: REST API Endpoint (JSON)</span>
+                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]" id="api-setup-m2-title">Metode 2: REST API Endpoint (JSON)</span>
                     <button onclick="window.copySetupCode('api-setup-api-url', 'btn-copy-api')" id="btn-copy-api" class="text-[10px] text-sky-500 hover:underline font-bold">Salin URL</button>
                 </div>
-                <p class="text-[10px] text-slate-400 dark:text-cyber-dim">Gunakan HTTP GET request untuk mengambil detail stream format JSON (termasuk WebRTC / WHEP URL untuk player kustom).</p>
+                <p class="text-[10px] text-slate-400 dark:text-cyber-dim" id="api-setup-m2-desc">Gunakan HTTP GET request untuk mengambil detail stream format JSON (termasuk WebRTC / WHEP URL untuk player kustom).</p>
                 <textarea id="api-setup-api-url" readonly class="w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
             <!-- Metode 3: Link Direct Player -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Metode 3: URL Pemutar Langsung</span>
+                    <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]" id="api-setup-m3-title">Metode 3: URL Pemutar Langsung</span>
                     <button onclick="window.copySetupCode('api-setup-direct-url', 'btn-copy-direct')" id="btn-copy-direct" class="text-[10px] text-sky-500 hover:underline font-bold">Salin URL</button>
                 </div>
-                <p class="text-[10px] text-slate-400 dark:text-cyber-dim">Link direct untuk membuka halaman pemutar mandiri.</p>
+                <p class="text-[10px] text-slate-400 dark:text-cyber-dim" id="api-setup-m3-desc">Link direct untuk membuka halaman pemutar mandiri.</p>
                 <textarea id="api-setup-direct-url" readonly class="w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
@@ -414,7 +462,7 @@
 
 <!-- MODAL: Edit API Key Modal -->
 <div id="api-key-edit-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel" style="max-width: 36rem;">
+    <div class="ms-modal__panel" style="max-width: 42rem;">
         <div class="px-5 py-4 bg-slate-50 dark:bg-cyber-bg/40 border-b border-slate-200/60 dark:border-cyber-outline/40 flex items-center justify-between">
             <h3 class="font-bold text-sm uppercase tracking-wider font-mono text-slate-955 dark:text-white">Edit Integrasi Kunci API</h3>
             <button onclick="window.closeApiKeyEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -425,18 +473,10 @@
         <form id="api-key-edit-form" onsubmit="window.handleUpdateApiKey(event)" class="p-5 space-y-4">
             <input type="hidden" id="edit-api-key-id">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="edit-api-camera-select" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 mb-2 font-mono">Pilih Kamera</label>
-                    <select id="edit-api-camera-select" required class="app-input w-full app-select text-xs">
-                        <option value="">-- Pilih Kamera --</option>
-                    </select>
-                </div>
-                <div>
+            <div>
                     <label for="edit-api-client-name" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 mb-2 font-mono">Nama Klien / Server Penerima</label>
                     <input type="text" id="edit-api-client-name" required class="app-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
                 </div>
-            </div>
 
             <div>
                 <label for="edit-api-custom-camera-name" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 mb-2 font-mono">Judul Kamera Kustom (Opsional)</label>
@@ -454,6 +494,53 @@
                 </div>
             </div>
 
+
+
+            <div>
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 font-mono">Kamera (boleh lebih dari satu)</label>
+                    <div class="flex items-center gap-2">
+                        <span id="edit-api-cam-count" class="text-[10px] font-mono text-slate-400 dark:text-cyber-dim/60">0 dipilih</span>
+                        <button type="button" onclick="window.toggleAllApiCameras('edit-api', true)"
+                            class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-sky-400 dark:hover:border-cyber-primary transition-colors">Semua</button>
+                        <button type="button" onclick="window.toggleAllApiCameras('edit-api', false)"
+                            class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-rose-400 dark:hover:border-rose-500 transition-colors">Kosong</button>
+                    </div>
+                </div>
+                <input type="text" id="edit-api-cam-search" placeholder="Cari kamera..."
+                    oninput="window.filterApiCameraList('edit-api')"
+                    class="app-input w-full text-xs mb-2">
+                <div id="edit-api-camera-list"
+                    class="max-h-52 overflow-y-auto rounded-lg border border-slate-200/60 dark:border-cyber-outline/40 bg-slate-50 dark:bg-cyber-bg/40 p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                    <p class="text-[10px] font-mono text-slate-400 dark:text-cyber-dim/60 p-2">Memuat kamera...</p>
+                </div>
+                <p class="text-[9px] text-slate-400 dark:text-cyber-dim/50 mt-1 font-mono">Kamera pertama yang dicentang menjadi kamera utama (dipakai bila URL tanpa parameter camera).</p>
+            </div>
+
+
+            <div id="edit-api-order-wrap" class="hidden">
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 font-mono">Urutan Kamera</label>
+                    <span class="text-[9px] text-slate-400 dark:text-cyber-dim/60 font-mono">Nomor 1 = kamera utama</span>
+                </div>
+                <div id="edit-api-order-list" class="space-y-1.5 rounded-lg border border-slate-200/60 dark:border-cyber-outline/40 bg-slate-50 dark:bg-cyber-bg/40 p-2"></div>
+                <p class="text-[9px] text-slate-400 dark:text-cyber-dim/50 mt-1 font-mono">Klien memanggil <code>&amp;camera=1</code>, <code>&amp;camera=2</code>, dan seterusnya sesuai nomor di atas. Nomor 1 juga dipakai bila URL tanpa parameter camera.</p>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40">
+                <div class="flex items-center space-x-2.5">
+                    <div class="p-1.5 rounded-md bg-violet-500/10">
+                        <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-violet-600 dark:text-violet-400 font-mono">Sertakan playback jika ada</span>
+                        <span id="edit-api-playback-hint" class="text-[9px] text-slate-400 dark:text-slate-500 font-mono">Klien boleh melihat rekaman kamera di atas</span>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="edit-api-include-playback" class="sr-only peer">
+                    <div class="w-10 h-5 bg-slate-300 dark:bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
 
             <div class="flex justify-end gap-3 pt-3 border-t border-slate-200/60 dark:border-cyber-outline/40">
                 <button type="button" onclick="window.closeApiKeyEditModal()"
@@ -482,12 +569,6 @@
         <form id="api-key-form" onsubmit="window.handleGenerateApiKey(event)" class="p-5 space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="api-camera-select" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 mb-2 font-mono">Pilih Kamera</label>
-                    <select id="api-camera-select" required class="app-input w-full app-select text-xs">
-                        <option value="">-- Pilih Kamera --</option>
-                    </select>
-                </div>
-                <div>
                     <label for="api-client-name" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 mb-2 font-mono">Nama Klien / Server Penerima</label>
                     <input type="text" id="api-client-name" required class="app-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
                 </div>
@@ -510,6 +591,53 @@
                 </div>
             </div>
 
+
+
+            <div>
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 font-mono">Pilih Kamera (boleh lebih dari satu)</label>
+                    <div class="flex items-center gap-2">
+                        <span id="api-cam-count" class="text-[10px] font-mono text-slate-400 dark:text-cyber-dim/60">0 dipilih</span>
+                        <button type="button" onclick="window.toggleAllApiCameras('api', true)"
+                            class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-sky-400 dark:hover:border-cyber-primary transition-colors">Semua</button>
+                        <button type="button" onclick="window.toggleAllApiCameras('api', false)"
+                            class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-rose-400 dark:hover:border-rose-500 transition-colors">Kosong</button>
+                    </div>
+                </div>
+                <input type="text" id="api-cam-search" placeholder="Cari kamera..."
+                    oninput="window.filterApiCameraList('api')"
+                    class="app-input w-full text-xs mb-2">
+                <div id="api-camera-list"
+                    class="max-h-52 overflow-y-auto rounded-lg border border-slate-200/60 dark:border-cyber-outline/40 bg-slate-50 dark:bg-cyber-bg/40 p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                    <p class="text-[10px] font-mono text-slate-400 dark:text-cyber-dim/60 p-2">Memuat kamera...</p>
+                </div>
+                <p class="text-[9px] text-slate-400 dark:text-cyber-dim/50 mt-1 font-mono">Kamera pertama yang dicentang menjadi kamera utama (dipakai bila URL tanpa parameter camera).</p>
+            </div>
+
+
+            <div id="api-order-wrap" class="hidden">
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/80 font-mono">Urutan Kamera</label>
+                    <span class="text-[9px] text-slate-400 dark:text-cyber-dim/60 font-mono">Nomor 1 = kamera utama</span>
+                </div>
+                <div id="api-order-list" class="space-y-1.5 rounded-lg border border-slate-200/60 dark:border-cyber-outline/40 bg-slate-50 dark:bg-cyber-bg/40 p-2"></div>
+                <p class="text-[9px] text-slate-400 dark:text-cyber-dim/50 mt-1 font-mono">Klien memanggil <code>&amp;camera=1</code>, <code>&amp;camera=2</code>, dan seterusnya sesuai nomor di atas. Nomor 1 juga dipakai bila URL tanpa parameter camera.</p>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40">
+                <div class="flex items-center space-x-2.5">
+                    <div class="p-1.5 rounded-md bg-violet-500/10">
+                        <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-violet-600 dark:text-violet-400 font-mono">Sertakan playback jika ada</span>
+                        <span id="api-playback-hint" class="text-[9px] text-slate-400 dark:text-slate-500 font-mono">Klien boleh melihat rekaman kamera di atas</span>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="api-include-playback" class="sr-only peer">
+                    <div class="w-10 h-5 bg-slate-300 dark:bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
 
             <div class="flex justify-end gap-3 pt-3 border-t border-slate-200/60 dark:border-cyber-outline/40">
                 <button type="button" onclick="window.closeApiKeyGenerateModal()"

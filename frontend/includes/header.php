@@ -124,6 +124,15 @@ if(!defined('SECURE_ACCESS')) {
     <!-- Global CSS -->
     <link rel="stylesheet" href="/assets/css/global.css?v=<?= @filemtime(__DIR__ . '/../assets/css/global.css') ?: time() ?>">
 
+    <!-- Basemap CARTO: API key dipusatkan di sini (satu-satunya tempat) -->
+    <script>
+        (function () {
+            var k = "?key=cb1_2rm1_1_3a242dd67f58932f9ad943b4";
+            window.CARTO_DARK  = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" + k;
+            window.CARTO_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" + k;
+        })();
+    </script>
+
     <!-- Instant dark theme initialization -->
     <script>
         (function() {

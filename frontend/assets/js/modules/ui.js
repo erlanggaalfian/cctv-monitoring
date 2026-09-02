@@ -58,8 +58,8 @@
         // Dynamically update Leaflet map tiles if active
         const newIsDark = document.documentElement.classList.contains("dark");
         const nextUrl = newIsDark 
-            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+            ? window.CARTO_DARK
+            : window.CARTO_LIGHT;
 
         if (window.leafletTileLayer && typeof window.leafletTileLayer.setUrl === "function") {
             window.leafletTileLayer.setUrl(nextUrl);

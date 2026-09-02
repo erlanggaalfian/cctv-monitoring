@@ -1,4 +1,5 @@
 import re
+from urllib.parse import quote
 import os
 import uvicorn
 import socket
@@ -19,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Table, ForeignKey, text, DateTime, Float, Text
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Table, ForeignKey, text, DateTime, Float, Text, UniqueConstraint
 from sqlalchemy.orm import relationship, sessionmaker, Session, declarative_base
 import bcrypt
 from jose import JWTError, jwt
@@ -67,7 +68,7 @@ def persist_mediamtx_path(path_name: str, rtsp_url: str, record_config: dict = N
         safe_group = "".join(c if c.isalnum() or c in "-_" else "_" for c in group)
         rec_path = f"{disk}/recordings/{safe_group}/{safe_name}"
         path_cfg["record"] = True
-        path_cfg["recordPath"] = f"{rec_path}/%path/%Y-%m-%d_%H-%M-%S-%f"
+        path_cfg["recordPath"] = f"{rec_path}/%path/%Y-%m-%d_%H-%M-%S_%f"
         path_cfg["recordFormat"] = "fmp4"
         path_cfg["recordSegmentDuration"] = "1h"
         path_cfg["recordDeleteAfter"] = f"{retention * 24}h"
@@ -144,6 +145,89 @@ def delete_single_mediamtx_path(path_name: str) -> bool:
         except Exception:
             pass
     return False
+
+def list_mediamtx_paths() -> set:
+    """Nama path yang benar-benar ada di MediaMTX saat ini.
+
+    Kembalikan set kosong bila MediaMTX tak terjangkau, supaya pemanggil
+    bisa membedakan 'tak ada path' dari 'tak bisa dicek' (lihat resync).
+    """
+    for api_ver in ("v3", "v2", "v1"):
+        try:
+            nama = set()
+            halaman = 0
+            while True:
+                # PENTING: API ini dipaginasi (bawaan 100/halaman). Tanpa
+                # itemsPerPage, path ke-101 dst dikira hilang terus-menerus.
+                url = (f"{MEDIAMTX_API_BASE}/{api_ver}/config/paths/list"
+                       f"?itemsPerPage=1000&page={halaman}")
+                req = urllib.request.Request(url, method="GET")
+                with urllib.request.urlopen(req, timeout=3.0) as response:
+                    if response.status != 200:
+                        break
+                    data = json.loads(response.read().decode("utf-8"))
+
+                if isinstance(data, list):
+                    nama |= {i["name"] for i in data
+                             if isinstance(i, dict) and "name" in i}
+                    break
+                if not isinstance(data, dict):
+                    break
+                if "items" not in data:
+                    nama |= set(data.keys())
+                    break
+
+                nama |= {i["name"] for i in data["items"]
+                         if isinstance(i, dict) and "name" in i}
+
+                # berhenti bila sudah lengkap atau halaman habis
+                jml = data.get("itemCount")
+                if isinstance(jml, int) and len(nama) >= jml:
+                    break
+                if not data["items"] or halaman >= 49:
+                    break
+                halaman += 1
+
+            if nama:
+                return nama
+        except Exception:
+            continue
+    return set()
+
+
+def resync_missing_mediamtx_paths(db: Session):
+    """Daftarkan ulang path yang hilang dari MediaMTX.
+
+    MediaMTX restart = seluruh path yang hanya ada di memori ikut hilang,
+    dan kamera berhenti merekam diam-diam. Fungsi ini mengembalikannya.
+    """
+    global REGISTERED_PATHS
+    try:
+        ada = list_mediamtx_paths()
+        if not ada:
+            return  # MediaMTX tak terjangkau: jangan ambil kesimpulan
+
+        streams = db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.is_active == True).all()
+        hilang = [st for st in streams if f"stream_{st.id}" not in ada]
+        if not hilang:
+            return
+
+        print(f"[Resync] {len(hilang)} path hilang dari MediaMTX, mendaftarkan ulang...")
+        for st in hilang:
+            # cache backend masih mengira path ini terdaftar; bersihkan dulu
+            for k in [k for k in REGISTERED_PATHS if k[0] in (f"stream_{st.id}", f"stream_{st.id}_sub")]:
+                REGISTERED_PATHS.discard(k)
+            try:
+                if register_stream_in_mediamtx(st.id, st.rtsp_url):
+                    print(f"[Resync] stream_{st.id} ({st.name}) didaftarkan ulang")
+                else:
+                    print(f"[Resync] stream_{st.id} GAGAL didaftarkan ulang")
+            except Exception as e:
+                print(f"[Resync] stream_{st.id} error: {e}")
+    except Exception as e:
+        print(f"[Resync] Error: {e}")
+
 
 def cleanup_stale_mediamtx_paths(db: Session):
     """Prune leftover paths in MediaMTX config that are no longer present in the database."""
@@ -791,7 +875,18 @@ class ApiKeyModel(Base):
     is_active = Column(Boolean, default=True)
     embed_timeout_seconds = Column(Integer, nullable=False, default=300)
     click_to_play = Column(Boolean, default=True)
+    include_playback = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class ApiKeyCameraModel(Base):
+    """Kamera yang boleh diakses satu kunci API (many-to-many)."""
+    __tablename__ = "api_key_cameras"
+    id         = Column(Integer, primary_key=True, index=True)
+    api_key_id = Column(Integer, ForeignKey("api_keys.id", ondelete="CASCADE"), nullable=False, index=True)
+    camera_id  = Column(Integer, ForeignKey("cctv_streams.id", ondelete="CASCADE"), nullable=False, index=True)
+    position   = Column(Integer, nullable=False, default=0)  # 0 = kamera utama
+    __table_args__ = (UniqueConstraint("api_key_id", "camera_id", name="uq_apikey_camera"),)
+
 
 class ApiAccessLogModel(Base):
     __tablename__ = "api_access_logs"
@@ -842,6 +937,54 @@ def test_db_connection():
                     migration_conn.execute(text("ALTER TABLE api_keys ADD COLUMN click_to_play TINYINT(1) NOT NULL DEFAULT 1"))
                 print("[DB] Column 'click_to_play' successfully added to 'api_keys' table.")
             
+            # MIGRASI: kolom position pada api_key_cameras
+            try:
+                with engine.connect() as _c:
+                    _cols = [r[0] for r in _c.execute(text("SHOW COLUMNS FROM api_key_cameras")).fetchall()]
+                    if 'position' not in _cols:
+                        _c.execute(text('ALTER TABLE api_key_cameras ADD COLUMN position INT NOT NULL DEFAULT 0'))
+                        _c.execute(text('''UPDATE api_key_cameras akc
+                            JOIN api_keys k ON k.id = akc.api_key_id
+                            SET akc.position = IF(akc.camera_id = k.camera_id, 0, akc.id + 1000)'''))
+                        _c.commit()
+                        print('[MIGRASI] kolom position ditambahkan ke api_key_cameras')
+            except Exception as _e:
+                print(f'[MIGRASI] position dilewati: {_e}')
+
+            if "include_playback" not in columns_api_keys:
+                with engine.begin() as migration_conn:
+                    migration_conn.execute(text("ALTER TABLE api_keys ADD COLUMN include_playback TINYINT(1) NOT NULL DEFAULT 0"))
+                print("[DB] Column 'include_playback' successfully added to 'api_keys' table.")
+
+            # Tabel penghubung: satu kunci API boleh banyak kamera.
+            # Kunci lama disalin ke sini supaya perilaku lama tidak berubah.
+            if "api_key_cameras" not in inspector.get_table_names():
+                with engine.begin() as migration_conn:
+                    migration_conn.execute(text("""
+                        CREATE TABLE IF NOT EXISTS api_key_cameras (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            api_key_id INT NOT NULL,
+                            camera_id INT NOT NULL,
+                            UNIQUE KEY uq_apikey_camera (api_key_id, camera_id),
+                            KEY idx_akc_key (api_key_id),
+                            KEY idx_akc_cam (camera_id),
+                            CONSTRAINT fk_akc_key FOREIGN KEY (api_key_id) REFERENCES api_keys(id) ON DELETE CASCADE,
+                            CONSTRAINT fk_akc_cam FOREIGN KEY (camera_id) REFERENCES cctv_streams(id) ON DELETE CASCADE
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """))
+                print("[DB] Table 'api_key_cameras' created.")
+
+            # Seed dijalankan TERPISAH dari pembuatan tabel: SQLAlchemy create_all()
+            # bisa membuat tabelnya lebih dulu, sehingga guard di atas tidak pernah benar.
+            # INSERT IGNORE + UNIQUE(api_key_id,camera_id) membuat ini aman diulang.
+            with engine.begin() as migration_conn:
+                seeded = migration_conn.execute(text("""
+                    INSERT IGNORE INTO api_key_cameras (api_key_id, camera_id)
+                    SELECT id, camera_id FROM api_keys WHERE camera_id IS NOT NULL
+                """)).rowcount
+            if seeded:
+                print(f"[DB] api_key_cameras: {seeded} baris kunci lama disalin.")
+
             # 2. Migrate ad_config table
             columns_ad_config = [c["name"] for c in inspector.get_columns("ad_config")]
             is_sqlite = "sqlite" in DATABASE_URL
@@ -958,6 +1101,11 @@ async def background_status_monitor():
                 
             db = SessionLocal()
             try:
+                # Pulihkan path yang hilang (mis. setelah MediaMTX restart).
+                # Tanpa ini kamera berhenti merekam diam-diam sampai ada
+                # yang mengedit kamera itu.
+                resync_missing_mediamtx_paths(db)
+
                 # Bersihkan path sampah MediaMTX secara berkala
                 cleanup_counter += 1
                 if cleanup_counter >= 5:
@@ -1361,6 +1509,8 @@ class ApiKeySchema(BaseModel):
     id: Optional[int] = None
     key_value: Optional[str] = None
     camera_id: int
+    camera_ids: Optional[List[int]] = None
+    include_playback: bool = False
     client_name: str
     custom_camera_name: Optional[str] = ""
     allowed_domain: Optional[str] = ""
@@ -1378,6 +1528,9 @@ class ApiKeyAdminResponse(BaseModel):
     key_value: str
     camera_id: int
     camera_name: str
+    camera_ids: List[int] = []
+    camera_names: List[str] = []
+    include_playback: bool = False
     client_name: str
     custom_camera_name: Optional[str] = ""
     allowed_domain: Optional[str] = ""
@@ -2076,6 +2229,136 @@ def get_available_disks(admin: UserModel = Depends(verify_admin_role)):
 # --- Recording & Playback Endpoints ---
 import re as _re
 
+def _enforce_key_domain(key_record, request):
+    """Tolak bila allowed_domain diisi dan Referer/Origin tidak cocok."""
+    if not (key_record.allowed_domain and key_record.allowed_domain.strip()):
+        return
+
+    def _dom(u):
+        if not u:
+            return ""
+        if "://" in u:
+            u = u.split("://")[1]
+        return u.split("/")[0].split(":")[0].lower()
+
+    ref = _dom(request.headers.get("referer", ""))
+    org = _dom(request.headers.get("origin", ""))
+    target = key_record.allowed_domain.strip().lower()
+    if target not in ref and target not in org:
+        raise HTTPException(status_code=403, detail="Akses ditolak: Domain asal tidak diizinkan")
+
+
+def _strip_paths_for_key(user, items):
+    """Buang path absolut server bila pemanggilnya kunci API (bukan admin/user login)."""
+    if not isinstance(user, ApiKeyPrincipal):
+        return items
+    for it in items:
+        if isinstance(it, dict):
+            it.pop("path", None)
+    return items
+
+
+def _sync_key_cameras(db, key_id, camera_ids, primary_id):
+    """Samakan isi api_key_cameras dengan daftar yang dikirim admin.
+
+    Kamera utama selalu ikut supaya URL tanpa ?camera= tetap punya sasaran.
+    """
+    # Urutan daftar DIPERTAHANKAN: index 0 = kamera utama = URL tanpa ?camera=
+    urut = []
+    for cid in (camera_ids or []):
+        if cid not in urut:
+            urut.append(cid)
+    if primary_id and primary_id not in urut:
+        urut.append(primary_id)
+    if not urut:
+        return
+    valid = {r.id for r in db.query(CCTVStreamModel.id).filter(CCTVStreamModel.id.in_(urut)).all()}
+    hilang = [c for c in urut if c not in valid]
+    if hilang:
+        raise HTTPException(status_code=404, detail=f"Kamera tidak ditemukan: {hilang}")
+    db.query(ApiKeyCameraModel).filter(ApiKeyCameraModel.api_key_id == key_id).delete()
+    for pos, cid in enumerate(urut):
+        db.add(ApiKeyCameraModel(api_key_id=key_id, camera_id=cid, position=pos))
+
+
+def _resolve_camera_ref(ref, cam_ids):
+    """Terjemahkan nilai ?camera= menjadi id kamera sungguhan.
+
+    Utamakan NOMOR URUT (1 = kamera pertama/utama, 2 = kedua, ...) sesuai
+    permintaan: klien tak perlu tahu id internal. Bila nilai bukan nomor urut
+    yang sah tapi cocok dengan id milik kunci, id itu tetap diterima supaya
+    URL lama yang memakai id tidak mendadak mati.
+    """
+    if ref is None:
+        return cam_ids[0] if cam_ids else None
+    if 1 <= ref <= len(cam_ids):
+        return cam_ids[ref - 1]
+    if ref in cam_ids:
+        return ref
+    return None
+
+
+def _key_camera_ids(key_record, db):
+    """Semua id kamera yang boleh diakses satu kunci API.
+
+    Gabungan tabel penghubung api_key_cameras + camera_id utama (kompatibilitas).
+    """
+    ids = [r.camera_id for r in db.query(ApiKeyCameraModel).filter(
+        ApiKeyCameraModel.api_key_id == key_record.id).order_by(
+        ApiKeyCameraModel.position, ApiKeyCameraModel.id).all()]
+    if key_record.camera_id and key_record.camera_id not in ids:
+        ids.append(key_record.camera_id)
+    return ids
+
+
+class ApiKeyPrincipal:
+    """Peniru UserModel untuk kunci API.
+
+    Punya .role dan .streams supaya _user_has_stream_access() dan filter
+    [s.id for s in user.streams] di endpoint recordings jalan apa adanya.
+    role sengaja BUKAN 'admin' agar tidak pernah lolos jalur admin.
+    """
+    def __init__(self, key_record, streams):
+        self.id = None
+        self.role = "apikey"
+        self.username = f"apikey:{key_record.client_name}"
+        self.streams = streams
+        self.key_record = key_record
+
+
+async def get_playback_principal(
+    request: Request,
+    key: Optional[str] = Query(None, description="Kunci API (alternatif token login)"),
+    token_creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: Session = Depends(get_db),
+):
+    """Terima token login ATAU kunci API.
+
+    Kunci API hanya diterima bila include_playback menyala, dan aksesnya
+    terbatas pada kamera yang terdaftar di kunci tersebut.
+    """
+    if token_creds:
+        user = _get_user_from_token(token_creds.credentials, db)
+        touch_client_activity()
+        return user
+
+    if not key:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+
+    key_record = db.query(ApiKeyModel).filter(
+        ApiKeyModel.key_value == key, ApiKeyModel.is_active == True).first()
+    if not key_record:
+        raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
+    if not key_record.include_playback:
+        raise HTTPException(status_code=403, detail="Kunci API ini tidak diizinkan mengakses rekaman")
+
+    _enforce_key_domain(key_record, request)
+
+    ids = _key_camera_ids(key_record, db)
+    streams = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(ids)).all() if ids else []
+    return ApiKeyPrincipal(key_record, streams)
+
+
 def _user_has_stream_access(user, stream_id, db):
     """Check if user has access to a stream (admin = all, user = assigned, guest = assigned)."""
     if (user.role or "").lower() == "admin":
@@ -2150,7 +2433,7 @@ def _mediamtx_segments(path_name: str):
 
 @app.get("/api/recordings/cameras")
 def get_recording_cameras(
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """List cameras with recording enabled, filtered by user access."""
@@ -2176,7 +2459,7 @@ def get_recording_cameras(
             "id": s.id,
             "name": s.name,
             "group_name": s.group_name,
-            "record_path": rec_path,
+            "record_path": ("" if isinstance(user, ApiKeyPrincipal) else rec_path),
             "has_recordings": has_recordings
         })
     return cameras
@@ -2184,7 +2467,7 @@ def get_recording_cameras(
 @app.get("/api/recordings/{stream_id}/dates")
 def get_recording_dates(
     stream_id: int,
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """List dates that have recordings for a camera."""
@@ -2207,7 +2490,7 @@ def get_recording_dates(
 def get_recording_segments(
     stream_id: int,
     date: str = Query(..., description="Date in YYYY-MM-DD format"),
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """List recording segments for a camera on a specific date."""
@@ -2228,7 +2511,7 @@ def get_recording_segments(
         "stream_id": stream_id,
         "date": date,
         "mediamtx_segments": [],
-        "disk_segments": disk_segments
+        "disk_segments": _strip_paths_for_key(user, disk_segments)
     }
 
 
@@ -2236,7 +2519,7 @@ def get_recording_segments(
 def get_recording_file(
     stream_id: int,
     rel: str = Query(..., description="Path relative to the camera recording dir"),
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """Stream one recording file. `rel` is confined to the camera's own dir."""
@@ -2261,7 +2544,7 @@ def get_recording_file(
 def get_recording_timeline(
     stream_id: int,
     date: str = Query(None, description="YYYY-MM-DD; omit for all"),
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """Continuous recording ranges for a camera, for a scrubbable timeline."""
@@ -2314,22 +2597,44 @@ def stream_recording(
     start: str = Query(..., description="ISO8601 start time"),
     duration: float = Query(3600, gt=0, le=86400),
     token: str = Query(None, description="JWT (video tag cannot send headers)"),
+    key: str = Query(None, description="Kunci API (alternatif token login)"),
+    pass_: Optional[str] = Query(None, alias="pass"),
     authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Proxy MediaMTX playback: one continuous fMP4 across segments."""
-    raw = token or (authorization or "").replace("Bearer ", "").strip()
-    if not raw:
-        raise HTTPException(status_code=401, detail="Missing authorization")
-    try:
-        payload = jwt.decode(raw, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    """Proxy MediaMTX playback: one continuous fMP4 across segments.
 
-    user = db.query(UserModel).filter(UserModel.username == username).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    Kredensial lewat query karena tag <video> tak bisa kirim header.
+    Diterima: JWT pengguna login ATAU kunci API dengan izin playback.
+    """
+    user = None
+
+    if key:
+        key_record = db.query(ApiKeyModel).filter(
+            ApiKeyModel.key_value == key, ApiKeyModel.is_active == True).first()
+        if not key_record:
+            raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
+        if key_record.secret_pass and key_record.secret_pass.strip():
+            if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+                raise HTTPException(status_code=403, detail="Password salah atau tidak disertakan")
+        if not key_record.include_playback:
+            raise HTTPException(status_code=403, detail="Kunci API ini tidak diizinkan mengakses rekaman")
+        ids = _key_camera_ids(key_record, db)
+        streams_izin = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(ids)).all() if ids else []
+        user = ApiKeyPrincipal(key_record, streams_izin)
+    else:
+        raw = token or (authorization or "").replace("Bearer ", "").strip()
+        if not raw:
+            raise HTTPException(status_code=401, detail="Missing authorization")
+        try:
+            payload = jwt.decode(raw, SECRET_KEY, algorithms=[ALGORITHM])
+            username = payload.get("sub")
+        except Exception:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        user = db.query(UserModel).filter(UserModel.username == username).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+
     if not _user_has_stream_access(user, stream_id, db):
         raise HTTPException(status_code=403, detail="Access denied")
 
@@ -2359,7 +2664,7 @@ def get_playback_url(
     stream_id: int,
     start: str = Query(..., description="Start time ISO format"),
     end: str = Query(None, description="End time ISO format"),
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     """Get playback URL for a recording segment."""
@@ -2393,7 +2698,7 @@ def get_playback_url(
 
 @app.get("/api/ad-config", response_model=AdConfigSchema)
 def get_ad_config(
-    user: UserModel = Depends(get_authenticated_user),
+    user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
     config = db.query(AdConfigModel).filter(AdConfigModel.id == 1).first()
@@ -2537,11 +2842,190 @@ def _write_access_log(
         except Exception:
             pass
 
+@app.get("/api/external/cameras")
+def get_external_cameras(
+    key: str,
+    request: Request,
+    pass_: Optional[str] = Query(None, alias="pass"),
+    db: Session = Depends(get_db)
+):
+    """Daftar kamera yang boleh diakses satu kunci API.
+
+    Dipakai embed.php untuk menampilkan pemilih kamera. Hanya memuat kamera
+    milik kunci tersebut, bukan seluruh inventaris.
+    """
+    key_record = db.query(ApiKeyModel).filter(
+        ApiKeyModel.key_value == key, ApiKeyModel.is_active == True).first()
+    if not key_record:
+        raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
+
+    if key_record.secret_pass and key_record.secret_pass.strip():
+        if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+            raise HTTPException(status_code=403, detail="Kata sandi akses salah atau tidak disertakan")
+
+    _enforce_key_domain(key_record, request)
+
+    ids = _key_camera_ids(key_record, db)
+    streams = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(ids)).all() if ids else []
+
+    items = []
+    for st in streams:
+        nm = _re.sub(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', '', st.name or '')
+        nm = _re.sub(r'\s+', ' ', nm).strip(' -') or f"Kamera {st.id}"
+        items.append({
+            "id": st.id,
+            "name": nm,
+            "is_primary": st.id == key_record.camera_id,
+            "has_recording": bool(st.record_enabled),
+        })
+    items.sort(key=lambda x: (not x["is_primary"], x["name"]))
+
+    return {
+        "client_name": key_record.client_name,
+        "include_playback": bool(key_record.include_playback),
+        "cameras": items,
+    }
+
+
+def _daftar_kamera_kunci(key_record, cam_ids, db):
+    """Daftar kamera satu kunci sebagai nomor urut + nama.
+
+    Id internal sengaja TIDAK disertakan; klien memakai nomor urut saja.
+    """
+    rows = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(cam_ids)).all() if cam_ids else []
+    peta = {c.id: c.name for c in rows}
+    kustom = (key_record.custom_camera_name or "").strip()
+    hasil = []
+    for i, cid in enumerate(cam_ids):
+        label = peta.get(cid, f"Kamera {cid}")
+        if kustom and i == 0:
+            label = kustom
+        hasil.append({"camera": i + 1, "name": label})
+    return hasil
+
+
+@app.get("/api/external/playback")
+def external_playback(
+    key: str,
+    request: Request,
+    camera: Optional[int] = Query(None, description="nomor urut kamera (1=utama); id kamera juga diterima"),
+    date: Optional[str] = Query(None, description="YYYY-MM-DD; kosong = daftar tanggal yang tersedia"),
+    pass_: Optional[str] = Query(None, alias="pass"),
+    db: Session = Depends(get_db),
+):
+    """Playback untuk klien kunci API, memakai nomor urut kamera.
+
+    Tanpa ?date=  -> daftar tanggal yang punya rekaman.
+    Dengan ?date= -> daftar segmen tanggal itu + URL putar tiap segmen.
+    """
+    key_record = db.query(ApiKeyModel).filter(
+        ApiKeyModel.key_value == key, ApiKeyModel.is_active == True).first()
+    if not key_record:
+        raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
+
+    if key_record.secret_pass and key_record.secret_pass.strip():
+        if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+            raise HTTPException(status_code=403, detail="Password salah atau tidak disertakan")
+
+    if not key_record.include_playback:
+        raise HTTPException(status_code=403, detail="Kunci API ini tidak diizinkan mengakses rekaman")
+
+    _enforce_key_domain(key_record, request)
+
+    cam_ids = _key_camera_ids(key_record, db)
+    target_id = _resolve_camera_ref(camera, cam_ids)
+    if target_id is None or target_id not in cam_ids:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Nomor kamera tidak sah. Kunci ini punya {len(cam_ids)} kamera (camera=1..{len(cam_ids)})")
+
+    stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == target_id).first()
+    if not stream:
+        raise HTTPException(status_code=404, detail="Kamera tidak ditemukan")
+
+    nomor = cam_ids.index(target_id) + 1
+    nama = (key_record.custom_camera_name or "").strip() or stream.name
+    berkas = _scan_rec_files(_camera_rec_dir(stream))
+
+    # tanpa date: ringkas jadi daftar tanggal
+    if not date:
+        jumlah = {}
+        for f in berkas:
+            jumlah[f["date"]] = jumlah.get(f["date"], 0) + 1
+        tanggal = [{"date": d, "segment_count": n} for d, n in jumlah.items()]
+        tanggal.sort(key=lambda x: x["date"], reverse=True)
+        return {
+            "camera": nomor,
+            "camera_name": nama,
+            "total_cameras": len(cam_ids),
+            "cameras": _daftar_kamera_kunci(key_record, cam_ids, db),
+            "dates": tanggal,
+        }
+
+    # dengan date: daftar segmen + URL putar
+    q = f"key={quote(key)}" + (f"&pass={quote(pass_)}" if pass_ else "")
+    rec_dir = os.path.realpath(_camera_rec_dir(stream))
+    segmen = []
+    for f in berkas:
+        if f["date"] != date:
+            continue
+        # endpoint /file menerima `rel` = path relatif terhadap dir kamera
+        rel = os.path.relpath(f["path"], rec_dir)
+        segmen.append({
+            "start": f.get("start"),
+            "time": f.get("time"),
+            "size_bytes": f.get("size_bytes"),
+            "size_human": f.get("size_human"),
+            "url": f"/api/recordings/{target_id}/file?rel={quote(rel)}&{q}",
+        })
+    segmen.sort(key=lambda x: x.get("start") or "")
+
+    # Rentang kontinu untuk timeline (dipakai pemutar agar bisa digeser).
+    # Sumbernya MediaMTX, sama seperti halaman playback internal.
+    ranges = []
+    try:
+        raw = _mediamtx_segments(_mediamtx_path_for(stream, target_id))
+        potong = []
+        for r in raw:
+            mulai = r.get("start")
+            durasi = float(r.get("duration") or 0)
+            if not mulai or durasi <= 0:
+                continue
+            try:
+                dt = datetime.fromisoformat(mulai)
+            except ValueError:
+                continue
+            if dt.strftime("%Y-%m-%d") != date:
+                continue
+            potong.append({"start": mulai, "start_epoch": dt.timestamp(), "duration": durasi})
+        potong.sort(key=lambda x: x["start_epoch"])
+        for p in potong:
+            if ranges and p["start_epoch"] - (ranges[-1]["start_epoch"] + ranges[-1]["duration"]) <= 5:
+                ranges[-1]["duration"] = p["start_epoch"] + p["duration"] - ranges[-1]["start_epoch"]
+            else:
+                ranges.append(dict(p))
+    except Exception:
+        ranges = []
+
+    return {
+        "camera": nomor,
+        "camera_name": nama,
+        "total_cameras": len(cam_ids),
+        "cameras": _daftar_kamera_kunci(key_record, cam_ids, db),
+        "date": date,
+        "segment_count": len(segmen),
+        "segments": segmen,
+        "ranges": ranges,
+        "total_duration": sum(r["duration"] for r in ranges),
+    }
+
+
 @app.get("/api/external/stream")
 def get_external_stream(
     key: str,
     request: Request,
     pass_: Optional[str] = Query(None, alias="pass"),
+    camera: Optional[int] = Query(None, description="nomor urut kamera (1=utama); id kamera juga diterima"),
     db: Session = Depends(get_db)
 ):
     # --- Capture request context for logging ---
@@ -2593,7 +3077,19 @@ def get_external_stream(
             )
             raise HTTPException(status_code=403, detail="Akses ditolak: Domain asal tidak diizinkan")
 
-    stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == key_record.camera_id).first()
+    # Kamera yang diminta harus salah satu milik kunci ini.
+    # ?camera= dibaca sebagai NOMOR URUT (1 = kamera utama, 2 = kedua, ...).
+    # Id kamera asli juga masih diterima demi URL lama.
+    allowed_ids = _key_camera_ids(key_record, db)
+    target_id = _resolve_camera_ref(camera, allowed_ids)
+    if target_id is None or target_id not in allowed_ids:
+        executor.submit(_write_access_log,
+            key_record.id, key, key_record.client_name, target_id, "",
+            req_ip, req_referer, req_ua, "denied", f"camera={camera} tidak sah untuk kunci ini (tersedia 1..{len(allowed_ids)})"
+        )
+        raise HTTPException(status_code=403, detail=f"Nomor kamera tidak sah. Kunci ini punya {len(allowed_ids)} kamera (camera=1..{len(allowed_ids)})")
+
+    stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == target_id).first()
     if not stream:
         raise HTTPException(status_code=404, detail="Kamera tidak ditemukan")
 
@@ -2724,11 +3220,18 @@ def get_all_api_keys(
     results = []
     for k in keys:
         stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == k.camera_id).first()
+        cam_ids = _key_camera_ids(k, db)
+        cam_rows = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(cam_ids)).all() if cam_ids else []
+        cam_map = {c.id: c.name for c in cam_rows}
+        cam_names = [cam_map.get(i, f"Kamera {i}") for i in cam_ids]
         results.append({
             "id": k.id,
             "key_value": k.key_value,
             "camera_id": k.camera_id,
             "camera_name": stream.name if stream else "Kamera Terhapus",
+            "camera_ids": cam_ids,
+            "camera_names": cam_names,
+            "include_playback": bool(k.include_playback),
             "client_name": k.client_name,
             "custom_camera_name": k.custom_camera_name or "",
             "allowed_domain": k.allowed_domain or "",
@@ -2763,12 +3266,37 @@ def create_api_key(
         secret_pass=payload.secret_pass.strip() if payload.secret_pass else None,
         is_active=payload.is_active,
         embed_timeout_seconds=payload.embed_timeout_seconds,
-        click_to_play=payload.click_to_play
+        click_to_play=payload.click_to_play,
+        include_playback=payload.include_playback
     )
     db.add(key_record)
     db.commit()
     db.refresh(key_record)
-    return key_record
+    _sync_key_cameras(db, key_record.id, payload.camera_ids, key_record.camera_id)
+    db.commit()
+
+    # Objek ORM tidak memuat kolom turunan; kirim dict agar bentuk respons POST
+    # sama dengan GET (UI memakai hasil POST langsung).
+    cam_ids = _key_camera_ids(key_record, db)
+    cam_rows = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(cam_ids)).all() if cam_ids else []
+    cam_map = {c.id: c.name for c in cam_rows}
+    return {
+        "id": key_record.id,
+        "key_value": key_record.key_value,
+        "camera_id": key_record.camera_id,
+        "camera_name": stream.name if stream else "Kamera Terhapus",
+        "camera_ids": cam_ids,
+        "camera_names": [cam_map.get(x, f"Kamera {x}") for x in cam_ids],
+        "include_playback": bool(key_record.include_playback),
+        "client_name": key_record.client_name,
+        "custom_camera_name": key_record.custom_camera_name or "",
+        "allowed_domain": key_record.allowed_domain or "",
+        "secret_pass": key_record.secret_pass or "",
+        "is_active": key_record.is_active,
+        "embed_timeout_seconds": key_record.embed_timeout_seconds,
+        "click_to_play": key_record.click_to_play,
+        "created_at": key_record.created_at,
+    }
 
 @app.put("/api/admin/api-keys/{key_id}", response_model=ApiKeySchema)
 def update_api_key(
@@ -2794,7 +3322,11 @@ def update_api_key(
     key_record.is_active = payload.is_active
     key_record.embed_timeout_seconds = payload.embed_timeout_seconds
     key_record.click_to_play = payload.click_to_play
-    
+    key_record.include_playback = payload.include_playback
+
+    if payload.camera_ids is not None:
+        _sync_key_cameras(db, key_record.id, payload.camera_ids, payload.camera_id)
+
     db.commit()
     db.refresh(key_record)
     return key_record

@@ -296,6 +296,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const key = urlParams.get('key');
             const pass = urlParams.get('pass');
+            const camera = urlParams.get('camera');
 
             if (!key) {
                 showError("Akses Ditolak", "Parameter API Key (key) wajib disertakan untuk mengakses stream.");
@@ -305,6 +306,7 @@
             // Fetch stream info dari backend
             let apiUrl = `/api/external/stream?key=${encodeURIComponent(key)}`;
             if (pass) apiUrl += `&pass=${encodeURIComponent(pass)}`;
+            if (camera) apiUrl += `&camera=${encodeURIComponent(camera)}`;
 
             fetch(apiUrl)
                 .then(res => {

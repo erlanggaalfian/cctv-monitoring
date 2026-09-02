@@ -184,6 +184,30 @@
         countBadge.textContent = `${online}/${total}`;
     }
 
+    // Isi dropdown grup dari daftar kamera mana pun yang tersedia.
+    // Mandiri: tidak bergantung pada elemen sidebar.
+    function populateGroupFilter(streams) {
+        const sel = document.getElementById("viewer-group-filter");
+        if (!sel || !Array.isArray(streams) || streams.length === 0) return;
+
+        const groups = [...new Set(streams.map(s => s.group_name).filter(Boolean))].sort();
+        if (groups.length === 0) return;
+
+        const existing = [...sel.options].map(o => o.value).filter(Boolean).sort();
+        if (existing.length === groups.length && existing.every((v, i) => v === groups[i])) return;
+
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">All Groups</option>';
+        groups.forEach(g => {
+            const opt = document.createElement("option");
+            opt.value = g;
+            opt.textContent = g;
+            if (g === currentVal) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+    window.populateGroupFilter = populateGroupFilter;
+
     async function loadSidebarData() {
         if (sidebarLoadPromise) return sidebarLoadPromise;
 
@@ -203,6 +227,7 @@
 
                 const data = await res.json();
                 viewerAllStreamsList = data.items || [];
+                populateGroupFilter(viewerAllStreamsList);
 
                 sidebarList.innerHTML = "";
                 updateSidebarCountBadge(viewerAllStreamsList);
@@ -227,19 +252,6 @@
                     sidebarList.appendChild(li);
                 });
 
-                const viewerGroupFilter = document.getElementById("viewer-group-filter");
-                if (viewerGroupFilter && viewerGroupFilter.children.length <= 1) {
-                    const currentVal = viewerGroupFilter.value;
-                    const groups = [...new Set(viewerAllStreamsList.map(s => s.group_name).filter(Boolean))].sort();
-                    viewerGroupFilter.innerHTML = '<option value="">All Groups</option>';
-                    groups.forEach(g => {
-                        const opt = document.createElement("option");
-                        opt.value = g;
-                        opt.textContent = g;
-                        if (g === currentVal) opt.selected = true;
-                        viewerGroupFilter.appendChild(opt);
-                    });
-                }
             } catch (err) {
                 console.error("Sidebar loading error:", err);
                 if (countBadge && viewerAllStreamsList.length === 0) countBadge.textContent = "0/0";
@@ -265,7 +277,9 @@
         }
 
         try {
-            loadSidebarData();
+            // Sidebar hanya dimuat sekali; isinya tidak terpengaruh filter grup.
+            // Status per kamera diperbarui terpisah oleh pemantau berkala.
+            if (viewerAllStreamsList.length === 0) loadSidebarData();
 
             const controller = new AbortController();
             const fetchTimeout = setTimeout(() => controller.abort(), 30000);
@@ -307,6 +321,7 @@
             if (currentPage !== "monitor" || loadGen !== streamsLoadGeneration) return;
 
             streamsData = pageData.items;
+            populateGroupFilter(viewerAllStreamsList.length ? viewerAllStreamsList : streamsData);
             viewerTotalPages = pageData.total_pages;
             viewerTotalItems = pageData.total_items;
 
@@ -1083,24 +1098,30 @@
     function attachCamTileEvents(card, stream) {
         let hideTimer = null;
 
-        function showOverlay() {
+        // durasi tampil: 3 detik saat halaman baru dimuat,
+        // 5 detik saat tile diketuk pengguna
+        function showOverlay(durasi = 5000) {
             // Hide all other tiles' overlays first
             document.querySelectorAll('[id^="cam-tile-"], [id^="custom-cam-tile-"]').forEach(t => {
                 if (t !== card) t.classList.remove("tile-controls-visible");
             });
             card.classList.add("tile-controls-visible");
             clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => card.classList.remove("tile-controls-visible"), 3000);
+            hideTimer = setTimeout(() => card.classList.remove("tile-controls-visible"), durasi);
         }
+        card._msShowOverlay = showOverlay;
 
         function hideOverlay() {
             clearTimeout(hideTimer);
             card.classList.remove("tile-controls-visible");
         }
 
-        // Double-click always opens popup
+        // Ketuk ganda selalu membuka popup. Timer klik tunggal
+        // dibatalkan supaya bar tidak ikut berkedip lebih dulu.
         card.ondblclick = (e) => {
             e.stopPropagation();
+            clearTimeout(hideTimer);
+            card.classList.remove("tile-controls-visible");
             window.openCameraPopup(stream);
         };
 
@@ -1209,19 +1230,28 @@
         }
 
         return `
-            <div class="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex justify-between items-center bg-[#0b1329]/90 backdrop-blur-md px-3 py-1.5 text-[8px] font-sans text-slate-300 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
-                <div class="flex space-x-2 items-center text-slate-400">
-                    <span>FPS: <strong id="cam-telemetry-fps-${streamId}" class="text-sky-400 font-mono">30.0</strong></span>
-                    <span class="text-white/10">•</span>
-                    <span>RES: <strong id="cam-telemetry-res-${streamId}" class="text-sky-400 font-mono">1080p</strong></span>
-                    <span class="text-white/10">•</span>
-                    <span>CODEC: <strong id="cam-telemetry-codec-${streamId}" class="text-sky-400 font-mono">H264</strong></span>
+            <div class="ms-telemetry ms-telemetry--tile ms-telemetry--compact">
+                <div class="ms-telemetry__group">
+                    <span class="ms-telemetry__chip">
+                        <span class="ms-telemetry__label">fps</span>
+                        <strong id="cam-telemetry-fps-${streamId}" class="ms-telemetry__val">30.0</strong>
+                    </span>
+                    <span class="ms-telemetry__sep" aria-hidden="true"></span>
+                    <span class="ms-telemetry__chip">
+                        <span class="ms-telemetry__label">res</span>
+                        <strong id="cam-telemetry-res-${streamId}" class="ms-telemetry__val">1080p</strong>
+                    </span>
+                    <span class="ms-telemetry__sep" aria-hidden="true"></span>
+                    <span class="ms-telemetry__chip">
+                        <span class="ms-telemetry__label">codec</span>
+                        <strong id="cam-telemetry-codec-${streamId}" class="ms-telemetry__val">H264</strong>
+                    </span>
                 </div>
-                <button class="cam-tile-expand-btn flex items-center space-x-1 text-sky-400 hover:text-white bg-sky-500/15 hover:bg-sky-500/35 border border-sky-500/35 rounded px-2 py-0.5 transition-all duration-150 active:scale-95 cursor-pointer" title="Buka Kamera">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button class="cam-tile-expand-btn ms-telemetry__action" title="Buka Kamera" aria-label="Buka Kamera">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 5v-4m0 4h-4m4 0l-5-5"></path>
                     </svg>
-                    <span class="font-bold uppercase tracking-wider text-[8px]">Buka</span>
+                    <span>Buka</span>
                 </button>
             </div>
         `;
@@ -1296,18 +1326,18 @@
             
             const showTopLeft = (userRole || "").toLowerCase() !== "guest";
             const overlayTopLeftHtml = showTopLeft ? `
-                <div class="absolute top-2.5 left-2.5 z-10 flex items-center space-x-1.5">
+                <div class="ms-badge-row">
                     <!-- Camera Code Badge -->
-                    <span class="bg-[#0f172a]/90 border border-white/10 px-2 py-0.5 rounded text-[8px] font-bold text-slate-100 font-sans tracking-wide">
+                    <span class="ms-badge ms-badge--overlay font-data">
                         CAM_${String(stream.id).padStart(3, '0')}
                     </span>
                     <!-- Status Pill -->
-                    <span class="px-2 py-0.5 rounded text-[8px] font-bold font-sans tracking-wide flex items-center space-x-1.5 ${stream.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
-                        <span class="w-1 h-1 rounded-full ${stream.status === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}"></span>
+                    <span class="ms-badge ${stream.status === 'online' ? 'ms-badge--online' : 'ms-badge--offline'}">
+                        <span class="ms-badge__dot"></span>
                         <span>${stream.status === 'online' ? 'ONLINE' : 'OFFLINE'}</span>
                     </span>
                     <!-- Camera Name -->
-                    <span class="text-white font-sans font-semibold text-[9px] drop-shadow-md truncate max-w-[100px] pl-0.5">
+                    <span class="ms-badge__name">
                         ${stream.name.toUpperCase()}
                     </span>
                 </div>
@@ -1315,9 +1345,9 @@
 
             const overlayTop = `
                 ${overlayTopLeftHtml}
-                <div class="absolute top-2.5 right-2.5 z-10 flex items-center space-x-1">
-                    <span class="px-2 py-0.5 rounded text-[8px] font-bold font-sans tracking-wider flex items-center space-x-1.5 ${stream.status === 'online' ? 'bg-red-500/15 text-red-400 border border-red-500/25' : 'bg-slate-800/80 text-slate-400 border border-white/5'}">
-                        <span class="w-1 h-1 rounded-full ${stream.status === 'online' ? 'bg-red-500 animate-pulse' : 'bg-slate-400'}"></span>
+                <div class="ms-badge-row ms-badge-row--right">
+                    <span class="ms-badge ${stream.status === 'online' ? 'ms-badge--rec' : 'ms-badge--idle'}">
+                        <span class="ms-badge__dot"></span>
                         <span>${stream.status === 'online' ? 'REC' : 'LOSS'}</span>
                     </span>
                 </div>
@@ -1358,6 +1388,14 @@
             }
         });
         gridContainer.replaceChildren(tileFragment);
+        // Sesaat setelah dimuat, tampilkan info tiap tile 3 detik
+        // supaya pengguna tahu bar itu ada (di HP tak ada hover).
+        gridContainer.querySelectorAll('[id^="cam-tile-"]').forEach(t => {
+            if (typeof t._msShowOverlay === "function") {
+                t.classList.add("tile-controls-visible");
+                setTimeout(() => t.classList.remove("tile-controls-visible"), 3000);
+            }
+        });
         if (typeof window.preloadServerPostersForGrid === "function") {
             window.preloadServerPostersForGrid(gridContainer);
         }
@@ -2480,19 +2518,20 @@
                     tile.className = "relative cam-placeholder-bg border border-cyber-outline/65 rounded-md overflow-hidden aspect-video group";
                     
                     const overlayTop = `
-                        <div class="absolute top-2 left-2 z-10 bg-[#090e1a]/85 backdrop-blur-md px-2 py-1 text-[8px] font-mono text-white rounded-md flex items-center space-x-1.5 border border-white/5 shadow-sm">
-                            <span class="w-1 h-1 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}"></span>
-                            <span class="font-bold">CAM_${String(stream.id).padStart(3, '0')}</span>
-                            <span class="text-slate-600">|</span>
-                            <span class="text-slate-300 truncate max-w-24">${stream.name.toUpperCase()}</span>
+                        <div class="ms-badge-row">
+                            <span class="ms-badge ms-badge--overlay ${isOnline ? 'ms-badge--online' : 'ms-badge--offline'}">
+                                <span class="ms-badge__dot"></span>
+                                <span class="font-data">CAM_${String(stream.id).padStart(3, '0')}</span>
+                            </span>
+                            <span class="ms-badge__name">${stream.name.toUpperCase()}</span>
                         </div>
                     `;
                     
                     if (!isOnline) {
                         tile.innerHTML = `
                             ${overlayTop}
-                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-[#090e1a]/95 backdrop-blur-sm font-mono text-center px-4 border border-red-500/20 rounded-md">
-                                <span class="text-[9px] font-bold text-red-500 uppercase tracking-wider">OFFLINE</span>
+                            <div class="ms-offline-screen">
+                                <span class="ms-offline-screen__label">Offline</span>
                             </div>
                         `;
                     } else if (simulationActive) {
