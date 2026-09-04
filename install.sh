@@ -359,7 +359,10 @@ else
     MARIADB_CMD="mariadb -h $DB_HOST -P $DB_PORT -u root"
 fi
 
-# Uji akses root MySQL
+# Uji akses root MySQL.
+# Pada mesin bersih MariaDB belum terpasang saat ini (baru dipasang di [2/8]),
+# sehingga aksesnya tidak dapat diuji sekarang. Passwordnya tetap ditanyakan
+# agar tidak gagal diam-diam saat perintah SQL dijalankan nanti.
 DB_PASS_ARG=""
 if command -v mariadb &>/dev/null; then
     systemctl start mariadb &>/dev/null
@@ -367,14 +370,39 @@ if command -v mariadb &>/dev/null; then
         mariadb-admin ping &>/dev/null && break
         sleep 0.5
     done
-    
-    if ! $MARIADB_CMD -e "SELECT 1" < /dev/null &>/dev/null; then
+
+    # Ulangi sampai password benar, agar kegagalan ketahuan di sini
+    # dan bukan belasan perintah SQL kemudian.
+    while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; do
         echo -e "  ${YELLOW}* Koneksi MariaDB root memerlukan password.${NC}"
         echo -n "  Masukkan password root MariaDB/MySQL Anda: "
-        read -s DB_ROOT_PASS
+        if ! read -s DB_ROOT_PASS; then
+            echo
+            echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
+            DB_PASS_ARG=""
+            break
+        fi
         echo
-        [ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
-    fi
+        if [ -z "$DB_ROOT_PASS" ]; then
+            echo -e "  ${RED}\u2717 Password kosong, koneksi root tetap gagal.${NC}"
+            continue
+        fi
+        DB_PASS_ARG="-p${DB_ROOT_PASS}"
+        if $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
+            echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB berhasil."
+            break
+        fi
+        echo -e "  ${RED}\u2717 Password root salah, coba lagi.${NC}"
+        DB_PASS_ARG=""
+    done
+else
+    # MariaDB akan dipasang nanti; instalasi baru menyisakan root tanpa
+    # password (auth soket), jadi kosong itu wajar dan sah.
+    echo -e "  ${YELLOW}* MariaDB belum terpasang, akan dipasang otomatis.${NC}"
+    echo -n "  Password root MariaDB [kosongkan jika instalasi baru]: "
+    read -s DB_ROOT_PASS
+    echo
+    [ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
 fi
 
 echo -e "\n${BLUE}>>> Langkah 2: Akun Administrator Aplikasi Web${NC}"
@@ -571,7 +599,19 @@ echo -e "${BLUE}[1/8] Memperbarui indeks paket sistem (apt update)...${NC}"
 apt-get update -y -qq
 
 echo -e "\n${BLUE}[2/8] Menginstal dependensi sistem yang dibutuhkan...${NC}"
-INSTALL_PKGS="apache2 libapache2-mod-php php8.2 php8.2-cli php8.2-mysql php8.2-curl mariadb-server mariadb-client openssl python3 python3-pip python3-venv ffmpeg curl"
+# Versi PHP mengikuti apa yang disediakan repositori distribusi:
+# Debian 12 memberi 8.2, Ubuntu 24.04 memberi 8.3, Debian 13 memberi 8.4.
+PHP_VER=$(apt-cache search --names-only '^php[0-9]+\.[0-9]+-cli$' 2>/dev/null \
+          | grep -oE 'php[0-9]+\.[0-9]+' | sort -V | tail -1 | sed 's/^php//')
+if [ -z "$PHP_VER" ]; then
+    # Repositori tidak menyebut versi apa pun: pakai paket meta tanpa nomor.
+    echo -e "  ${YELLOW}* Versi PHP tidak terdeteksi, memakai paket 'php' bawaan.${NC}"
+    PHP_PKGS="php php-cli php-mysql php-curl"
+else
+    echo -e "  ${GREEN}\u2713${NC} PHP terdeteksi: versi ${CYAN}${PHP_VER}${NC}"
+    PHP_PKGS="php${PHP_VER} php${PHP_VER}-cli php${PHP_VER}-mysql php${PHP_VER}-curl"
+fi
+INSTALL_PKGS="apache2 libapache2-mod-php $PHP_PKGS mariadb-server mariadb-client openssl python3 python3-pip python3-venv ffmpeg curl"
 if [ "$SSL_MODE" = "letsencrypt" ]; then
     INSTALL_PKGS="$INSTALL_PKGS certbot python3-certbot-apache"
 fi
@@ -585,6 +625,28 @@ for i in {1..10}; do
     $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" &>/dev/null && break
     sleep 0.5
 done
+
+# MariaDB kini pasti terpasang. Bila password yang diberikan di Langkah 1
+# ternyata salah, hentikan di sini dengan pesan jelas: belasan perintah SQL
+# berikutnya akan gagal satu per satu tanpa menyebut sebabnya.
+while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" &>/dev/null; do
+    echo -e "  ${RED}\u2717 Tidak dapat terhubung ke MariaDB sebagai root.${NC}"
+    echo -n "  Masukkan password root MariaDB/MySQL: "
+    if ! read -s DB_ROOT_PASS; then
+        echo
+        echo -e "  ${RED}\u2717 Masukan tidak tersedia dan koneksi root gagal.${NC}"
+        echo -e "  ${RED}  Jalankan install.sh dari terminal, atau setel${NC}"
+        echo -e "  ${RED}  password root MariaDB terlebih dahulu.${NC}"
+        exit 1
+    fi
+    echo
+    if [ -n "$DB_ROOT_PASS" ]; then
+        DB_PASS_ARG="-p${DB_ROOT_PASS}"
+    else
+        DB_PASS_ARG=""
+    fi
+done
+echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB siap."
 
 # ── 5. Import / Restore Database & Create User ────────────────────────────────
 echo -e "\n${BLUE}[4/8] Mengimpor skema database / memulihkan backup...${NC}"
