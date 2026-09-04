@@ -10,6 +10,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import json
+import time
 import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -2407,6 +2408,7 @@ def _scan_rec_files(base: str):
 
 
 MEDIAMTX_PLAYBACK_BASE = os.getenv("MEDIAMTX_PLAYBACK_BASE", "http://127.0.0.1:9996")
+MEDIAMTX_LIST_TIMEOUT = float(os.getenv("MEDIAMTX_LIST_TIMEOUT", "30"))
 
 
 def _mediamtx_path_for(stream, stream_id: int) -> str:
@@ -2422,14 +2424,30 @@ def _mediamtx_path_for(stream, stream_id: int) -> str:
     return f"stream_{stream_id}"
 
 
+# Cache daftar segmen: {path_name: (waktu_ambil, data)}. Kamera dengan RTSP
+# putus-sambung bisa punya ~20rb segmen dan butuh ~7 detik untuk dipindai
+# MediaMTX; tanpa cache, tiap ganti tanggal membayar ongkos itu lagi.
+_SEGMEN_CACHE: dict = {}
+_SEGMEN_CACHE_TTL = float(os.getenv("MEDIAMTX_LIST_CACHE_TTL", "60"))
+
+
 def _mediamtx_segments(path_name: str):
+    now = time.time()
+    memo = _SEGMEN_CACHE.get(path_name)
+    if memo and (now - memo[0]) < _SEGMEN_CACHE_TTL:
+        return memo[1]
+
     url = f"{MEDIAMTX_PLAYBACK_BASE}/list?path={urllib.parse.quote(path_name)}"
+    # Kamera dengan puluhan ribu segmen butuh >5s; timeout lama bikin
+    # timeline kosong walau rekaman ada (dates baca disk, jadi tetap terisi).
     try:
-        with urllib.request.urlopen(url, timeout=5) as resp:
-            return json.loads(resp.read().decode())
+        with urllib.request.urlopen(url, timeout=MEDIAMTX_LIST_TIMEOUT) as resp:
+            data = json.loads(resp.read().decode())
+        _SEGMEN_CACHE[path_name] = (now, data)
+        return data
     except Exception as e:
-        print(f"[Playback] list error: {e}")
-        return []
+        print(f"[Playback] list error path={path_name}: {type(e).__name__}: {e}")
+        raise
 
 @app.get("/api/recordings/cameras")
 def get_recording_cameras(
@@ -2544,6 +2562,7 @@ def get_recording_file(
 def get_recording_timeline(
     stream_id: int,
     date: str = Query(None, description="YYYY-MM-DD; omit for all"),
+    segments: bool = Query(False, description="Sertakan daftar segmen mentah (berat)"),
     user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
@@ -2585,10 +2604,93 @@ def get_recording_timeline(
         "stream_id": stream_id,
         "path": path_name,
         "date": date,
-        "segments": segs,
+        # Daftar segmen mentah bisa puluhan ribu entri (kamera yang RTSP-nya
+        # putus-sambung). Pemutar hanya butuh `ranges`, jadi segmen dikirim
+        # hanya bila diminta eksplisit.
+        "segments": segs if segments else [],
+        "segment_count": len(segs),
         "ranges": ranges,
         "total_duration": sum(r["duration"] for r in ranges),
     }
+
+
+@app.get("/api/recordings/{stream_id}/next-playable")
+def cari_range_terisi(
+    stream_id: int,
+    start: str = Query(..., description="ISO8601: cari dari titik ini"),
+    limit: int = Query(12, ge=1, le=40, description="Maksimal range yang dicoba"),
+    user = Depends(get_playback_principal),
+    db: Session = Depends(get_db)
+):
+    """Range pertama yang BENAR-BENAR berisi video, mulai dari `start`.
+
+    `ranges` dari MediaMTX tak bisa dipercaya pada kamera yang RTSP-nya
+    putus-sambung: metadata durasi bohong, sehingga range panjang bisa
+    kosong dan range pendek bisa berisi. Satu-satunya cara memastikan
+    adalah menarik potongannya. Di sini beberapa range diperiksa paralel
+    supaya pemutar tak perlu mencoba satu per satu.
+    """
+    if not _user_has_stream_access(user, stream_id, db):
+        raise HTTPException(status_code=403, detail="Access denied")
+    stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
+    if not stream:
+        raise HTTPException(status_code=404, detail="Stream not found")
+
+    try:
+        titik = datetime.fromisoformat(start).timestamp()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Format `start` tidak sah")
+
+    path_name = _mediamtx_path_for(stream, stream_id)
+    raw = _mediamtx_segments(path_name)
+
+    kandidat = []
+    for seg in raw:
+        st, dur = seg.get("start"), float(seg.get("duration") or 0)
+        if not st or dur <= 0:
+            continue
+        try:
+            ep = datetime.fromisoformat(st).timestamp()
+        except ValueError:
+            continue
+        if ep > titik + 0.5:
+            kandidat.append((ep, st))
+    kandidat.sort()
+    kandidat = kandidat[:limit]
+
+    if not kandidat:
+        return {"found": False, "start": None, "checked": 0}
+
+    def berisi(item):
+        ep, st = item
+        url = (f"{MEDIAMTX_PLAYBACK_BASE}/get?path={urllib.parse.quote(path_name)}"
+               f"&start={urllib.parse.quote(st)}&duration=8")
+        try:
+            with urllib.request.urlopen(url, timeout=12) as r:
+                # Cukup baca kepala berkas: fMP4 kosong hanya berisi
+                # moov/ftyp tanpa data gambar berarti.
+                data = r.read(65536)
+            return (ep, st, len(data) >= 40000)
+        except Exception:
+            return (ep, st, False)
+
+    # Diperiksa bergelombang kecil dan berhenti begitu ketemu: sebagian besar
+    # range sebenarnya berisi, jadi memeriksa semua kandidat sekaligus
+    # membayar ongkos berkali-kali untuk jawaban yang ada di urutan pertama.
+    GELOMBANG = 4
+    diperiksa = 0
+    with ThreadPoolExecutor(max_workers=GELOMBANG) as ex:
+        for i in range(0, len(kandidat), GELOMBANG):
+            batch = kandidat[i:i + GELOMBANG]
+            hasil = sorted(ex.map(berisi, batch), key=lambda x: x[0])
+            diperiksa += len(hasil)
+            for ep, st, ok in hasil:
+                if ok:
+                    return {"found": True, "start": st, "start_epoch": ep,
+                            "checked": diperiksa}
+
+    return {"found": False, "start": None, "checked": diperiksa,
+            "next_after": kandidat[-1][0] if kandidat else None}
 
 
 @app.get("/api/recordings/{stream_id}/stream")

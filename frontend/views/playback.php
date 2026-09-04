@@ -130,7 +130,15 @@ if(!defined('SECURE_ACCESS')) {
 <script>
 (function() {
     const API_URL = '/api';
-    const CHUNK = 900;               // seconds fetched per playback request
+    // 900s = ~81MB per klik: lambat di jaringan lambat. 120s = ~10MB,
+    // masih nyaman untuk scrub dan cukup untuk menonton berkelanjutan.
+    const CHUNK = 120;               // seconds fetched per playback request
+    // Potongan di bawah ini dianggap kosong (berkas rusak / metadata bohong)
+    // dan dilewati tanpa berhenti. Batas lompatan mencegah putaran tanpa
+    // henti bila satu jam penuh memang tak ada rekamannya.
+    const MIN_POTONGAN = 1.0;        // detik
+    const MAKS_LOMPAT = 40;
+    let lompatBeruntun = 0;
     let cameras = [];
     let ranges = [];                 // continuous recording ranges (epoch seconds)
     let dayStart = 0, dayEnd = 0;    // timeline bounds (epoch seconds)
@@ -382,15 +390,49 @@ if(!defined('SECURE_ACCESS')) {
     }
 
     function nearestRangeEpoch(epoch) {
+        // Di dalam rekaman: pakai apa adanya.
         for (const r of ranges) {
             if (epoch >= r.start_epoch && epoch <= r.start_epoch + r.duration) return epoch;
         }
-        let best = ranges[0].start_epoch, dist = Infinity;
+        // Di jeda kosong: lompat MAJU ke rekaman berikutnya. (Dulu memilih
+        // yang "terdekat" sehingga bisa mundur dan terasa mengulang.)
         for (const r of ranges) {
-            const d = Math.abs(r.start_epoch - epoch);
-            if (d < dist) { dist = d; best = r.start_epoch; }
+            if (r.start_epoch > epoch) return r.start_epoch;
         }
-        return best;
+        // Lewat rekaman terakhir: pakai yang terakhir.
+        return ranges.length ? ranges[ranges.length - 1].start_epoch : epoch;
+    }
+
+    // Tanya server: titik terisi berikutnya setelah `epoch`. Server memeriksa
+    // beberapa range paralel, jadi jam kosong dilewati dalam satu lompatan.
+    async function cariTerisi(epoch) {
+        try {
+            const iso = new Date(epoch * 1000).toISOString();
+            const res = await fetch(
+                `${API_URL}/recordings/${activeCamera.id}/next-playable`
+                + `?start=${encodeURIComponent(iso)}&limit=20`,
+                { headers: authHeaders() });
+            if (!res.ok) return null;
+            const d = await res.json();
+            return d.found ? d.start_epoch : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Awal range pertama yang mulai setelah `epoch`; null bila sudah habis.
+    function rangeBerikutnya(epoch) {
+        for (const r of ranges) {
+            if (r.start_epoch > epoch + 0.5) return r.start_epoch;
+        }
+        return null;
+    }
+
+    // Klik/scrub oleh pengguna: mulai lagi dari nol supaya batas lompatan
+    // sebelumnya tidak menghalangi pencarian di posisi baru.
+    function seekManual(epoch) {
+        lompatBeruntun = 0;
+        return seekToEpoch(epoch);
     }
 
     async function seekToEpoch(epoch) {
@@ -407,8 +449,62 @@ if(!defined('SECURE_ACCESS')) {
 
         video.src = url;
         video.load();
-        video.onloadeddata = () => { loading.classList.add('hidden'); video.play().catch(() => {}); };
-        video.onerror = () => { loading.classList.add('hidden'); };
+        video.onloadeddata = () => {
+            const d = video.duration;
+            // Potongan kosong: lanjut ke rekaman berikutnya tanpa berhenti.
+            if (isFinite(d) && d < MIN_POTONGAN) {
+                if (lompatBeruntun < MAKS_LOMPAT) {
+                    lompatBeruntun++;
+                    // Potongan kosong hampir selalu tunggal, jadi range
+                    // berikutnya biasanya langsung berisi -- itu jalur cepat.
+                    if (lompatBeruntun <= 2) {
+                        const lanjut = rangeBerikutnya(chunkStartEpoch);
+                        if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
+                    }
+                    // Dua kali berturut kosong: minta server memindai lebih
+                    // jauh sekaligus daripada merayap satu per satu.
+                    cariTerisi(chunkStartEpoch).then(titik => {
+                        if (titik !== null && titik < dayEnd) { seekToEpoch(titik); return; }
+                        const lanjut = rangeBerikutnya(chunkStartEpoch);
+                        if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
+                        loading.classList.add('hidden');
+                        lompatBeruntun = 0;
+                        showNoRecording('Tidak ada rekaman berisi setelah titik ini');
+                    });
+                    return;
+                }
+                loading.classList.add('hidden');
+                lompatBeruntun = 0;
+                showNoRecording('Rekaman pada jam ini kosong atau rusak');
+                return;
+            }
+            lompatBeruntun = 0;
+            loading.classList.add('hidden');
+            video.play().catch(() => {});
+        };
+        video.onerror = () => {
+            // Potongan gagal dimuat: jangan berhenti, lompat ke rekaman
+            // berikutnya (dibatasi MAKS_LOMPAT seperti potongan kosong).
+            if (lompatBeruntun < MAKS_LOMPAT) {
+                lompatBeruntun++;
+                if (lompatBeruntun <= 2) {
+                    const lanjut = rangeBerikutnya(chunkStartEpoch);
+                    if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
+                }
+                cariTerisi(chunkStartEpoch).then(titik => {
+                    if (titik !== null && titik < dayEnd) { seekToEpoch(titik); return; }
+                    const lanjut = rangeBerikutnya(chunkStartEpoch);
+                    if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
+                    loading.classList.add('hidden');
+                    lompatBeruntun = 0;
+                    showNoRecording('Tidak ada rekaman berisi setelah titik ini');
+                });
+                return;
+            }
+            loading.classList.add('hidden');
+            lompatBeruntun = 0;
+            showNoRecording('Rekaman pada jam ini kosong atau rusak');
+        };
     }
 
     window.pbSeekRelative = function(delta) {
@@ -449,7 +545,7 @@ if(!defined('SECURE_ACCESS')) {
         };
         const commit = (clientX) => {
             if (!ranges.length) return;
-            seekToEpoch(dayStart + ratioAt(clientX) * (dayEnd - dayStart));
+            seekManual(dayStart + ratioAt(clientX) * (dayEnd - dayStart));
         };
 
         tl.addEventListener('pointerdown', (e) => {
@@ -486,7 +582,21 @@ if(!defined('SECURE_ACCESS')) {
     });
 
     $('playback-video').addEventListener('ended', () => {
-        const next = chunkStartEpoch + CHUNK;
+        // MediaMTX sering memberi potongan lebih pendek dari CHUNK (berhenti
+        // di batas segmen). Pakai durasi nyata supaya tidak melompati rekaman.
+        const v = $('playback-video');
+        const played = (v.duration && isFinite(v.duration) && v.duration > 0) ? v.duration : CHUNK;
+        let next = chunkStartEpoch + played;
+
+        // Bila titik lanjut jatuh di jeda kosong, lompat ke rekaman
+        // berikutnya supaya pemutaran tidak berhenti di lubang jadwal.
+        const diRekaman = ranges.some(r =>
+            next >= r.start_epoch && next < r.start_epoch + r.duration);
+        if (!diRekaman) {
+            const lanjut = rangeBerikutnya(next);
+            if (lanjut === null) return;   // sudah rekaman terakhir
+            next = lanjut;
+        }
         if (next < dayEnd) seekToEpoch(next);
     });
 
