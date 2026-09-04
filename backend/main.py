@@ -2409,6 +2409,10 @@ def _scan_rec_files(base: str):
 
 MEDIAMTX_PLAYBACK_BASE = os.getenv("MEDIAMTX_PLAYBACK_BASE", "http://127.0.0.1:9996")
 MEDIAMTX_LIST_TIMEOUT = float(os.getenv("MEDIAMTX_LIST_TIMEOUT", "30"))
+# Mengambil potongan dari titik jauh pada kamera dengan ribuan segmen
+# bisa memakan ~20 detik. Batas lama (15 detik) memutus permintaan yang
+# sebenarnya akan berhasil.
+MEDIAMTX_PLAYBACK_TIMEOUT = float(os.getenv("MEDIAMTX_PLAYBACK_TIMEOUT", "60"))
 
 
 def _mediamtx_path_for(stream, stream_id: int) -> str:
@@ -2748,16 +2752,36 @@ def stream_recording(
     url = (f"{MEDIAMTX_PLAYBACK_BASE}/get?path={urllib.parse.quote(path_name)}"
            f"&start={urllib.parse.quote(start)}&duration={duration}")
 
+    # Sambungan dibuka di sini, bukan di dalam generator: begitu
+    # StreamingResponse dikembalikan, status 200 sudah terkirim dan kegagalan
+    # apa pun hanya tampak sebagai badan kosong di sisi klien.
+    try:
+        resp = urllib.request.urlopen(url, timeout=MEDIAMTX_PLAYBACK_TIMEOUT)
+        kepala = resp.read(65536)
+    except Exception as e:
+        print(f"[Playback] stream error: {e}")
+        raise HTTPException(
+            status_code=504,
+            detail="Server rekaman tidak menjawab untuk rentang waktu ini")
+
+    if not kepala:
+        resp.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Tidak ada rekaman pada rentang waktu ini")
+
     def pump():
         try:
-            with urllib.request.urlopen(url, timeout=15) as resp:
-                while True:
-                    chunk = resp.read(65536)
-                    if not chunk:
-                        break
-                    yield chunk
+            yield kepala
+            while True:
+                chunk = resp.read(65536)
+                if not chunk:
+                    break
+                yield chunk
         except Exception as e:
             print(f"[Playback] stream error: {e}")
+        finally:
+            resp.close()
 
     return StreamingResponse(pump(), media_type="video/mp4")
 
