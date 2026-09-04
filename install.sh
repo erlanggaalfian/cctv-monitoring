@@ -355,11 +355,11 @@ baca_sandi() {
 
 echo -e "${BLUE}>>> Langkah 1: Pengaturan Database (MySQL / MariaDB)${NC}"
 
-read -p "  Database Host [localhost]: " DB_HOST
+printf "\n"; read -p "  Database Host [localhost]: " DB_HOST
 [ -z "$DB_HOST" ] && DB_HOST="localhost"
 
 while true; do
-    read -p "  Database Port [3306]: " DB_PORT
+    printf "\n"; read -p "  Database Port [3306]: " DB_PORT
     [ -z "$DB_PORT" ] && DB_PORT="3306"
     if [[ "$DB_PORT" =~ ^[0-9]+$ ]] && [ "$DB_PORT" -ge 1 ] && [ "$DB_PORT" -le 65535 ]; then
         break
@@ -368,13 +368,13 @@ while true; do
     fi
 done
 
-read -p "  Database Name [cctv_monitoring]: " DB_NAME
+printf "\n"; read -p "  Database Name [cctv_monitoring]: " DB_NAME
 [ -z "$DB_NAME" ] && DB_NAME="cctv_monitoring"
 
-read -p "  Database User [cctv_user]: " DB_USER
+printf "\n"; read -p "  Database User [cctv_user]: " DB_USER
 [ -z "$DB_USER" ] && DB_USER="cctv_user"
 
-echo -n "  Password User Database (kosong = auto generate): "
+echo -en "\n  Password user database (kosong = auto generate): "
 baca_sandi DB_PASS_INPUT
 if [ -z "$DB_PASS_INPUT" ]; then
     DB_PASS=$(openssl rand -hex 16)
@@ -407,7 +407,7 @@ if command -v mariadb &>/dev/null; then
     # dan bukan belasan perintah SQL kemudian.
     while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; do
         echo -e "  ${YELLOW}* Koneksi MariaDB root memerlukan password.${NC}"
-        echo -n "  Password root MariaDB/MySQL: "
+        echo -en "\n  Password root MariaDB/MySQL: "
         if ! baca_sandi DB_ROOT_PASS; then
             echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
             DB_PASS_ARG=""
@@ -430,14 +430,14 @@ else
     # MariaDB akan dipasang nanti; instalasi baru menyisakan root tanpa
     # password (auth soket), jadi kosong itu wajar dan sah.
     echo -e "  ${YELLOW}* MariaDB belum terpasang, akan dipasang otomatis.${NC}"
-    echo -n "  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
+    echo -en "\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
     baca_sandi DB_ROOT_PASS
     [ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
 fi
 
 echo -e "\n${BLUE}>>> Langkah 2: Akun Administrator Aplikasi Web${NC}"
 while true; do
-    read -p "  Username Admin Web [admin]: " APP_ADMIN_USER
+    printf "\n"; read -p "  Username admin web [admin]: " APP_ADMIN_USER
     [ -z "$APP_ADMIN_USER" ] && APP_ADMIN_USER="admin"
     if [[ "$APP_ADMIN_USER" =~ ^[a-zA-Z0-9_]{3,20}$ ]]; then
         break
@@ -448,7 +448,7 @@ done
 
 APP_ADMIN_PASS=""
 while [ -z "$APP_ADMIN_PASS" ]; do
-    echo -n "  Password Admin Web (tidak boleh kosong): "
+    echo -en "\n  Password admin web (tidak boleh kosong): "
     baca_sandi APP_ADMIN_PASS
 done
 
@@ -660,7 +660,7 @@ done
 # berikutnya akan gagal satu per satu tanpa menyebut sebabnya.
 while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" &>/dev/null; do
     echo -e "  ${RED}\u2717 Tidak dapat terhubung ke MariaDB sebagai root.${NC}"
-    echo -n "  Password root MariaDB/MySQL: "
+    echo -en "\n  Password root MariaDB/MySQL: "
     if ! baca_sandi DB_ROOT_PASS; then
         echo -e "  ${RED}\u2717 Masukan tidak tersedia dan koneksi root gagal.${NC}"
         echo -e "  ${RED}  Jalankan install.sh dari terminal, atau setel${NC}"

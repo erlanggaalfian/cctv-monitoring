@@ -122,15 +122,15 @@ uji("EOF: tidak menggantung", out != "TIMEOUT", out)
 print("\n=== keseragaman prompt ===")
 
 harus_ada = [
-    'read -p "  Database Host [localhost]: " DB_HOST',
-    'read -p "  Database Port [3306]: " DB_PORT',
-    'read -p "  Database Name [cctv_monitoring]: " DB_NAME',
-    'read -p "  Database User [cctv_user]: " DB_USER',
-    'echo -n "  Password User Database (kosong = auto generate): "',
-    'echo -n "  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "',
+    'printf "\\n"; read -p "  Database Host [localhost]: " DB_HOST',
+    'printf "\\n"; read -p "  Database Port [3306]: " DB_PORT',
+    'printf "\\n"; read -p "  Database Name [cctv_monitoring]: " DB_NAME',
+    'printf "\\n"; read -p "  Database User [cctv_user]: " DB_USER',
+    'echo -en "\\n  Password user database (kosong = auto generate): "',
+    'echo -en "\\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "',
     'read -p "  Port HTTP [80]: " HTTP_PORT',
     'read -p "  Port HTTPS [443]: " HTTPS_PORT',
-    'echo -n "  Password Admin Web (tidak boleh kosong): "',
+    'echo -en "\\n  Password admin web (tidak boleh kosong): "',
 ]
 for h in harus_ada:
     uji(f"ada: {h[:52]}", h in s)
