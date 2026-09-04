@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Prompt password root harus selalu muncul, apa pun keadaan MariaDB.
+"""Password root ditanyakan hanya bila koneksi root memang gagal.
 
 Blok diambil apa adanya dari install.sh; hanya `mariadb` yang diganti tiruan
-agar keadaannya dapat dikendalikan. Kasus yang diperiksa adalah keadaan
-server pengguna: MariaDB sudah terpasang dan root lolos lewat auth socket --
-dulu prompt terlewat sama sekali di keadaan ini.
+agar keadaannya dapat dikendalikan. Yang dijaga: mesin dengan auth socket
+bebas password tidak ditanyai sama sekali, sedangkan root berpassword tetap
+ditanyai sampai benar.
 """
 import os
 import pty
@@ -18,9 +18,8 @@ import time
 SRC = "install.sh"
 s = open(SRC).read()
 
-# Blok memuat beberapa "fi" di dalamnya, jadi tidak bisa dipotong pada
-# kemunculan pertama: batasnya adalah header Langkah 2 berikutnya.
-awal = s.index("# Password root MariaDB selalu ditanyakan")
+# Blok memuat beberapa "fi", jadi batasnya header Langkah 2 berikutnya.
+awal = s.index("# Koneksi root MariaDB diuji lebih dulu")
 batas = s.index(">>> Langkah 2: Akun Administrator")
 BLOK = s[awal:s.rindex("echo -e", awal, batas)].rstrip()
 
@@ -70,8 +69,8 @@ def jalankan(env, ketikan, batas=15):
             time.sleep(0.4)
             os.write(induk, k)
         keluar = b""
-        awal = time.time()
-        while time.time() - awal < batas:
+        t0 = time.time()
+        while time.time() - t0 < batas:
             r, _, _ = select.select([induk], [], [], 1)
             if not r:
                 if p.poll() is not None:
@@ -95,40 +94,44 @@ def jalankan(env, ketikan, batas=15):
         os.unlink(nama)
 
 
-PROMPT = "Password root MariaDB/MySQL (kosongkan jika pakai auth socket"
+PROMPT = "Password root MariaDB/MySQL:"
 
-print("=== MariaDB terpasang, root lolos via auth socket ===")
-print("    (keadaan server pengguna: dulu prompt terlewat)")
-rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "1"}, [b"\r"])
-uji("prompt tetap muncul", PROMPT in out, repr(out[:200]))
-uji("kosong diterima", "ARG=[]" in out, repr(out[-150:]))
-uji("tidak menanyakan ulang", out.count(PROMPT) == 1, f"muncul {out.count(PROMPT)}x")
-uji("konfirmasi koneksi berhasil", "berhasil" in out, repr(out[-150:]))
+print("=== root lolos via auth socket (tidak boleh bertanya) ===")
+rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "1"}, [])
+uji("prompt TIDAK muncul", PROMPT not in out, repr(out[:200]))
+uji("lanjut tanpa password", "ARG=[]" in out, repr(out[-150:]))
+uji("memberi tahu koneksi siap", "siap" in out, repr(out[-200:]))
+uji("tidak menggantung", rc != "TIMEOUT", str(out)[-150:])
 
-print("\n=== MariaDB terpasang, root pakai password ===")
+print("\n=== root berpassword (harus bertanya) ===")
 rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "0"}, [b"benar\r"])
-uji("prompt muncul", PROMPT in out, repr(out[:200]))
+uji("prompt muncul", PROMPT in out, repr(out[:250]))
 uji("password dipakai", "ARG=[-pbenar]" in out, repr(out[-150:]))
-uji("tidak mengulang saat benar", "salah" not in out, repr(out[-200:]))
+uji("konfirmasi berhasil", "berhasil" in out, repr(out[-200:]))
 
 print("\n=== password salah lalu benar ===")
 rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "0"}, [b"salah\r", b"benar\r"])
-uji("ditolak lalu diterima", "ARG=[-pbenar]" in out, repr(out[-150:]))
-uji("memberi tahu salah", "salah" in out, repr(out[-200:]))
+uji("memberi tahu salah", "salah, coba lagi" in out, repr(out[-250:]))
+uji("akhirnya diterima", "ARG=[-pbenar]" in out, repr(out[-150:]))
+uji("bertanya dua kali", out.count(PROMPT) == 2, f"muncul {out.count(PROMPT)}x")
 
 print("\n=== dikosongkan padahal password diperlukan ===")
 rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "0"}, [b"\r", b"benar\r"])
-uji("meminta lagi setelah kosong", "diperlukan" in out, repr(out[-250:]))
-uji("akhirnya diterima", "ARG=[-pbenar]" in out, repr(out[-150:]))
+uji("menolak kosong", "password diperlukan" in out, repr(out[-250:]))
+uji("meminta lagi lalu diterima", "ARG=[-pbenar]" in out, repr(out[-150:]))
+
+print("\n=== password tidak pernah benar ===")
+rc, out = jalankan({"KLIEN_ADA": "0", "SOKET_BEBAS": "0"},
+                   [b"x\r"] * 6, batas=30)
+uji("berhenti, tidak berputar selamanya", rc != "TIMEOUT", str(out)[-150:])
+uji("menyerah setelah 5 percobaan", "5 percobaan" in str(out), str(out)[-250:])
+uji("keluar dengan galat", rc == 1, f"rc={rc}")
 
 print("\n=== MariaDB belum terpasang ===")
-rc, out = jalankan({"KLIEN_ADA": "1", "SOKET_BEBAS": "0"}, [b"\r"])
-uji("prompt muncul", PROMPT in out, repr(out[:200]))
-uji("tidak menguji koneksi", "belum terpasang" in out, repr(out[-200:]))
-uji("kosong tetap sah", "ARG=[]" in out, repr(out[-150:]))
-
-rc, out = jalankan({"KLIEN_ADA": "1", "SOKET_BEBAS": "0"}, [b"rahasia\r"])
-uji("password disimpan untuk nanti", "ARG=[-prahasia]" in out, repr(out[-150:]))
+rc, out = jalankan({"KLIEN_ADA": "1", "SOKET_BEBAS": "0"}, [])
+uji("tidak bertanya di sini", PROMPT not in out, repr(out[:200]))
+uji("memberi tahu akan dipasang", "belum terpasang" in out, repr(out[-200:]))
+uji("arg kosong", "ARG=[]" in out, repr(out[-150:]))
 
 print(f"\nHASIL: {lolos} lolos, {gagal} gagal")
 sys.exit(1 if gagal else 0)

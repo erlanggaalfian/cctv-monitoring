@@ -391,52 +391,53 @@ else
     MARIADB_CMD="mariadb -h $DB_HOST -P $DB_PORT -u root"
 fi
 
-# Password root MariaDB selalu ditanyakan, bukan hanya saat koneksi gagal.
-# Pada mesin yang root-nya memakai auth socket, pemeriksaan otomatis akan
-# lolos tanpa password sehingga prompt terlewat dan pengguna yang memang
-# memakai password tidak pernah diberi kesempatan mengisinya.
+# Koneksi root MariaDB diuji lebih dulu; password hanya ditanyakan bila
+# koneksi itu ditolak. Mesin yang root-nya memakai auth socket tidak perlu
+# ditanyai sama sekali.
 DB_PASS_ARG=""
-MARIADB_ADA=0
 if command -v mariadb &>/dev/null; then
-    MARIADB_ADA=1
     systemctl start mariadb &>/dev/null
     for i in {1..5}; do
         mariadb-admin ping &>/dev/null && break
         sleep 0.5
     done
-fi
 
-echo -en "\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
-if ! baca_sandi DB_ROOT_PASS; then
-    DB_ROOT_PASS=""
-fi
-[ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
-
-# Bila MariaDB belum terpasang, tidak ada yang bisa diuji sekarang:
-# pemeriksaan sesungguhnya dilakukan setelah paket dipasang di [3/8].
-if [ "$MARIADB_ADA" = "1" ]; then
-    while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; do
-        if [ -z "$DB_ROOT_PASS" ]; then
-            echo -e "  ${YELLOW}* Koneksi root tanpa password ditolak, password diperlukan.${NC}"
-        else
-            echo -e "  ${RED}\u2717 Password root salah, coba lagi.${NC}"
-        fi
-        echo -en "\n  Password root MariaDB/MySQL: "
-        if ! baca_sandi DB_ROOT_PASS; then
-            echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
-            DB_PASS_ARG=""
-            break
-        fi
-        if [ -z "$DB_ROOT_PASS" ]; then
-            DB_PASS_ARG=""
-        else
+    if $MARIADB_CMD -e "SELECT 1" < /dev/null &>/dev/null; then
+        echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB siap (tanpa password)."
+    else
+        # Percobaan dibatasi agar instalasi tidak menggantung selamanya bila
+        # password tidak pernah benar atau masukan tidak tersedia.
+        DB_TRY=0
+        while [ "$DB_TRY" -lt 5 ]; do
+            DB_TRY=$((DB_TRY + 1))
+            echo -en "\n  Password root MariaDB/MySQL: "
+            if ! baca_sandi DB_ROOT_PASS; then
+                echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
+                DB_PASS_ARG=""
+                break
+            fi
+            if [ -z "$DB_ROOT_PASS" ]; then
+                echo -e "  ${RED}\u2717 Koneksi root tanpa password ditolak, password diperlukan.${NC}"
+                continue
+            fi
             DB_PASS_ARG="-p${DB_ROOT_PASS}"
+            if $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
+                echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB berhasil."
+                break
+            fi
+            echo -e "  ${RED}\u2717 Password root salah, coba lagi.${NC}"
+            DB_PASS_ARG=""
+        done
+
+        if ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
+            echo -e "\n  ${RED}\u2717 Tidak dapat terhubung ke MariaDB sebagai root setelah 5 percobaan.${NC}"
+            echo -e "  ${RED}  Periksa password root, lalu jalankan install.sh kembali.${NC}"
+            exit 1
         fi
-    done
-    if $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
-        echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB berhasil."
     fi
 else
+    # Belum ada yang bisa diuji; pemeriksaan dilakukan setelah MariaDB
+    # terpasang di [3/8], lengkap dengan prompt bila koneksinya ditolak.
     echo -e "  ${YELLOW}* MariaDB belum terpasang, akan dipasang otomatis.${NC}"
 fi
 
@@ -870,7 +871,13 @@ EOT
         systemctl restart apache2
         
         echo "  Mendapatkan sertifikat Let's Encrypt SSL tepercaya..."
-        if certbot certonly --standalone --non-interactive --agree-tos --email "$SSL_EMAIL" -d "$SERVER_DOMAIN"; then
+        # --webroot, bukan --standalone: Apache sudah memakai port 80 di atas,
+        # dan --standalone butuh port itu untuk server sementaranya sendiri.
+        mkdir -p "$TARGET_DIR/frontend/.well-known/acme-challenge"
+        chown -R www-data:www-data "$TARGET_DIR/frontend/.well-known"
+        if certbot certonly --webroot -w "$TARGET_DIR/frontend" \
+             --non-interactive --agree-tos --email "$SSL_EMAIL" \
+             -d "$SERVER_DOMAIN"; then
             SSL_CERT_FILE="/etc/letsencrypt/live/$SERVER_DOMAIN/fullchain.pem"
             SSL_KEY_FILE="/etc/letsencrypt/live/$SERVER_DOMAIN/privkey.pem"
             
@@ -909,7 +916,9 @@ EOT
 </VirtualHost>
 EOT
         else
-            warn "Pendaftaran Let's Encrypt gagal. Server berjalan pada HTTP saja."
+            echo -e "  ${YELLOW}* Pendaftaran Let's Encrypt gagal. Server berjalan pada HTTP saja.${NC}"
+            echo -e "  ${YELLOW}  Periksa bahwa $SERVER_DOMAIN mengarah ke server ini${NC}"
+            echo -e "  ${YELLOW}  dan port 80 dapat dijangkau dari internet.${NC}"
         fi
         ;;
     selfsigned)

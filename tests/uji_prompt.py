@@ -127,7 +127,7 @@ harus_ada = [
     'printf "\\n"; read -p "  Database Name [cctv_monitoring]: " DB_NAME',
     'printf "\\n"; read -p "  Database User [cctv_user]: " DB_USER',
     'echo -en "\\n  Password user database (kosong = auto generate): "',
-    'echo -en "\\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "',
+    'echo -en "\\n  Password root MariaDB/MySQL: "',
     'read -p "  Port HTTP [80]: " HTTP_PORT',
     'read -p "  Port HTTPS [443]: " HTTPS_PORT',
     'echo -en "\\n  Password admin web (tidak boleh kosong): "',
@@ -142,7 +142,9 @@ sisa = re.findall(r"read -s (\w+)", s)
 uji("tidak ada read -s telanjang", not sisa, sisa)
 
 n_baca = len(re.findall(r"\bbaca_sandi \w+", s))
-uji("semua sandi lewat baca_sandi (5)", n_baca == 5, f"ketemu {n_baca}")
+# Empat: sandi pengguna database, sandi admin web, dan dua prompt root
+# (satu di Langkah 1 bila koneksi ditolak, satu setelah MariaDB terpasang).
+uji("semua sandi lewat baca_sandi (4)", n_baca == 4, f"ketemu {n_baca}")
 
 print(f"\nHASIL: {lolos} lolos, {gagal} gagal")
 sys.exit(1 if gagal else 0)
