@@ -391,48 +391,53 @@ else
     MARIADB_CMD="mariadb -h $DB_HOST -P $DB_PORT -u root"
 fi
 
-# Uji akses root MySQL.
-# Pada mesin bersih MariaDB belum terpasang saat ini (baru dipasang di [2/8]),
-# sehingga aksesnya tidak dapat diuji sekarang. Passwordnya tetap ditanyakan
-# agar tidak gagal diam-diam saat perintah SQL dijalankan nanti.
+# Password root MariaDB selalu ditanyakan, bukan hanya saat koneksi gagal.
+# Pada mesin yang root-nya memakai auth socket, pemeriksaan otomatis akan
+# lolos tanpa password sehingga prompt terlewat dan pengguna yang memang
+# memakai password tidak pernah diberi kesempatan mengisinya.
 DB_PASS_ARG=""
+MARIADB_ADA=0
 if command -v mariadb &>/dev/null; then
+    MARIADB_ADA=1
     systemctl start mariadb &>/dev/null
     for i in {1..5}; do
         mariadb-admin ping &>/dev/null && break
         sleep 0.5
     done
+fi
 
-    # Ulangi sampai password benar, agar kegagalan ketahuan di sini
-    # dan bukan belasan perintah SQL kemudian.
+echo -en "\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
+if ! baca_sandi DB_ROOT_PASS; then
+    DB_ROOT_PASS=""
+fi
+[ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
+
+# Bila MariaDB belum terpasang, tidak ada yang bisa diuji sekarang:
+# pemeriksaan sesungguhnya dilakukan setelah paket dipasang di [3/8].
+if [ "$MARIADB_ADA" = "1" ]; then
     while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; do
-        echo -e "  ${YELLOW}* Koneksi MariaDB root memerlukan password.${NC}"
+        if [ -z "$DB_ROOT_PASS" ]; then
+            echo -e "  ${YELLOW}* Koneksi root tanpa password ditolak, password diperlukan.${NC}"
+        else
+            echo -e "  ${RED}\u2717 Password root salah, coba lagi.${NC}"
+        fi
         echo -en "\n  Password root MariaDB/MySQL: "
         if ! baca_sandi DB_ROOT_PASS; then
             echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
             DB_PASS_ARG=""
             break
         fi
-        echo
         if [ -z "$DB_ROOT_PASS" ]; then
-            echo -e "  ${RED}\u2717 Password kosong, koneksi root tetap gagal.${NC}"
-            continue
+            DB_PASS_ARG=""
+        else
+            DB_PASS_ARG="-p${DB_ROOT_PASS}"
         fi
-        DB_PASS_ARG="-p${DB_ROOT_PASS}"
-        if $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
-            echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB berhasil."
-            break
-        fi
-        echo -e "  ${RED}\u2717 Password root salah, coba lagi.${NC}"
-        DB_PASS_ARG=""
     done
+    if $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; then
+        echo -e "  ${GREEN}\u2713${NC} Koneksi root MariaDB berhasil."
+    fi
 else
-    # MariaDB akan dipasang nanti; instalasi baru menyisakan root tanpa
-    # password (auth soket), jadi kosong itu wajar dan sah.
     echo -e "  ${YELLOW}* MariaDB belum terpasang, akan dipasang otomatis.${NC}"
-    echo -en "\n  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
-    baca_sandi DB_ROOT_PASS
-    [ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
 fi
 
 echo -e "\n${BLUE}>>> Langkah 2: Akun Administrator Aplikasi Web${NC}"
