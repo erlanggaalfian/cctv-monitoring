@@ -304,7 +304,7 @@ if [ ${#BACKUP_FILES[@]} -gt 0 ]; then
     done
     echo ""
     while true; do
-        read -p "  Pilih file backup untuk dipulihkan [0]: " BACKUP_CHOICE
+        read -p "  Pilih File Backup [0]: " BACKUP_CHOICE
         [ -z "$BACKUP_CHOICE" ] && BACKUP_CHOICE=0
         if [ "$BACKUP_CHOICE" -eq 0 ]; then
             break
@@ -320,13 +320,46 @@ if [ ${#BACKUP_FILES[@]} -gt 0 ]; then
 fi
 
 # ── 2. Formulir Konfigurasi Interaktif ─────────────────────────────────────────
+# Membaca sandi sambil menampilkan tanda bintang.
+# `read -s` tidak menampilkan apa pun, sehingga pengguna tidak memperoleh
+# umpan balik bahwa ketikannya terbaca. Nilai dikembalikan lewat variabel
+# yang namanya diberikan sebagai argumen pertama.
+baca_sandi() {
+    local __var="$1" isi="" ch
+    # Tanpa terminal (pipa, CI) baca biasa saja: topeng tidak ada gunanya.
+    if [ ! -t 0 ]; then
+        if ! IFS= read -r isi; then
+            printf -v "$__var" "%s" ""
+            return 1
+        fi
+        printf -v "$__var" "%s" "$isi"
+        return 0
+    fi
+    while IFS= read -r -s -n 1 ch; do
+        # Enter mengakhiri masukan
+        [ -z "$ch" ] && break
+        if [ "$ch" = $'\177' ] || [ "$ch" = $'\b' ]; then
+            if [ -n "$isi" ]; then
+                isi="${isi%?}"
+                printf '\b \b'
+            fi
+            continue
+        fi
+        isi+="$ch"
+        printf '*'
+    done
+    echo
+    printf -v "$__var" "%s" "$isi"
+    return 0
+}
+
 echo -e "${BLUE}>>> Langkah 1: Pengaturan Database (MySQL / MariaDB)${NC}"
 
-read -p "  Masukkan host database [default: localhost]: " DB_HOST
+read -p "  Database Host [localhost]: " DB_HOST
 [ -z "$DB_HOST" ] && DB_HOST="localhost"
 
 while true; do
-    read -p "  Masukkan port database [default: 3306]: " DB_PORT
+    read -p "  Database Port [3306]: " DB_PORT
     [ -z "$DB_PORT" ] && DB_PORT="3306"
     if [[ "$DB_PORT" =~ ^[0-9]+$ ]] && [ "$DB_PORT" -ge 1 ] && [ "$DB_PORT" -le 65535 ]; then
         break
@@ -335,15 +368,14 @@ while true; do
     fi
 done
 
-read -p "  Masukkan nama database [default: cctv_monitoring]: " DB_NAME
+read -p "  Database Name [cctv_monitoring]: " DB_NAME
 [ -z "$DB_NAME" ] && DB_NAME="cctv_monitoring"
 
-read -p "  Masukkan username database [default: cctv_user]: " DB_USER
+read -p "  Database User [cctv_user]: " DB_USER
 [ -z "$DB_USER" ] && DB_USER="cctv_user"
 
-echo -n "  Masukkan password database [kosongkan untuk generate acak]: "
-read -s DB_PASS_INPUT
-echo
+echo -n "  Password User Database (kosong = auto generate): "
+baca_sandi DB_PASS_INPUT
 if [ -z "$DB_PASS_INPUT" ]; then
     DB_PASS=$(openssl rand -hex 16)
 else
@@ -375,9 +407,8 @@ if command -v mariadb &>/dev/null; then
     # dan bukan belasan perintah SQL kemudian.
     while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" < /dev/null &>/dev/null; do
         echo -e "  ${YELLOW}* Koneksi MariaDB root memerlukan password.${NC}"
-        echo -n "  Masukkan password root MariaDB/MySQL Anda: "
-        if ! read -s DB_ROOT_PASS; then
-            echo
+        echo -n "  Password root MariaDB/MySQL: "
+        if ! baca_sandi DB_ROOT_PASS; then
             echo -e "  ${YELLOW}* Masukan tidak tersedia, melanjutkan tanpa password.${NC}"
             DB_PASS_ARG=""
             break
@@ -399,15 +430,14 @@ else
     # MariaDB akan dipasang nanti; instalasi baru menyisakan root tanpa
     # password (auth soket), jadi kosong itu wajar dan sah.
     echo -e "  ${YELLOW}* MariaDB belum terpasang, akan dipasang otomatis.${NC}"
-    echo -n "  Password root MariaDB [kosongkan jika instalasi baru]: "
-    read -s DB_ROOT_PASS
-    echo
+    echo -n "  Password root MariaDB/MySQL (kosongkan jika pakai auth socket tanpa password): "
+    baca_sandi DB_ROOT_PASS
     [ -n "$DB_ROOT_PASS" ] && DB_PASS_ARG="-p${DB_ROOT_PASS}"
 fi
 
 echo -e "\n${BLUE}>>> Langkah 2: Akun Administrator Aplikasi Web${NC}"
 while true; do
-    read -p "  Tentukan username admin web [default: admin]: " APP_ADMIN_USER
+    read -p "  Username Admin Web [admin]: " APP_ADMIN_USER
     [ -z "$APP_ADMIN_USER" ] && APP_ADMIN_USER="admin"
     if [[ "$APP_ADMIN_USER" =~ ^[a-zA-Z0-9_]{3,20}$ ]]; then
         break
@@ -418,9 +448,8 @@ done
 
 APP_ADMIN_PASS=""
 while [ -z "$APP_ADMIN_PASS" ]; do
-    echo -n "  Tentukan password admin web [tidak boleh kosong]: "
-    read -s APP_ADMIN_PASS
-    echo
+    echo -n "  Password Admin Web (tidak boleh kosong): "
+    baca_sandi APP_ADMIN_PASS
 done
 
 echo -e "\n${BLUE}>>> Langkah 3: Pengaturan Nama Domain / Alamat Server${NC}"
@@ -429,7 +458,7 @@ echo "  1) Target folder web  -> /var/www/nama_domain"
 echo "  2) Nama config Apache -> /etc/apache2/sites-available/nama_domain.conf"
 echo ""
 while true; do
-    read -p "  Masukkan Nama Domain Anda: " SERVER_DOMAIN
+    read -p "  Nama Domain: " SERVER_DOMAIN
     [ -z "$SERVER_DOMAIN" ] && SERVER_DOMAIN="localhost"
     SERVER_DOMAIN=$(echo "$SERVER_DOMAIN" | sed 's/\.*$//g' | xargs)
     if [[ "$SERVER_DOMAIN" =~ ^[a-zA-Z0-9.-]+$ ]]; then
@@ -450,7 +479,7 @@ fi
 
 echo -e "\n${BLUE}>>> Langkah 4: Konfigurasi Port Web Server (Apache)${NC}"
 while true; do
-    read -p "  Masukkan port HTTP [default: 80]: " HTTP_PORT
+    read -p "  Port HTTP [80]: " HTTP_PORT
     [ -z "$HTTP_PORT" ] && HTTP_PORT="80"
     if [[ "$HTTP_PORT" =~ ^[0-9]+$ ]] && [ "$HTTP_PORT" -ge 1 ] && [ "$HTTP_PORT" -le 65535 ]; then
         break
@@ -461,7 +490,7 @@ done
 
 # Deteksi port HTTPS
 while true; do
-    read -p "  Masukkan port HTTPS [default: 443]: " HTTPS_PORT
+    read -p "  Port HTTPS [443]: " HTTPS_PORT
     [ -z "$HTTPS_PORT" ] && HTTPS_PORT="443"
     if [[ "$HTTPS_PORT" =~ ^[0-9]+$ ]] && [ "$HTTPS_PORT" -ge 1 ] && [ "$HTTPS_PORT" -le 65535 ]; then
         if [ "$HTTPS_PORT" -eq "$HTTP_PORT" ]; then
@@ -482,7 +511,7 @@ echo "  3) Self-signed (development / intranet)"
 echo "  4) Sertifikat manual (path file .crt / .key)"
 echo ""
 while true; do
-    read -p "  Pilih opsi SSL [1]: " SSL_CHOICE
+    read -p "  Opsi SSL [1]: " SSL_CHOICE
     [ -z "$SSL_CHOICE" ] && SSL_CHOICE=1
     if [[ "$SSL_CHOICE" =~ ^[1-4]$ ]]; then
         break
@@ -500,7 +529,7 @@ case "$SSL_CHOICE" in
     2)
         SSL_MODE="letsencrypt"
         while true; do
-            read -p "  Masukkan alamat email untuk registrasi Let's Encrypt: " SSL_EMAIL
+            read -p "  Email Let's Encrypt: " SSL_EMAIL
             if [[ "$SSL_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
                 break
             else
@@ -514,7 +543,7 @@ case "$SSL_CHOICE" in
     4)
         SSL_MODE="manual"
         while true; do
-            read -p "  Masukkan path berkas sertifikat SSL (.crt / .pem): " SSL_CERT
+            read -p "  Path Sertifikat SSL (.crt / .pem): " SSL_CERT
             if [ -f "$SSL_CERT" ]; then
                 break
             else
@@ -522,7 +551,7 @@ case "$SSL_CHOICE" in
             fi
         done
         while true; do
-            read -p "  Masukkan path berkas private key SSL (.key): " SSL_KEY
+            read -p "  Path Private Key SSL (.key): " SSL_KEY
             if [ -f "$SSL_KEY" ]; then
                 break
             else
@@ -546,11 +575,11 @@ fi
 echo -e "\n${BLUE}>>> Langkah 6: Konfigurasi IP Publik (Wajib untuk WebRTC)${NC}"
 
 if [ -n "$DETECTED_IP" ]; then
-    read -p "  Masukkan IP Publik Server [default: $DETECTED_IP]: " USER_IP
+    read -p "  IP Publik Server [$DETECTED_IP]: " USER_IP
     PUBLIC_IP="${USER_IP:-$DETECTED_IP}"
 else
     while true; do
-        read -p "  Masukkan IP Publik Server secara manual: " USER_IP
+        read -p "  IP Publik Server: " USER_IP
         if [[ "$USER_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             PUBLIC_IP="$USER_IP"
             break
@@ -581,7 +610,7 @@ else
 fi
 echo -e "----------------------------------------------------------------"
 while true; do
-    read -p "  Apakah data konfigurasi di atas sudah benar? (y/n) [default: y]: " CONFIRM_OK
+    read -p "  Data konfigurasi sudah benar? (y/n) [y]: " CONFIRM_OK
     [ -z "$CONFIRM_OK" ] && CONFIRM_OK="y"
     if [[ "$CONFIRM_OK" =~ ^[yY]$ ]]; then
         break
@@ -631,9 +660,8 @@ done
 # berikutnya akan gagal satu per satu tanpa menyebut sebabnya.
 while ! $MARIADB_CMD $DB_PASS_ARG -e "SELECT 1" &>/dev/null; do
     echo -e "  ${RED}\u2717 Tidak dapat terhubung ke MariaDB sebagai root.${NC}"
-    echo -n "  Masukkan password root MariaDB/MySQL: "
-    if ! read -s DB_ROOT_PASS; then
-        echo
+    echo -n "  Password root MariaDB/MySQL: "
+    if ! baca_sandi DB_ROOT_PASS; then
         echo -e "  ${RED}\u2717 Masukan tidak tersedia dan koneksi root gagal.${NC}"
         echo -e "  ${RED}  Jalankan install.sh dari terminal, atau setel${NC}"
         echo -e "  ${RED}  password root MariaDB terlebih dahulu.${NC}"
