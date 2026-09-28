@@ -4575,7 +4575,7 @@ def get_ad_config(
     db: Session = Depends(get_db)
 ):
     # API key (bukan user login) tak punya show_ads -> anggap boleh tampil.
-    if isinstance(user, UserModel) and not user.show_ads:
+    if isinstance(user, UserModel) and not user.show_ads and user.role != "super_admin":
         return AdConfigSchema(
             image_url="", marquee_text="", bg_color="#1e293b", text_color="#ffffff",
             scroll_speed=5, font_size=10, font_family="monospace",
