@@ -4,7 +4,7 @@
             if (!userToken) return;
             try {
                 let streams = [];
-                if ((userRole || "").toLowerCase() === "admin") {
+                if (window.bolehKelola(userRole)) {
                     const res = await fetch(`${API_URL}/admin/streams`, {
                         headers: { "Authorization": `Bearer ${userToken}` }
                     });
@@ -342,7 +342,7 @@
                 if (emptyState) {
                     const msgEl = emptyState.querySelector("p:last-of-type");
                     if (msgEl) {
-                        if ((userRole || "").toLowerCase() === "admin") {
+                        if (window.bolehKelola(userRole)) {
                             msgEl.textContent = "Belum ada kamera yang terdaftar. Tambahkan kamera melalui menu Admin Console.";
                         } else {
                             msgEl.textContent = "Belum ada kamera yang di-assign ke akun Anda. Hubungi administrator untuk mendapatkan akses.";
@@ -1165,6 +1165,7 @@
         });
     }
     window.attachCamTileEvents = attachCamTileEvents;
+    window.renderVideoGrid = renderVideoGrid;
 
     // Hide all tile overlays when clicking on empty background
     document.addEventListener("click", (e) => {
@@ -1176,7 +1177,7 @@
 
     function buildTileOverlayBottom(streamId) {
         const ad = window.adConfigData;
-        if ((userRole || "").toLowerCase() === "guest" && ad && ad.is_active) {
+        if (ad && ad.is_active) {
             const bgOpacity = ad.bg_opacity !== undefined ? ad.bg_opacity : 1.0;
             const bgRgba = hexToRgba(ad.bg_color || "#1e293b", bgOpacity);
             const textColor = ad.text_color || "#ffffff";
@@ -2575,12 +2576,13 @@
                 }
             }
 
-            // Load Ad Config for Guest Users
+            // Load Ad Config: berlaku utk siapapun sesuai show_ads backend,
+            // tidak lagi cuma role guest.
             const adImg = document.getElementById("popup-ad-img");
             const adTextContainer = document.getElementById("popup-ad-text-container");
             const adMarqueeTrack = document.getElementById("popup-ad-marquee-track");
 
-            if ((userRole || "").toLowerCase() === "guest") {
+            {
                 fetch(`${API_URL}/ad-config`, {
                     headers: { "Authorization": `Bearer ${userToken}` }
                 })
@@ -2672,13 +2674,6 @@
                         adTextContainer.style.display = "none";
                     }
                 });
-            } else {
-                // Ensure ad components are hidden for non-guest roles
-                if (adImg) adImg.classList.add("hidden");
-                if (adTextContainer) {
-                    adTextContainer.classList.add("hidden");
-                    adTextContainer.style.display = "none";
-                }
             }
         }
     };
@@ -2940,7 +2935,7 @@
                         
                         tr.innerHTML = `
                             <td class="py-3.5 px-4 text-center">
-                                <input type="checkbox" class="scanned-cam-checkbox w-4 h-4 text-sky-500 bg-slate-100 border-slate-300 rounded focus:ring-sky-500 dark:bg-cyber-bg dark:border-cyber-outline focus:ring-0 cursor-pointer" 
+                                <input type="checkbox" class="scanned-cam-checkbox chk-native chk-native--md" 
                                     data-name="${cam.name}" data-rtsp="${cam.rtsp_url}" onchange="window.updateSelectedScannedCamsCount()">
                             </td>
                             <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-300">${cam.ip}</td>

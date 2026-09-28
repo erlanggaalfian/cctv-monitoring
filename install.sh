@@ -704,6 +704,18 @@ else
         else
             echo -e "  ${RED}✗ Error: Gagal mengimpor skema database baru!${NC}"
             rm -f temp_database.sql
+
+        # Migrasi bertahap. schema.sql hanya membangun struktur baru; server
+        # yang sudah berisi data lama membutuhkan pergeseran peran dan tabel
+        # izin. Migrasi ditulis agar aman dijalankan berulang.
+        for m in "$SCRIPT_DIR"/database/migrations/*.sql; do
+            [ -f "$m" ] || continue
+            echo -e "  Menjalankan migrasi: $(basename "$m")"
+            if ! sed "s/cctv_monitoring/$DB_NAME/g" "$m" | $MARIADB_CMD $DB_PASS_ARG; then
+                echo -e "${RED}✗ Migrasi $(basename "$m") gagal.${NC}"
+                exit 1
+            fi
+        done
             exit 1
         fi
         rm -f temp_database.sql
@@ -784,8 +796,12 @@ fi
 
 $MARIADB_CMD $DB_PASS_ARG <<EOF
 USE $DB_NAME;
-INSERT INTO users (username, password_hash, role) VALUES ('$APP_ADMIN_USER', '$HASHED_PASS', 'admin')
-ON DUPLICATE KEY UPDATE password_hash='$HASHED_PASS';
+-- Administrator pertama memegang kuasa penuh: 'super_admin'.
+-- Peran 'admin' kini berarti pengelola bawahan, bukan penguasa sistem.
+INSERT INTO users (username, password_hash, role) VALUES ('$APP_ADMIN_USER', '$HASHED_PASS', 'super_admin')
+-- Pada instalasi ulang, peran yang sudah ada DIPERTAHANKAN (role=role).
+-- Menimpanya akan menurunkan Super Admin yang sedang berjalan.
+ON DUPLICATE KEY UPDATE password_hash='$HASHED_PASS', role=role;
 EOF
 echo -e "  ${GREEN}✓${NC} Akun admin '$APP_ADMIN_USER' berhasil didaftarkan."
 

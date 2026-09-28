@@ -60,7 +60,7 @@ if ($page === 'viewer') $page = 'monitor';
                     <span class="nav-btn-label">Playback</span>
                     <span class="nav-btn-indicator"></span>
                 </a>
-                <!-- 4. System Admin -->
+                <!-- 4. Admin Console -->
                 <a href="index.php?page=admin" id="nav-admin"
                    class="sidebar-nav-link sidebar-btn-card hidden <?php echo ($page==='admin') ? 'active' : ''; ?>">
                     <div class="nav-btn-icon-wrap">
@@ -69,7 +69,7 @@ if ($page === 'viewer') $page = 'monitor';
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
-                    <span class="nav-btn-label">System Admin</span>
+                    <span class="nav-btn-label">Admin Console</span>
                     <span class="nav-btn-indicator"></span>
                 </a>
             </nav>

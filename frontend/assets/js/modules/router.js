@@ -1,3 +1,22 @@
+/**
+ * Benar bila peran memegang kuasa penuh atas seluruh kamera.
+ *
+ * Sejak peran menjadi empat tingkat, hanya `super_admin` yang setara dengan
+ * `admin` lama. Peran `admin` sekarang adalah bekas `user`: ia mengelola
+ * bawahannya sendiri, dan wewenang itu diberikan pada tahap berikutnya.
+ * Definisi ini harus sama persis dengan kuasa_penuh() di backend.
+ */
+window.bolehKelola = function (peran) {
+    // Boleh membuka konsol: Super Admin dan Admin. Isi tiap bagian masih
+    // disaring server per pemilik, jadi ini hanya soal pintu masuk.
+    const p = (peran || "").trim().toLowerCase();
+    return p === "super_admin" || p === "admin";
+};
+
+window.kuasaPenuh = function (peran) {
+    return (peran || "").toLowerCase() === "super_admin";
+};
+
     // --- 2. Initializer ---
     function closeAllGridWebRTCConnections() {
         if (!window.peerConnections) return;
@@ -533,8 +552,9 @@
         `;
         document.head.appendChild(adStyle);
 
-        // Fetch ad config globally for guest view tiles
-        if ((userRole || "").toLowerCase() === "guest") {
+        // Fetch ad config globally: berlaku utk siapapun (bergantung show_ads
+        // per-user/grup di backend), tidak lagi cuma role guest.
+        {
             fetch(`${API_URL}/ad-config`, {
                 headers: { "Authorization": `Bearer ${userToken}` }
             })
@@ -567,7 +587,7 @@
         // Render admin navigation link if role is administrator (both Desktop sidebar & Mobile bottom nav)
         const navAdmin = document.getElementById("nav-admin");
         if (navAdmin) {
-            if ((userRole || "").toLowerCase() === "admin") {
+            if (window.bolehKelola(userRole)) {
                 navAdmin.classList.remove("hidden");
             } else {
                 navAdmin.classList.add("hidden");
@@ -576,7 +596,7 @@
 
         const mobileNavAdmin = document.getElementById("mobile-nav-admin");
         if (mobileNavAdmin) {
-            if ((userRole || "").toLowerCase() === "admin") {
+            if (window.bolehKelola(userRole)) {
                 mobileNavAdmin.classList.remove("hidden");
             } else {
                 mobileNavAdmin.classList.add("hidden");

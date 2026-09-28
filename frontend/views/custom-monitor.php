@@ -11,7 +11,7 @@ if(!defined('SECURE_ACCESS')) {
     <div class="layout-section layout-intro">
         <?php
         $tabIntroTitle = 'Screen';
-        $tabIntroDesc = 'Atur layar monitoring personal, kustomisasi grid, dan simpan grouping kamera.';
+        $tabIntroDesc = 'Susun layar pantau sendiri dan simpan grupnya';
         $tabIntroIcon = 'screen';
         $tabIntroActionHtml = '<button type="button" onclick="window.toggleFullscreen(\'custom-cctv-grid\')" class="btn-elegant btn-elegant-primary">'
             . '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
@@ -77,8 +77,8 @@ if(!defined('SECURE_ACCESS')) {
 
         <div class="panel-card space-y-5">
             <div class="panel-card-header">
-                <h3 class="panel-card-title">Gruping Layar</h3>
-                <p class="panel-card-desc">Simpan & muat konfigurasi susunan kamera Anda</p>
+                <h3 class="panel-card-title">Screen Groups</h3>
+                <p class="panel-card-desc">Simpan dan muat susunan kamera Anda</p>
             </div>
 
             <div class="space-y-2">
@@ -159,8 +159,8 @@ if(!defined('SECURE_ACCESS')) {
                 <svg class="w-16 h-16 mx-auto text-slate-300 dark:text-cyber-outline mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                 </svg>
-                <p class="panel-card-title">Playlist Empty</p>
-                <p class="panel-card-desc mt-2 max-w-sm mx-auto">Centang minimal satu kamera di panel kiri untuk mulai monitoring.</p>
+                <p class="empty-state-title">Playlist Empty</p>
+                <p class="empty-state-desc mt-2 max-w-sm mx-auto">Centang minimal satu kamera di panel kiri untuk mulai monitoring.</p>
             </div>
         </div>
     </div>

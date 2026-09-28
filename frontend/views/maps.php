@@ -16,7 +16,7 @@ if(!defined('SECURE_ACCESS')) {
     <div class="layout-section layout-intro">
         <?php
         $tabIntroTitle = 'Peta Kamera';
-        $tabIntroDesc = 'Visualisasi lokasi geografis kamera, posisi instalasi, dan status koneksi interaktif.';
+        $tabIntroDesc = 'Lokasi kamera di peta beserta status koneksinya';
         $tabIntroIcon = 'map';
         $tabIntroBadgeId = 'map-total-badge';
         $tabIntroBadge = '0';
@@ -37,7 +37,7 @@ if(!defined('SECURE_ACCESS')) {
                 </span>
                 <input type="text" id="map-search-input" oninput="filterMapCCTVList()"
                     placeholder="Cari kamera..."
-                    class="app-input app-search-input app-input-sm">
+                    class="app-input app-input-sm">
             </div>
         </div>
 
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("map-sidebar-cctv-list").innerHTML = `
                     <div class="py-12 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
                         <p class="font-bold">TIDAK ADA KAMERA TERPETAKAN</p>
-                        <p class="text-[10px] text-slate-500 mt-2">Gunakan menu System Admin untuk menambahkan koordinat GPS pada kamera Anda.</p>
+                        <p class="text-[10px] text-slate-500 mt-2">Gunakan menu Admin Console untuk menambahkan koordinat GPS pada kamera Anda.</p>
                     </div>`;
             }
 

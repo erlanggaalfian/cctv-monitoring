@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'user', 'guest') NOT NULL DEFAULT 'guest',
+    role ENUM('super_admin', 'admin', 'user', 'guest') NOT NULL DEFAULT 'guest',
+    -- Admin yang menaungi akun ini. NULL = langsung di bawah
+    -- Super Admin.
+    parent_admin_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

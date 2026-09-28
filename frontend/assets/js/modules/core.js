@@ -491,7 +491,7 @@ for (const key of Object.keys(state)) {
                     </td>
                     <td class="py-4 px-4 space-y-1.5">
                         <div>
-                            <span class="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded-sm ${key.allowed_domain ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/30' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30'}">
+                            <span class="badge-tag ${key.allowed_domain ? 'badge-tag--amber' : 'badge-tag--green'}">
                                 ${key.allowed_domain ? `🔑 ${key.allowed_domain.toUpperCase()}` : '🌐 PUBLIC'}
                             </span>
                         </div>
@@ -970,8 +970,8 @@ for (const key of Object.keys(state)) {
     function _renderApiLogRow(log) {
         const isHit    = log.status === 'hit';
         const statusBadge = isHit
-            ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">✓ HIT</span>`
-            : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40">✕ DENIED</span>`;
+            ? `<span class="badge-tag badge-tag--green inline-flex items-center rounded tracking-wider">✓ HIT</span>`
+            : `<span class="badge-tag badge-tag--red inline-flex items-center rounded tracking-wider">✕ DENIED</span>`;
 
         const cameraText = log.camera_name
             ? `<span class="text-[9px] text-slate-400 dark:text-cyber-dim/80">${log.camera_name}</span>`
@@ -1124,7 +1124,10 @@ for (const key of Object.keys(state)) {
     const _origSwitchAdminTab = window.switchAdminTab;
     window.switchAdminTab = function(tabName) {
         _origSwitchAdminTab(tabName);
-        if (tabName === 'api') {
+        // Log akses mencakup seluruh sistem dan hanya untuk kuasa penuh.
+        // Tanpa penjagaan ini, pemuatnya berulang otomatis dan menghasilkan
+        // aliran galat 403 yang tak terlihat sebabnya oleh pemakai.
+        if (tabName === 'api' && window.kuasaPenuh(userRole)) {
             window.loadApiAccessLogs();
             _startApiLogAutoRefresh();
         } else {

@@ -14,7 +14,7 @@ if(!defined('SECURE_ACCESS')) {
     <div class="layout-section layout-intro">
         <?php
         $tabIntroTitle = 'Admin Console';
-        $tabIntroDesc = 'Kelola stream CCTV, hak akses pengguna, dan perangkat jaringan.';
+        $tabIntroDesc = 'Kelola kamera, akun, dan integrasi sistem';
         $tabIntroIcon = 'admin';
         $tabIntroBadge = null;
         $tabIntroBadgeId = null;
@@ -25,7 +25,7 @@ if(!defined('SECURE_ACCESS')) {
     <!-- Modern Natural Subtab Navigation Bar -->
     <div class="layout-section layout-tabs">
         <div class="admin-tab-nav">
-            <!-- 1. CCTV Directory -->
+            <!-- 1. Camera Streams -->
             <button type="button" id="admin-subtab-btn-streams" onclick="switchAdminTab('streams')" class="admin-tab-box is-active">
                 <span class="admin-tab-box-icon" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -33,7 +33,7 @@ if(!defined('SECURE_ACCESS')) {
                     </svg>
                 </span>
                 <span class="admin-tab-box-body">
-                    <span class="admin-tab-box-title">CCTV Directory</span>
+                    <span class="admin-tab-box-title">Camera Streams</span>
                     <span id="admin-subtab-streams-badge" class="admin-tab-box-badge">0</span>
                 </span>
             </button>
@@ -51,7 +51,21 @@ if(!defined('SECURE_ACCESS')) {
                 </span>
             </button>
 
-            <!-- 3. Network Scanner -->
+            <!-- 3. Camera Access -->
+            <button type="button" id="admin-subtab-btn-access" onclick="switchAdminTab('access')" class="admin-tab-box">
+                <span class="admin-tab-box-icon" aria-hidden="true">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </span>
+                <span class="admin-tab-box-body">
+                    <span class="admin-tab-box-title">Camera Access</span>
+                    <span id="admin-subtab-access-badge" class="admin-tab-box-badge">0</span>
+                </span>
+            </button>
+
+            <!-- 4. Network Scanner -->
             <button type="button" id="admin-subtab-btn-scanner" onclick="switchAdminTab('scanner')" class="admin-tab-box">
                 <span class="admin-tab-box-icon" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -59,11 +73,11 @@ if(!defined('SECURE_ACCESS')) {
                     </svg>
                 </span>
                 <span class="admin-tab-box-body">
-                    <span class="admin-tab-box-title">Network Scanner</span>
+                    <span class="admin-tab-box-title">Camera Scanner</span>
                 </span>
             </button>
 
-            <!-- 4. Ad Space Manager -->
+            <!-- 5. Ad Space Config -->
             <button type="button" id="admin-subtab-btn-ads" onclick="switchAdminTab('ads')" class="admin-tab-box">
                 <span class="admin-tab-box-icon" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -71,11 +85,11 @@ if(!defined('SECURE_ACCESS')) {
                     </svg>
                 </span>
                 <span class="admin-tab-box-body">
-                    <span class="admin-tab-box-title">Ad Space Manager</span>
+                    <span class="admin-tab-box-title">Ad Space Config</span>
                 </span>
             </button>
 
-            <!-- 5. API Integration -->
+            <!-- 6. API Integration -->
             <button type="button" id="admin-subtab-btn-api" onclick="switchAdminTab('api')" class="admin-tab-box">
                 <span class="admin-tab-box-icon" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -93,6 +107,12 @@ if(!defined('SECURE_ACCESS')) {
     <!-- TAB 1: CCTV Directory -->
     <div id="admin-subtab-streams" class="layout-section layout-panel space-y-4">
         <div class="panel-card">
+            <div class="panel-card-header pb-4">
+                <div>
+                    <h3 class="panel-card-title">Camera Streams</h3>
+                    <p class="panel-card-desc">Kelola kamera terdaftar, alamat RTSP, dan status koneksi</p>
+                </div>
+            </div>
 
             <div class="layout-section layout-toolbar">
             <!-- Toolbar Row -->
@@ -106,7 +126,7 @@ if(!defined('SECURE_ACCESS')) {
                     </span>
                     <input type="text" id="stream-search-input" oninput="filterStreamsTable()"
                         placeholder="Search camera name or RTSP..."
-                        class="app-input app-search-input">
+                        class="app-input">
                 </div>
 
                 <!-- Group Filter -->
@@ -188,8 +208,8 @@ if(!defined('SECURE_ACCESS')) {
 
             <div class="layout-section layout-table">
             <!-- CCTV Data Table -->
-            <div class="admin-table-wrap overflow-x-auto border border-slate-200/80 dark:border-cyber-outline/30 rounded-xl bg-white dark:bg-cyber-container/40">
-                <table class="w-full text-left text-xs font-mono">
+            <div class="admin-table-wrap overflow-x-auto">
+                <table id="admin-streams-table" class="w-full text-left text-xs font-mono">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold w-12 text-center">
@@ -202,15 +222,15 @@ if(!defined('SECURE_ACCESS')) {
                             <th class="py-3.5 px-4 font-semibold w-36">Coordinates</th>
                             <th class="py-3.5 px-4 font-semibold">RTSP Endpoint</th>
                             <th class="py-3.5 px-4 font-semibold w-20">Status</th>
-                            <th class="py-3.5 px-4 font-semibold w-16">Record</th>
+                            <th class="py-3.5 px-4 font-semibold w-16 text-center">Record</th>
                             <th class="py-3.5 px-4 font-semibold text-right w-44">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="admin-streams-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="9" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
-                            <div class="flex items-center justify-center space-x-2">
-                                <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                <span>Loading camera directory...</span>
+                        <tr class="stream-status-row"><td colspan="9">
+                            <div class="w-full flex flex-col items-center justify-center text-center py-12 px-4 bg-gray-50 dark:bg-cyber-bg rounded-xl border border-gray-100 dark:border-cyber-outline/30">
+                                <svg class="w-8 h-8 text-gray-400 dark:text-cyber-dim mb-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                <span class="text-sm font-medium text-gray-500 dark:text-cyber-dim">Loading camera directory...</span>
                             </div>
                         </td></tr>
                     </tbody>
@@ -244,7 +264,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="panel-card-header flex flex-wrap gap-3 items-center justify-between pb-4">
                 <div>
                     <h3 class="panel-card-title">Console Users</h3>
-                    <p class="panel-card-desc">Kelola akun pengguna, peran, dan hak akses kamera</p>
+                    <p class="panel-card-desc">Kelola akun pengguna, peran, dan grupnya</p>
                 </div>
                 <button onclick="openCreateUserModal()"
                     class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
@@ -254,18 +274,19 @@ if(!defined('SECURE_ACCESS')) {
             </div>
 
             <!-- Users Data Table -->
-            <div class="admin-table-wrap overflow-x-auto border border-slate-200/80 dark:border-cyber-outline/30 rounded-xl bg-white dark:bg-cyber-container/40">
+            <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
-                            <th class="py-3.5 px-4 font-semibold w-10">No</th>
-                            <th class="py-3.5 px-4 font-semibold">Username</th>
-                            <th class="py-3.5 px-4 font-semibold w-24">Role</th>
-                            <th class="py-3.5 px-4 font-semibold text-right w-44">Actions</th>
+                            <th class="py-3.5 px-4 font-semibold pgn-kol-no">No</th>
+                            <th class="py-3.5 px-4 font-semibold pgn-kol-nama">Username</th>
+                            <th class="py-3.5 px-4 font-semibold pgn-kol-peran">Role</th>
+                            <th class="py-3.5 px-4 font-semibold pgn-kol-iklan">Iklan</th>
+                            <th class="py-3.5 px-4 font-semibold text-right pgn-kol-aksi">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="admin-users-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="4" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
                             <div class="flex items-center justify-center space-x-2">
                                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <span>Loading user accounts...</span>
@@ -277,62 +298,123 @@ if(!defined('SECURE_ACCESS')) {
         </div>
     </div>
 
-    <!-- TAB 3: Network Camera Scanner -->
+    <!-- TAB 3: Camera Access -->
+    <div id="admin-subtab-access" class="layout-section layout-panel space-y-4 hidden">
+        <div class="panel-card">
+            <div class="panel-card-header flex flex-wrap gap-3 items-center justify-between pb-4">
+                <div>
+                    <h3 class="panel-card-title">Camera Access</h3>
+                    <p class="panel-card-desc">Atur kamera mana yang dapat dilihat tiap grup dan akun</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.bukaAksesKamera()"
+                        class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Add Access</span>
+                    </button>
+                    <span class="w-px h-6 bg-slate-200 dark:bg-cyber-outline/40 mx-1"></span>
+                    <button type="button" id="akses-arah-akun" onclick="window.gantiArahAkses('grup')"
+                        class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
+                        Per Grup
+                    </button>
+                    <button type="button" id="akses-arah-kamera" onclick="window.gantiArahAkses('kamera')"
+                        class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
+                        Per Kamera
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <input type="text" id="akses-cari" oninput="window.renderIkhtisarAkses()"
+                    placeholder="Cari…"
+                    class="app-input w-full text-xs">
+            </div>
+
+            <div class="admin-table-wrap overflow-x-auto">
+                <table class="w-full text-left text-xs font-mono">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                            <th class="py-3.5 px-4 font-semibold w-10">No</th>
+                            <th id="akses-kol-1" class="py-3.5 px-4 font-semibold">Account</th>
+                            <th id="akses-kol-2" class="py-3.5 px-4 font-semibold akses-kol-anggota">Role</th>
+                            <th id="akses-kol-jml" class="py-3.5 px-4 font-semibold w-20 text-center">Cameras</th>
+                            <th class="py-3.5 px-4 font-semibold aksi-sel w-28"><span class="aksi-isi">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="akses-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
+                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                            <div class="flex items-center justify-center space-x-2">
+                                <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                <span>Memuat…</span>
+                            </div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TAB 4: Network Camera Scanner -->
     <div id="admin-subtab-scanner" class="layout-section layout-panel space-y-4 hidden">
         <!-- Scanner Input Parameters -->
         <div class="panel-card">
             <div class="panel-card-header pb-4">
-                <h3 class="panel-card-title">Scanner Config</h3>
+                <h3 class="panel-card-title">Camera Scanner</h3>
                 <p class="panel-card-desc">Parameter scan jaringan lokal untuk kamera RTSP</p>
             </div>
             
             <form id="scanner-form" onsubmit="handleStartScan(event)" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label for="scan-ip-range" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">IP Subnet Range (CIDR)</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 scanner-field-grid">
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-ip-range" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">IP Subnet Range (CIDR)</label>
                         <input type="text" id="scan-ip-range" required value="192.168.1.0/24"
-                            class="app-input w-full">
-                        <p class="text-[10px] text-slate-400 dark:text-cyber-dim/60 mt-1 font-mono">Contoh: 192.168.1.0/24, 10.0.0.0/24</p>
+                            class="app-input w-full h-10">
+                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim/60 mt-1 min-h-[16px] font-mono">Contoh: 192.168.1.0/24, 10.0.0.0/24</p>
                     </div>
 
-                    <div>
-                        <label for="scan-port" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Target Port (RTSP)</label>
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-port" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Target Port (RTSP)</label>
                         <input type="number" id="scan-port" required value="554" min="1" max="65535"
-                            class="app-input w-full">
+                            class="app-input w-full h-10">
+                        <div class="mt-1 min-h-[16px]"></div>
                     </div>
 
-                    <div>
-                        <label for="scan-username" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Default Username</label>
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-username" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Default Username</label>
                         <input type="text" id="scan-username" required value="admin"
-                            class="app-input w-full">
+                            class="app-input w-full h-10">
+                        <div class="mt-1 min-h-[16px]"></div>
                     </div>
 
-                    <div>
-                        <label for="scan-password" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Default Password</label>
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-password" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Default Password</label>
                         <input type="text" id="scan-password" required value="admin"
-                            class="app-input w-full">
+                            class="app-input w-full h-10">
+                        <div class="mt-1 min-h-[16px]"></div>
                     </div>
 
-                    <div>
-                        <label for="scan-codec" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Codec / Stream Path</label>
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-codec" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Codec / Stream Path</label>
                         <input type="text" id="scan-codec" required value="H.264"
-                            class="app-input w-full">
-                        <p class="text-[10px] text-slate-400 dark:text-cyber-dim/60 mt-1 font-mono">Suffix URL RTSP (e.g. H.264, stream1)</p>
+                            class="app-input w-full h-10">
+                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim/60 mt-1 min-h-[16px] font-mono">Suffix URL RTSP (e.g. H.264, stream1)</p>
                     </div>
 
-                    <div>
-                        <label for="scan-coordinates" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Default Coordinates (lat, lon)</label>
+                    <div class="flex flex-col justify-start h-full w-full">
+                        <label for="scan-coordinates" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Default Coordinates (lat, lon)</label>
                         <input type="text" id="scan-coordinates" value=""
-                            class="app-input w-full"
+                            class="app-input w-full h-10"
                             placeholder="-6.2095, 106.8456">
+                        <div class="mt-1 min-h-[16px]"></div>
                     </div>
-                </div>
 
-                <button type="submit" id="start-scan-btn"
-                    class="w-full py-3 bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer mt-4">
-                    <svg id="scan-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <span>Scan Network</span>
-                </button>
+                    <button type="submit" id="start-scan-btn"
+                        class="col-span-full w-full py-3 bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer mt-2">
+                        <svg id="scan-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Scan Network</span>
+                    </button>
+                </div>
             </form>
 
             <!-- Progress Bar -->
@@ -341,7 +423,7 @@ if(!defined('SECURE_ACCESS')) {
                     <span id="scan-progress-label">Scanner Idle</span>
                     <span id="scan-progress-percent">0%</span>
                 </div>
-                <div class="w-full bg-slate-200 dark:bg-cyber-bg h-2 rounded-full overflow-hidden">
+                <div id="scan-progress-bar-track" class="w-full bg-slate-200 dark:bg-cyber-bg h-2 rounded-full overflow-hidden">
                     <div id="scan-progress-bar" class="w-0 bg-brand-blue h-full transition-all duration-200"></div>
                 </div>
             </div>
@@ -360,7 +442,7 @@ if(!defined('SECURE_ACCESS')) {
                 </button>
             </div>
             
-            <div class="admin-table-wrap overflow-x-auto border border-slate-200/80 dark:border-cyber-outline/30 rounded-xl bg-white dark:bg-cyber-container/40">
+            <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono font-medium">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
@@ -372,7 +454,7 @@ if(!defined('SECURE_ACCESS')) {
                             <th class="py-3.5 px-4 font-semibold w-24">Port</th>
                             <th class="py-3.5 px-4 font-semibold w-36">Credentials</th>
                             <th class="py-3.5 px-4 font-semibold">RTSP Target URL</th>
-                            <th class="py-3.5 px-4 font-semibold text-right w-56">Action</th>
+                            <th class="py-3.5 px-4 font-semibold text-right w-56">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="scan-results-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
@@ -387,8 +469,8 @@ if(!defined('SECURE_ACCESS')) {
     <div id="admin-subtab-ads" class="layout-section layout-panel space-y-4 hidden">
         <div class="panel-card">
             <div class="panel-card-header pb-4">
-                <h3 class="panel-card-title">Konfigurasi Space Iklan (Guest Only)</h3>
-                <p class="panel-card-desc">Atur tampilan iklan gambar dan teks bergulir yang akan muncul pada popup guest</p>
+                <h3 class="panel-card-title">Ad Space Config</h3>
+                <p class="panel-card-desc">Atur gambar dan teks berjalan pada popup guest</p>
             </div>
             
             <!-- Live Preview Area -->
@@ -397,31 +479,31 @@ if(!defined('SECURE_ACCESS')) {
                     <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">Live Preview (Pratinjau Langsung)</span>
                     <span class="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-md border border-sky-500/20">Widescreen Monitor (16:9)</span>
                 </div>
-                <div class="relative w-full h-44 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden" style="background-image: radial-gradient(circle, #0f172a 10%, #020617 100%);">
-                    <div class="absolute inset-0 opacity-15 pointer-events-none select-none" style="background-size: 20px 20px; background-image: linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px);"></div>
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 opacity-25 border border-sky-400 rounded-full flex items-center justify-center pointer-events-none select-none">
+                <div class="relative w-full h-44 bg-slate-950 rounded-xl border border-slate-700/60 ring-1 ring-black/40 flex items-center justify-center overflow-hidden shadow-[0_8px_24px_-4px_rgba(0,0,0,0.6)]" style="background-image: radial-gradient(circle, #0f172a 10%, #020617 100%);">
+                    <div class="absolute inset-0 opacity-[0.08] pointer-events-none select-none" style="background-size: 20px 20px; background-image: linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px);"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 opacity-20 border border-sky-400 rounded-full flex items-center justify-center pointer-events-none select-none">
                         <div class="w-1.5 h-1.5 bg-sky-400 rounded-full"></div>
                     </div>
 
                     <!-- Top Left: Camera Label -->
-                    <div class="absolute top-3 left-3 bg-slate-950/80 border border-slate-800/80 px-2.5 py-1 rounded-md text-[10px] font-mono text-white select-none flex items-center space-x-1.5 shadow-sm">
+                    <div class="absolute top-3 left-3 bg-slate-950/70 backdrop-blur-sm border border-white/10 px-2.5 py-1 rounded-md text-[10px] font-mono text-white select-none flex items-center space-x-1.5 shadow-sm">
                         <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                         <span class="font-bold tracking-wide">📹 LOBBY UTAMA - LIVE</span>
                     </div>
 
                     <!-- Top Right: REC Blinking Indicator -->
-                    <div class="absolute top-3 right-3 bg-slate-950/80 border border-slate-800/80 px-2.5 py-1 rounded-md text-[10px] font-mono text-rose-500 select-none flex items-center space-x-1.5 shadow-sm">
+                    <div class="absolute top-3 right-3 bg-slate-950/70 backdrop-blur-sm border border-white/10 px-2.5 py-1 rounded-md text-[10px] font-mono text-rose-500 select-none flex items-center space-x-1.5 shadow-sm">
                         <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping"></span>
                         <span class="font-bold tracking-widest">● REC</span>
                     </div>
 
                     <!-- Bottom Right: Mock Time -->
-                    <div id="preview-mock-time" class="absolute bottom-3 right-3 text-[10px] font-mono text-slate-400 select-none bg-slate-950/60 px-2 py-0.5 rounded-md">
+                    <div id="preview-mock-time" class="absolute bottom-3 right-3 text-[10px] font-mono text-slate-300 select-none bg-slate-950/70 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
                         2026-07-16 19:48:00
                     </div>
                     
-                    <!-- Preview Banner Overlay -->
-                    <div id="ad-preview-banner" class="absolute bottom-10 px-2.5 py-1 rounded-lg border border-white/10 flex items-center transition-all duration-300 overflow-hidden shadow-lg" style="min-height: 24px;">
+                    <!-- Preview Banner Overlay (lower-third, menempel tepi bawah frame) -->
+                    <div id="ad-preview-banner" class="absolute bottom-0 px-2.5 py-1.5 border-t border-white/10 flex items-center transition-all duration-300 overflow-hidden shadow-[0_-4px_12px_rgba(0,0,0,0.3)]" style="min-height: 26px;">
                         <img id="ad-preview-image" src="" alt="Preview Logo" class="h-4 w-auto rounded object-contain shrink-0 mr-2 hidden">
                         <div class="flex-grow overflow-hidden relative flex items-center">
                             <div class="marquee-track flex whitespace-nowrap" style="animation: marquee-scroll 25s linear infinite;">
@@ -455,7 +537,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Lebar Kotak Iklan -->
                         <div>
-                            <label for="ad-box-width" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Lebar Wadah Iklan (10% - 100%)</label>
+                            <label for="ad-box-width" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Lebar Wadah Iklan (10% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-box-width" min="10" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-box-width-val').textContent = this.value + '%'">
                                 <span id="ad-box-width-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
@@ -464,7 +546,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Perataan Konten Iklan -->
                         <div>
-                            <label for="ad-text-align" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Posisi Aliran Konten</label>
+                            <label for="ad-text-align" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Posisi Aliran Konten</label>
                             <select id="ad-text-align" class="app-input w-full text-xs">
                                 <option value="left">Rata Kiri</option>
                                 <option value="center">Rata Tengah</option>
@@ -474,7 +556,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Warna Background -->
                         <div>
-                            <label for="ad-bg-color" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Warna Latar Belakang</label>
+                            <label for="ad-bg-color" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Warna Latar Belakang</label>
                             <div class="flex space-x-2">
                                 <input type="color" id="ad-bg-color" required class="w-9 h-9 border border-slate-300 dark:border-cyber-outline rounded-lg cursor-pointer bg-transparent">
                                 <input type="text" id="ad-bg-color-text" class="app-input flex-grow font-mono uppercase text-xs" placeholder="#1E293B" oninput="if (this.value.startsWith('#') && this.value.length === 7) { document.getElementById('ad-bg-color').value = this.value; }">
@@ -483,7 +565,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Background Transparency -->
                         <div>
-                            <label for="ad-bg-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Transparansi Latar (0% - 100%)</label>
+                            <label for="ad-bg-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Latar (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-bg-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-bg-opacity-val').textContent = this.value + '%'">
                                 <span id="ad-bg-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
@@ -499,7 +581,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Upload logo image -->
                         <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Gambar Sponsor (Kiri Iklan)</label>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Gambar Sponsor (Kiri Iklan)</label>
                             <div class="flex flex-col space-y-3">
                                 <div class="w-full h-16 bg-slate-950/40 border border-slate-300 dark:border-cyber-outline rounded-xl flex items-center justify-center overflow-hidden">
                                     <img id="ad-image-preview" src="" alt="Preview" class="max-h-14 object-contain hidden">
@@ -517,7 +599,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Image Transparency -->
                         <div>
-                            <label for="ad-image-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Transparansi Logo (0% - 100%)</label>
+                            <label for="ad-image-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Logo (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-image-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-image-opacity-val').textContent = this.value + '%'">
                                 <span id="ad-image-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
@@ -526,7 +608,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Tinggi Logo (Image Height/Size) -->
                         <div>
-                            <label for="ad-image-size" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Tinggi Ukuran Logo (10px - 60px)</label>
+                            <label for="ad-image-size" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Tinggi Ukuran Logo (10px - 60px)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-image-size" min="10" max="60" value="20" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-image-size-val').textContent = this.value + 'px'">
                                 <span id="ad-image-size-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">20px</span>
@@ -542,21 +624,23 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Teks marquee -->
                         <div>
-                            <label for="ad-marquee-text" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Isi Teks Marquee</label>
+                            <label for="ad-marquee-text" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Isi Teks Marquee</label>
                             <textarea id="ad-marquee-text" rows="2" required class="app-input w-full text-xs" placeholder="Ketik kalimat informasi iklan..."></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
                             <!-- Warna Teks -->
                             <div>
-                                <label for="ad-text-color" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1 font-mono">Warna Teks</label>
-                                <input type="color" id="ad-text-color" required class="w-full h-8 border border-slate-300 dark:border-cyber-outline rounded-lg cursor-pointer bg-transparent">
-                                <input type="text" id="ad-text-color-text" class="app-input w-full font-mono uppercase text-[10px] mt-1" placeholder="#FFFFFF" oninput="if (this.value.startsWith('#') && this.value.length === 7) { document.getElementById('ad-text-color').value = this.value; }">
+                                <label for="ad-text-color" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Warna Teks</label>
+                                <div class="flex space-x-2">
+                                    <input type="color" id="ad-text-color" required class="w-9 h-9 border border-slate-300 dark:border-cyber-outline rounded-lg cursor-pointer bg-transparent shrink-0">
+                                    <input type="text" id="ad-text-color-text" class="app-input flex-grow font-mono uppercase text-[10px]" placeholder="#FFFFFF" oninput="if (this.value.startsWith('#') && this.value.length === 7) { document.getElementById('ad-text-color').value = this.value; }">
+                                </div>
                             </div>
                             <!-- Font Family -->
                             <div>
-                                <label for="ad-font-family" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1 font-mono">Jenis Font</label>
-                                <select id="ad-font-family" required class="app-input w-full text-xs" style="height: 32px; padding: 2px 4px;">
+                                <label for="ad-font-family" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Jenis Font</label>
+                                <select id="ad-font-family" required class="app-input w-full text-xs">
                                     <option value="monospace">Monospace</option>
                                     <option value="sans-serif">Sans-Serif</option>
                                     <option value="serif">Serif</option>
@@ -588,7 +672,7 @@ if(!defined('SECURE_ACCESS')) {
 
                         <!-- Text Transparency -->
                         <div>
-                            <label for="ad-text-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-2 font-mono">Transparansi Teks (0% - 100%)</label>
+                            <label for="ad-text-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Teks (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-text-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-text-opacity-val').textContent = this.value + '%'">
                                 <span id="ad-text-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
@@ -749,8 +833,8 @@ if(!defined('SECURE_ACCESS')) {
         <div class="panel-card">
             <div class="panel-card-header pb-4">
                 <div>
-                    <h3 class="panel-card-title">Pengaturan Embed Player (Eksternal API)</h3>
-                    <p class="panel-card-desc">Konfigurasi batas waktu pemutaran dan status click to play untuk semua pemutar eksternal (API Integration)</p>
+                    <h3 class="panel-card-title">Embed Player Settings (External API)</h3>
+                    <p class="panel-card-desc">Batas waktu putar dan mode klik untuk pemutar eksternal</p>
                 </div>
             </div>
             <form id="global-embed-config-form" onsubmit="window.handleSaveEmbedConfig(event)" class="space-y-4 pt-2">
@@ -800,22 +884,22 @@ if(!defined('SECURE_ACCESS')) {
         <div class="panel-card">
             <div class="panel-card-header flex items-center justify-between flex-wrap gap-3 pb-4">
                 <div>
-                    <h3 class="panel-card-title">Kunci API & Integrasi Aktif</h3>
-                    <p class="panel-card-desc">Daftar kunci akses eksternal yang terdaftar aktif dalam sistem</p>
+                    <h3 class="panel-card-title">API Keys & Active Integrations</h3>
+                    <p class="panel-card-desc">Kunci akses eksternal yang aktif di sistem</p>
                 </div>
                 <button onclick="window.openApiKeyGenerateModal()" class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
                     + Generate API Key Baru
                 </button>
             </div>
             
-            <div class="admin-table-wrap overflow-x-auto border border-slate-200/80 dark:border-cyber-outline/30 rounded-xl bg-white dark:bg-cyber-container/40">
+            <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
-                            <th class="py-3.5 px-4 font-semibold">Klien / Kamera</th>
-                            <th class="py-3.5 px-4 font-semibold w-40">Keamanan</th>
+                            <th class="py-3.5 px-4 font-semibold">Client / Camera</th>
+                            <th class="py-3.5 px-4 font-semibold w-40">Security</th>
                             <th class="py-3.5 px-4 font-semibold">API Key &amp; Embed URL</th>
-                            <th class="py-3.5 px-4 font-semibold text-right w-48">Aksi</th>
+                            <th class="py-3.5 px-4 font-semibold text-right w-48">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="api-keys-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
@@ -831,11 +915,11 @@ if(!defined('SECURE_ACCESS')) {
         </div>
 
         <!-- API Access Log Panel -->
-        <div class="panel-card">
+        <div id="api-log-section" class="panel-card">
             <div class="panel-card-header flex items-center justify-between flex-wrap gap-3 pb-4">
                 <div class="flex-1 min-w-0">
-                    <h3 class="panel-card-title">Log Akses API</h3>
-                    <p class="panel-card-desc">Rekam jejak setiap server/domain yang mengakses stream melalui API Key</p>
+                    <h3 class="panel-card-title">API Access Log</h3>
+                    <p class="panel-card-desc">Jejak server dan domain yang memakai kunci API</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <!-- Filter dropdown -->
@@ -881,16 +965,16 @@ if(!defined('SECURE_ACCESS')) {
             </div>
 
             <!-- Log Table -->
-            <div class="admin-table-wrap overflow-x-auto border border-slate-200/80 dark:border-cyber-outline/30 rounded-xl bg-white dark:bg-cyber-container/40">
+            <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
-                            <th class="py-3.5 px-4 font-semibold w-36">Waktu</th>
-                            <th class="py-3.5 px-4 font-semibold">Klien / Kamera</th>
-                            <th class="py-3.5 px-4 font-semibold">IP Asal</th>
+                            <th class="py-3.5 px-4 font-semibold w-36">Time</th>
+                            <th class="py-3.5 px-4 font-semibold">Client / Camera</th>
+                            <th class="py-3.5 px-4 font-semibold">Source IP</th>
                             <th class="py-3.5 px-4 font-semibold">Referer / Domain</th>
                             <th class="py-3.5 px-4 font-semibold w-24 text-center">Status</th>
-                            <th class="py-3.5 px-4 font-semibold">Keterangan</th>
+                            <th class="py-3.5 px-4 font-semibold">Details</th>
                         </tr>
                     </thead>
                     <tbody id="api-log-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">

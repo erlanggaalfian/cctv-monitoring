@@ -88,8 +88,14 @@
   /* ---------------------------------------------------------
      TYPOGRAPHY
      --------------------------------------------------------- */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  /* Aplikasi hanya pakai 2 keluarga font: Poppins (identitas/judul/badge/
+     tombol) & Montserrat (body/label/data teknis). --font-mono TIDAK dihapus
+     (dipakai ratusan class[*="font-mono"] di seluruh codebase) — cukup
+     diarahkan ke Montserrat supaya semuanya ikut berubah tanpa menyentuh
+     tiap file pemakainya. */
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   /* ---------------------------------------------------------
      BORDER RADIUS & TRANSISI
@@ -199,7 +205,7 @@ input, select, textarea { font-family: inherit; font-weight: 400; letter-spacing
 input::placeholder, textarea::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; font-weight: 400; letter-spacing: normal; }
 .font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono); letter-spacing: normal; }
 .font-sans, [class*="font-sans"] { font-family: var(--font-sans); letter-spacing: -0.011em; }
-h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-sans); font-weight: 700; letter-spacing: -0.025em; }
+h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) !important; font-weight: 700; letter-spacing: -0.025em; }
 @media (max-width: 768px) { html { font-size: 13px; } }
 @media (min-width: 768px) { :root { --page-gap: 1.25rem; } }
 /* ==============================================================
@@ -509,6 +515,29 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-sans); fo
 .panel-card:hover { border-color: rgba(var(--rgb-blue), 0.16); }
 .panel-card-header { margin-bottom: 1rem; }
 .panel-card-title { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-text); }
+.panel-card-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 1.875rem; height: 1.875rem; border-radius: var(--r-md); background: rgba(var(--rgb-blue), 0.08); border: 1px solid rgba(var(--rgb-blue), 0.15); color: var(--c-blue); }
+.dark .panel-card-icon { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #a8bcdb; }
+.panel-card-icon svg { width: 1rem; height: 1rem; }
+@media (min-width: 768px) { .scanner-field-grid > div { display: flex; flex-direction: column; } .scanner-field-grid > div > input, .scanner-field-grid > div > select { margin-top: auto; } }
+#scan-progress-bar-track { background: var(--c-border) !important; }
+.scanner-field-grid .col-span-full { grid-column: 1 / -1; }
+
+/* Color swatch Warna Teks: bulat penuh, hilangkan kotak dalam bawaan browser */
+#ad-text-color, #ad-bg-color {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border-radius: 9999px !important;
+  overflow: hidden;
+}
+#ad-text-color::-webkit-color-swatch-wrapper, #ad-bg-color::-webkit-color-swatch-wrapper { padding: 0; border-radius: 9999px; }
+#ad-text-color::-webkit-color-swatch, #ad-bg-color::-webkit-color-swatch { border: none; border-radius: 9999px; }
+#ad-text-color::-moz-color-swatch, #ad-bg-color::-moz-color-swatch { border: none; border-radius: 9999px; }
+.scanner-field-grid input.h-10 { height: 2.5rem; padding-top: 0; padding-bottom: 0; box-sizing: border-box; }
+.scanner-field-grid .min-h-\[16px\] { min-height: 16px; }
+.scanner-field-grid label.mb-1\.5 { margin-bottom: 0.375rem; }
+.dark #scan-progress-bar-track { background: rgba(255,255,255,0.16) !important; }
+
 .panel-card-desc { margin-top: 0.25rem; font-size: 0.6875rem; line-height: 1.45; color: var(--c-text-muted); }
 .field-label { display: block; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-dim); margin-bottom: 0.5rem; }
 .field-input, .app-input, .panel-card select, .panel-card input[type="text"], .panel-card input[type="number"], .panel-card input[type="password"] { width: 100%; padding: 0.5rem 0.75rem; font-size: 0.75rem; line-height: 1.45; font-weight: 400; letter-spacing: normal; text-shadow: none; -webkit-font-smoothing: auto; color: var(--c-text); background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm); transition: border-color var(--t), box-shadow var(--t); }
@@ -534,6 +563,12 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-sans); fo
 .app-select, select.app-input, select.field-input { appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; font-weight: 500; color: var(--c-text); }
 .app-field-wrap select.app-select, .app-field-wrap select.app-input, .app-field-wrap select.field-input { padding-top: 0.5rem; padding-bottom: 0.5rem; padding-right: 0.375rem; font-size: 0.75rem; line-height: 1.35; background-image: none; }
 .app-field-wrap:not(:has(.app-field-icon-left)) select { padding-left: 0.75rem; }
+#akses-modal-akun-nama { padding-top: 0.5rem; padding-bottom: 0.5rem; margin: 0; line-height: 1.25; }
+/* Kotak centang bawaan Tailwind w-4 hanya 13px terukur di peramban — di bawah
+   batas sentuh yang nyaman. Sasaran sentuhnya dilebarkan lewat padding pada
+   pembungkusnya, sehingga kotaknya tetap ramping tetapi mudah dikenai jari. */
+#berbagi-daftar input[type="checkbox"] { width: 1.125rem; height: 1.125rem; }
+#berbagi-daftar span:has(> input[type="checkbox"]) { padding: 0.375rem 0; }
 select.app-select-block,
 select.field-input { appearance: none; -webkit-appearance: none; cursor: pointer; font-weight: 500; padding-right: 2.25rem; background-color: var(--c-surface2); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.625rem center; background-size: 0.875rem; border: 1px solid var(--c-border); border-radius: var(--r-md); transition: border-color var(--t), box-shadow var(--t), background-color var(--t); }
 .app-field-wrap select.field-input, .app-field-wrap select.app-select-block, .app-field-wrap select.app-input { background-image: none; background-color: transparent; border: none; border-radius: 0; padding-right: 0.375rem; }
@@ -614,6 +649,29 @@ select.app-select option, select.app-input option, select.field-input option { b
 @media (min-width: 768px) { .tab-intro-title { font-size: 1.0625rem; } }
 .tab-intro-desc { margin-top: 0.375rem; font-size: 0.75rem; line-height: 1.55; color: var(--c-text-muted); max-width: 52rem; }
 .tab-intro-badge { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 999px; font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-blue); background: var(--c-primary-muted); border: 1px solid rgba(var(--rgb-blue), 0.18); }
+/* Lencana peran: warna tetap datang dari kelas Tailwind di markup,
+   hanya bentuknya yang dipatok di sini supaya tidak bergantung pada
+   utilitas yang belum tentu termuat di halaman ini. */
+.pgn-peran {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Console Users: lebar kolom dipatok supaya Username tidak menelan
+   sisa ruang dan mendorong Role serta Actions ke tepi kanan. Persen,
+   bukan piksel, agar pembagiannya ikut lebar layar. */
+.pgn-kol-no { width: 4rem; }
+.pgn-kol-nama { width: auto; }
+.pgn-kol-peran { width: 22%; }
+.pgn-kol-aksi { width: 16%; min-width: 8.5rem; }
+
 @media (max-width: 639px) { .tab-intro-actions { width: 100%; margin-left: 0; margin-top: 0.125rem; } .tab-intro-actions .btn-elegant { width: 100%; justify-content: center; } }
 .layout-intro { margin-bottom: 0; flex-shrink: 0; }
 .layout-panel { min-width: 0; }
@@ -728,6 +786,17 @@ select.app-select option, select.app-input option, select.field-input option { b
 .admin-tab-box.is-active .admin-tab-box-title {
   color: var(--c-text);
   font-weight: 700;
+}
+.empty-state-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+.empty-state-desc {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--c-text-muted);
+  opacity: 0.8;
 }
 .admin-tab-box-badge {
   display: inline-flex;
@@ -1481,11 +1550,21 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
 }
 .ms-modal__title {
   font-family: var(--font-sans);
-  font-size: var(--text-lg);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.022em;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--c-text);
   margin: 0;
+}
+/* Keterangan popup mengikuti panel-card-desc: satu bahasa visual antara
+   kepala panel dan kepala popup, dan warnanya ikut tema lewat variabel
+   alih-alih dipatok per kelas Tailwind. */
+.ms-modal__desc {
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--c-text-muted);
 }
 .ms-modal__body { padding: var(--space-4); overflow-y: auto; flex: 1 1 auto; }
 .ms-modal__foot {
@@ -1497,6 +1576,107 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
   border-top: 1px solid var(--c-border);
   flex-shrink: 0;
 }
+
+/* Garis pembatas dalam body modal (di atas seksi terakhir/footer inline).
+   Menggantikan "border-t border-slate-200/60 dark:border-cyber-outline/40"
+   yang diulang manual 11x di modals.php. */
+.ms-modal__divider { border-top: 1px solid var(--c-border); }
+
+/* Lencana status iklan (ON/OFF) - dipakai di Console Users & baris grup.
+   Sebelumnya inline Tailwind panjang, digenerate lencanaIklan() di admin.js. */
+.badge-iklan {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+}
+.badge-iklan--on {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.dark .badge-iklan--on { background: rgba(6, 78, 59, 0.6); color: #34d399; border-color: rgba(6, 95, 70, 0.4); }
+.badge-iklan--off {
+  background: var(--c-surface2);
+  color: var(--c-text-dim);
+  border-color: var(--c-border);
+}
+
+/* Lencana status generik (ACTIVE/DISABLED, HIT/DENIED, domain key, dst).
+   Pola berulang di admin.js/core.js: inline-block/flex px-1.5 py-0.5
+   text-[9px] font-bold rounded(-sm) {warna}-100/950 border. */
+.badge-tag {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+}
+.badge-tag--green  { background: rgba(16, 185, 129, 0.12); color: #10b981; border-color: rgba(16, 185, 129, 0.25); }
+.dark .badge-tag--green  { background: rgba(6, 78, 59, 0.6); color: #34d399; border-color: rgba(6, 95, 70, 0.4); }
+.badge-tag--slate  { background: var(--c-surface2); color: var(--c-text-dim); border-color: var(--c-border); }
+.badge-tag--amber  { background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.25); }
+.dark .badge-tag--amber  { background: rgba(120, 53, 15, 0.6); color: #fbbf24; border-color: rgba(146, 64, 14, 0.4); }
+.badge-tag--red    { background: rgba(239, 68, 68, 0.12); color: #dc2626; border-color: rgba(239, 68, 68, 0.25); }
+.dark .badge-tag--red    { background: rgba(69, 10, 10, 0.6); color: #f87171; border-color: rgba(127, 29, 29, 0.4); }
+.badge-tag--sky    { background: rgba(14, 165, 233, 0.12); color: #0284c7; border-color: rgba(14, 165, 233, 0.25); }
+.dark .badge-tag--sky    { background: rgba(8, 47, 73, 0.7); color: #38bdf8; border-color: rgba(3, 105, 161, 0.35); }
+.badge-tag--rose   { background: rgba(244, 63, 94, 0.12); color: #e11d48; border-color: rgba(244, 63, 94, 0.25); }
+.dark .badge-tag--rose   { background: rgba(76, 5, 25, 0.6); color: #fb7185; border-color: rgba(159, 18, 57, 0.4); }
+
+/* Kartu pembungkus tabel admin (Console Users, Camera Access, dst).
+   Sebelumnya inline Tailwind identik diulang 6x di admin-console.php. */
+.admin-table-wrap {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+}
+
+/* Checkbox nativ (accent warna sky) - pola berulang 5x di admin.js/webrtc.js.
+   Class fungsional (group-select-checkbox dst) dipertahankan apa adanya
+   untuk query JS; ini cuma menggantikan styling visualnya. */
+.chk-native {
+  border: 1px solid var(--c-border);
+  border-radius: 0.25rem;
+  background: var(--c-surface2);
+  accent-color: #0ea5e9;
+  cursor: pointer;
+}
+.chk-native:focus { outline: none; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.35); }
+.chk-native--sm { width: 0.875rem; height: 0.875rem; }
+.chk-native--md { width: 1rem; height: 1rem; }
+
+/* Kotak scroll checklist kamera (Edit/Generate API Key) - identik 2x
+   di modals.php: grid responsif + border + bg muted + scroll. */
+.field-checklist-box {
+  max-height: 13rem;
+  overflow-y: auto;
+  border-radius: var(--r-lg, 0.5rem);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface2);
+  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+}
+@media (min-width: 640px) {
+  .field-checklist-box { grid-template-columns: 1fr 1fr; }
+}
+
+/* Keterangan kecil di bawah field (hint text) - identik 22x di modals.php
+   dgn variasi ukuran/opacity/margin yg drift tak sengaja. Distandarkan. */
+.field-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(148 163 184 / 0.6);
+  margin-top: 0.25rem;
+}
+.dark .field-hint { color: rgb(148 163 184 / 0.6); }
+
 
 @keyframes msModalIn {
   from { opacity: 0; transform: scale(0.97) translateY(8px); }
@@ -1511,7 +1691,7 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
 @media (max-width: 639px) {
   .ms-modal { align-items: flex-end; padding: 0; }
   .ms-modal__panel {
-    max-width: 100%;
+    max-width: 100% !important;
     max-height: 92dvh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;
@@ -1529,6 +1709,136 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
     background: var(--c-border);
   }
   .ms-modal__head { position: relative; padding-top: var(--space-5); }
+}
+
+/* --- Modal akses kamera: penyesuaian ponsel -------------------- */
+
+/* Kolom centang. Di layar lebar tetap selebar semula; di ponsel
+   dipersempit supaya nama kamera tidak tinggal beberapa huruf. */
+.akses-kol { width: 4rem; }
+.akses-kol-anggota { width: 11rem; }
+
+/* Modal Camera Access: baris kamera perlu batas dan sasaran tunjuk yang
+   jelas. Sebelumnya baris menempel rapat tanpa pemisah, sehingga centang
+   milik kamera mana mudah tertukar saat daftarnya panjang. */
+.akses-baris { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.375rem 0.5rem; margin: 0 -0.5rem; border-radius: var(--r-sm); border-bottom: 1px solid transparent; transition: background var(--t); }
+.akses-baris:hover { background: rgba(var(--rgb-blue), 0.06); }
+.akses-baris + .akses-baris { border-top: 1px solid var(--c-border); }
+.akses-baris--mati { opacity: 0.62; }
+.akses-baris--mati:hover { background: transparent; }
+
+/* Kepala grup: nama beserta jumlah kamera di dalamnya, supaya besarnya
+   grup terbaca tanpa menghitung baris satu per satu. */
+.akses-grup-kepala { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.375rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--c-border); }
+.akses-grup-nama { display: flex; align-items: center; gap: 0.375rem; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-text-dim); }
+.akses-grup-jumlah { flex-shrink: 0; padding: 0.0625rem 0.3125rem; border-radius: 999px; background: rgba(var(--rgb-blue), 0.12); color: var(--c-blue); font-size: 0.5rem; letter-spacing: 0; }
+.akses-grup-tombol { flex-shrink: 0; padding: 0.125rem 0.4375rem; border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-blue); cursor: pointer; transition: background var(--t), border-color var(--t); }
+.akses-grup-tombol:hover { background: rgba(var(--rgb-blue), 0.1); border-color: rgba(var(--rgb-blue), 0.28); }
+
+/* Penghitung terpilih: lencana, bukan teks lepas yang hilang di antara
+   label di sebelahnya. */
+.akses-lencana { flex-shrink: 0; padding: 0.125rem 0.4375rem; border-radius: 999px; background: rgba(var(--rgb-blue), 0.1); color: var(--c-blue); font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5625rem; letter-spacing: 0.02em; }
+.akses-lencana:empty { display: none; }
+
+/* Dropdown anggota grup di ikhtisar akses. Sebelumnya sebuah tombol teks
+   dengan segitiga entitas HTML: ia tidak terbaca sebagai sesuatu yang
+   dapat dibuka, dan isinya jatuh sebagai baris telanjang. */
+.ang-pemicu { display: flex; width: 100%; align-items: center; gap: 0.375rem; padding: 0.3125rem 0; border: 0; background: none; font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--c-text-dim); cursor: pointer; transition: color var(--t); }
+.ang-pemicu:hover { color: var(--c-blue); }
+.ang-pemicu--buka { color: var(--c-blue); }
+/* Tetap terlihat saat dijelajahi papan ketik: ia satu-satunya jalan
+   membuka dropdown tanpa tetikus, karena barisnya sendiri tak terfokus. */
+.ang-pemicu:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; border-radius: var(--radius-sm, 4px); }
+.ang-pemicu-jml { display: inline-flex; align-items: center; justify-content: center; min-width: 1.125rem; height: 1.125rem; padding: 0 0.25rem; border-radius: 999px; background: rgba(var(--rgb-blue), 0.14); color: var(--c-blue); font-size: 0.5625rem; }
+.ang-pemicu--buka .ang-pemicu-jml { background: var(--c-blue); color: #fff; }
+.ang-pemicu-teks { flex: 1 1 auto; min-width: 0; text-align: left; letter-spacing: 0.03em; }
+
+/* Panel anggota: kartu, bukan baris telanjang yang menempel ke tabel. */
+
+/* Baris anggota adalah baris tabel sungguhan supaya kolomnya jatuh lurus
+   di bawah kolom induknya. Ia dibedakan dengan latar, bukan garis. */
+.ang-baris-anggota > td { border-top: 0; background: var(--c-surface2); padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.ang-baris-anggota:hover > td { background: rgba(var(--rgb-blue), 0.06); }
+.ang-baris-grup { cursor: pointer; }
+.ang-anak { display: inline-flex; align-items: center; gap: 0.4375rem; min-width: 0; padding-left: 1.125rem; position: relative; }
+/* Garis siku menandai anggota bergantung pada grup di atasnya. */
+.ang-anak::before { content: ""; position: absolute; left: 0.3125rem; top: 50%; width: 0.625rem; height: 1px; background: var(--c-text-muted); opacity: 0.45; }
+/* Garis tegak menyambung anak ke induknya: tanpa ini tiap baris anak
+   berdiri sendiri dan sarangnya hanya terbaca dari jorokan. */
+.ang-anak::after { content: ""; position: absolute; left: 0.3125rem; top: 0; bottom: 50%; width: 1px; background: var(--c-text-muted); opacity: 0.45; }
+
+
+
+
+.ang-awal { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 999px; background: rgba(var(--rgb-blue), 0.12); color: var(--c-blue); font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5625rem; font-weight: 700; }
+.ang-nama { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 600; color: var(--c-text); }
+.ang-jml { color: var(--c-text-muted); font-size: var(--text-xs); font-weight: var(--fw-med); }
+.ang-peran { flex-shrink: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-text-muted); }
+
+/* Kolom Actions: satu sumbu dari header sampai baris anak.
+   Tiap isi sel dibungkus wadah selebar sama dan di-center, sehingga
+   teks telanjang, lencana berbingkai, dan tanda "-" tidak lagi
+   berselang-seling mengikuti lebar isinya masing-masing. */
+.aksi-sel { text-align: right; white-space: nowrap; }
+.aksi-isi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
+  min-height: 1.375rem;
+}
+/* Penanda "tanpa aksi" bukan tombol, jadi ia tidak ikut aturan kotak di
+   bawah; tanpa tinggi baris yang dipatok, glifnya terbaca melayang. */
+.aksi-isi > span:not(.ang-tanda):not(.ang-tombol) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.375rem;
+  line-height: 1;
+}
+/* Kotak di dalam wadah tidak boleh menggeser sumbunya: lebarnya
+   dipatok sama, jadi bingkai OTOMATIS dan ATUR bertumpuk rapi. */
+.aksi-isi > .ang-tanda,
+.aksi-isi > .ang-tombol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 4.5rem;
+  min-height: 1.375rem;
+  box-sizing: border-box;
+}
+.ang-tanda { flex-shrink: 0; padding: 0.0625rem 0.3125rem; border-radius: var(--r-sm); font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.ang-tanda--auto { background: rgba(16, 185, 129, 0.14); color: #059669; }
+.dark .ang-tanda--auto { color: #34d399; }
+.ang-tombol { display: inline-flex; align-items: center; gap: 0.25rem; flex-shrink: 0; padding: 0.125rem 0.375rem; border: 1px solid rgba(var(--rgb-blue), 0.3); border-radius: var(--r-sm); background: transparent; font-family: var(--f-mono, ui-monospace, monospace); font-size: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-blue); cursor: pointer; transition: background var(--t), border-color var(--t); }
+.ang-tombol:hover { background: rgba(var(--rgb-blue), 0.12); border-color: var(--c-blue); }
+
+.ang-kosong { display: block; padding: 0.375rem; font-size: 0.625rem; color: var(--c-text-dim); }
+.akses-lencana--isi { background: rgba(var(--rgb-blue), 0.16); color: var(--c-blue); font-weight: 600; }
+.akses-grup-jumlah--isi { background: var(--c-blue); color: #fff; }
+
+@media (max-width: 639px) {
+  .akses-kol { width: 2.75rem; }
+
+  /* Daftar kamera dipendekkan agar kaki modal ikut terlihat tanpa
+     menggulir dua lapis. */
+  .akses-kotak-kamera { max-height: 40dvh; }
+
+  /* Pegangan tarik untuk panel yang kepalanya dirakit sendiri —
+     .ms-modal__head tidak dipakai satu modal pun di views/modals.php,
+     sehingga tanpa aturan ini lembar bawah tampil tanpa pegangan. */
+  .ms-modal__panel--pad { position: relative; padding-top: var(--space-6); }
+  .ms-modal__panel--pad::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 50%;
+    width: 36px; height: 4px;
+    transform: translateX(-50%);
+    border-radius: var(--radius-pill);
+    background: var(--c-border);
+    pointer-events: none;
+  }
 }
 
 /* --- Skeleton (pengganti spinner kosong saat memuat) ---------- */
@@ -1580,15 +1890,11 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
    sendiri, bukan di .ms-modal__body.                             */
 .ms-modal__panel--scroll { overflow-y: auto; }
 
-/* Judul modal lama memakai .font-mono + uppercase; samakan dengan
-   sistem baru tanpa menyentuh markup tiap modal.                 */
-.ms-modal__panel h3 {
-  font-family: var(--font-sans) !important;
-  font-size: var(--text-lg);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.022em;
-  text-transform: none;
-}
+/* Judul modal seluruhnya memakai .ms-modal__title. Penyeragam massal
+   .ms-modal__panel h3 dihapus: selektor turunan itu mengalahkan kelas
+   judulnya sendiri, sehingga ukuran yang disetel di sana tidak pernah
+   sampai ke layar.                                               */
+.ms-modal__panel h3 { font-family: var(--font-sans); }
 
 /* Modal lama menaruh isi langsung di panel; pastikan tetap bisa
    digulir bila lebih tinggi dari layar.                          */
@@ -1633,7 +1939,66 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
   }
 }
 
+
+/* --- Camera Streams: Desktop (lg+) pakai CSS Grid, bukan table-layout
+     bawaan, supaya kolom tak dempet dan Actions tak wrapping/terpotong.
+     Alokasi 12 kolom: cek+no(1) nama(2) grup(1) koordinat(2) rtsp(2)
+     status(1) record(1) aksi(2). */
+@media (min-width: 1024px) {
+  #admin-streams-table thead tr,
+  #admin-streams-table-body tr:not(.stream-status-row) {
+    display: grid;
+    grid-template-columns: 40px 40px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1rem;
+  }
+  #admin-streams-table thead th,
+  #admin-streams-table-body td { padding: 0 !important; width: auto !important; min-width: 0 !important; }
+  #admin-streams-table-body td[data-label="RTSP"] { max-width: 100% !important; overflow: hidden; text-overflow: ellipsis; }
+  #admin-streams-table-body td[data-label="Status"] > span,
+  #admin-streams-table-body td[data-label="Status"] { max-width: 100%; }
+  #admin-streams-table-body td[data-label="Status"] span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+  #admin-streams-table-body td[data-label="Actions"] {
+    display: flex !important; flex-direction: row; justify-content: flex-end;
+    align-items: center; gap: 0.5rem; white-space: nowrap; flex-shrink: 0;
+  }
+  #admin-streams-table-body td[data-label="Status"] {
+    display: flex !important; flex-direction: column; align-items: flex-start; gap: 0.1875rem;
+  }
+}
+
 /* --- Mobile: tabel jadi daftar kartu --------------------------- */
+
+/* Tabel akses: lebar kolom mengikuti isinya, bukan sisa ruang. */
+#admin-subtab-access table { table-layout: fixed; }
+#admin-subtab-access thead th:nth-child(1) { width: 6%; }
+#admin-subtab-access thead th:nth-child(2) { width: 42%; }
+#admin-subtab-access thead th:nth-child(3) { width: 20%; }
+#admin-subtab-access thead th:nth-child(4) { width: 16%; }
+#admin-subtab-access thead th:nth-child(5) { width: 16%; }
+
+/* --- Console Users: satu data untuk semua ukuran layar ----------------
+   Keterangan grup dulu hanya muncul di ponsel sementara desktop memakai
+   kolom tersendiri, sehingga keduanya menampilkan hal berbeda. Kini satu
+   subjudul dipakai di kedua ukuran. */
+.pgn-ket {
+  display: block;
+  margin-top: 0.125rem;
+  font-family: var(--f-mono, ui-monospace, monospace);
+  font-size: 0.625rem;
+  font-weight: 400;
+  color: var(--c-text-dim);
+}
+.pgn-ket--mobile { display: none; }
+
+/* Edit dan Delete memakai bentuk yang sama dengan tombol Camera Access;
+   hanya warnanya yang membedakan tindakan merusak dari yang aman. */
+.pgn-aksi { display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.ang-tombol--bahaya { border-color: rgba(239, 68, 68, 0.35); color: #dc2626; }
+.dark .ang-tombol--bahaya { color: #f87171; }
+.ang-tombol--bahaya:hover { background: rgba(239, 68, 68, 0.12); border-color: #ef4444; }
 
 @media (max-width: 639px) {
 
@@ -1704,6 +2069,402 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
     align-items: center;
     justify-content: center;
   }
+
+  /* --- Console Users: kartu sepadan dengan Camera Access ---------------
+     Bentuk, lajur, dan ukuran sentuhnya sengaja disamakan supaya kedua
+     daftar terbaca sebagai satu keluarga, bukan dua rancangan berbeda. */
+  #admin-users-table-body tr {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      "nama  iklan aksi"
+      "peran iklan aksi";
+    align-items: center;
+    column-gap: var(--space-2);
+    row-gap: 0.125rem;
+    padding: var(--space-3);
+  }
+  #admin-users-table-body td {
+    border-bottom: 0;
+    padding: 0;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  #admin-users-table-body td::before { display: none; }
+
+  /* Nomor urut tidak dicetak: di kartu ia hanya mengulang urutan yang
+     sudah terlihat dari susunan kartunya sendiri. */
+  #admin-users-table-body td:nth-child(1) { display: none; }
+  /* Hierarki teks kiri: Nama (besar, tebal) di atas; Role/Grup (abu,
+     lebih kecil) tepat di bawahnya lewat grid row terpisah; "Dibuat
+     oleh" (paling kecil, paling pudar) menyusul lewat .pgn-ket
+     bersarang di dalam td nama yang sama. */
+  #admin-users-table-body td:nth-child(2) {
+    grid-area: nama; min-width: 0;
+    font-size: 1rem; font-weight: 700; color: var(--c-text);
+    flex-direction: column; align-items: flex-start; line-height: 1.3; gap: 0;
+  }
+  /* .ang-nama (dipakai nama grup & nama anggota) punya rule sendiri
+     (0.75rem/600) yang menang atas rule di atas karena lebih spesifik -
+     samakan di sini supaya nama grup/anggota selaras dgn user biasa. */
+  #admin-users-table-body td:nth-child(2) .ang-nama {
+    font-size: 1rem; font-weight: 700; color: inherit; line-height: 1.3;
+  }
+  #admin-users-table-body td:nth-child(2) .pgn-ket--desktop {
+    display: none;
+  }
+  #admin-users-table-body td:nth-child(3) {
+    grid-area: peran;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 0;
+    min-width: 0;
+    font-size: 0.8125rem; color: var(--c-text-muted); font-weight: 400;
+  }
+  #admin-users-table-body td:nth-child(3) .pgn-ket--mobile {
+    display: block; margin-top: 0.125rem;
+    font-size: 0.6875rem; font-weight: 400; color: var(--c-text-dim);
+    font-family: inherit;
+  }
+  /* Kanan: lencana Iklan lalu tombol aksi, dua kolom terpisah supaya
+     tak pernah bertumpuk, sama-sama rata kanan & sejajar tengah
+     terhadap tumpukan teks di kiri. */
+  #admin-users-table-body td:nth-child(4) {
+    grid-area: iklan;
+    display: flex; align-items: center; justify-content: flex-end;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  #admin-users-table-body td:nth-child(5) {
+    grid-area: aksi;
+    display: flex; align-items: center; justify-content: flex-end;
+    flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;
+    gap: var(--space-2);
+  }
+
+/* --- Camera Streams: kartu ringkas, klik untuk buka detail ---------
+     Tertutup: nama+grup / status koneksi (2 info paling sering dicek).
+     Terbuka: sisa kolom (No, Coordinates, RTSP, Active, Record, Actions)
+     muncul di bawahnya. Track kolom dipatok px (bukan `auto`) supaya tak
+     ikut melebar saat baris detail tampil — `auto` dihitung ulang dari
+     SEMUA sel di kolom itu, termasuk sel span 1/-1 yang muncul saat buka. */
+  /* Loading/Empty/Error: baris berdiri sendiri di luar grid accordion,
+     supaya teks tak terjepit vertikal dan chevron tak ikut muncul. */
+  #admin-streams-table-body tr.stream-status-row { display: block; width: 100%; }
+  #admin-streams-table-body tr.stream-status-row td { display: block; width: 100%; padding: 0; }
+  #admin-streams-table-body tr.stream-status-row::after { content: none; }
+
+  #admin-streams-table-body tr:not(.stream-status-row) {
+    display: grid;
+    grid-template-columns: 20px 1fr auto 10px;
+    grid-template-areas: "cek nama status chev";
+    align-items: center;
+    gap: 0.875rem var(--space-2);
+    padding: var(--space-3);
+    cursor: pointer;
+  }
+  #admin-streams-table-body td { border-bottom: 0; padding: 0; }
+
+  /* Header (tertutup & terbuka, layout identik): checkbox | nama+grup
+     (col) | status koneksi | chevron. Grup dibaca dari data-grup dan
+     dirender via ::after — td Group aslinya tak perlu tampil lagi. */
+  #admin-streams-table-body td:nth-child(1) { grid-area: cek; padding: 0 !important; }
+  #admin-streams-table-body td:nth-child(3) {
+    grid-area: nama; display: flex; flex-direction: column; align-items: flex-start;
+    justify-content: center; gap: 0.0625rem; min-width: 0;
+    text-align: left; font-size: 1rem; font-weight: 600; font-family: var(--font-heading) !important;
+  }
+  #admin-streams-table-body td:nth-child(3)::before { content: none; }
+  #admin-streams-table-body td:nth-child(3)::after {
+    content: attr(data-grup);
+    font-size: 0.75rem; font-weight: 400; color: var(--c-text-dim);
+  }
+  #admin-streams-table-body td[data-grup=""]::after { content: none; }
+  /* Group sudah tampil di header lewat data-grup: jangan diulang di detail. */
+  #admin-streams-table-body td[data-label="Group"] { display: none !important; }
+  /* Status koneksi: badge saja, tanpa label "STATUS" (dikecualikan dari
+     aturan key-value umum di bawah, dan ::before-nya dimatikan eksplisit
+     supaya tak kebocoran dari aturan generik admin-table-wrap). */
+  #admin-streams-table-body td[data-label="Status"] {
+    grid-area: status; padding: 0 !important;
+    display: flex !important; flex-direction: row; align-items: center; gap: 0.375rem;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  #admin-streams-table-body td[data-label="Status"]::before { content: none; }
+
+  /* Baris pendek: label kiri, nilai kanan (key-value). RTSP ditata
+     terpisah di bawah karena kepanjangan untuk sebaris. */
+  #admin-streams-table-body tr.stream-row--buka td[data-label]:not([data-label=""]):not([data-label="RTSP"]):not([data-label="Coordinates"]):not([data-label="Status"]):not([data-label="Actions"]) {
+    display: flex; flex-direction: row; justify-content: space-between; align-items: center;
+  }
+  #admin-streams-table-body tr.stream-row--buka td[data-label]:not([data-label=""]):not([data-label="RTSP"]):not([data-label="Coordinates"]):not([data-label="Status"]):not([data-label="Actions"])::before {
+    content: attr(data-label);
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--c-text-dim); flex-shrink: 0; margin-right: var(--space-2);
+  }
+  #admin-streams-table-body tr.stream-row--buka td[data-label="RTSP"],
+  #admin-streams-table-body tr.stream-row--buka td[data-label="Coordinates"] {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;
+    max-width: none; white-space: normal; overflow: visible; text-overflow: unset;
+    word-break: break-all;
+  }
+  #admin-streams-table-body tr.stream-row--buka td[data-label="RTSP"]::before {
+    content: attr(data-label) " ENDPOINT";
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--c-text-dim);
+  }
+  #admin-streams-table-body tr.stream-row--buka td[data-label="Coordinates"]::before {
+    content: attr(data-label);
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--c-text-dim);
+  }
+
+  /* No, Coordinates, RTSP, Active, Record, Actions: hanya saat kartu
+     dibuka. Checkbox (nth-child(1)), Nama (nth-child(3)), Status koneksi
+     selalu tampil di header — Group ikut Nama lewat data-grup. */
+  #admin-streams-table-body td:nth-child(2),
+  #admin-streams-table-body td[data-label="Coordinates"],
+  #admin-streams-table-body td[data-label="RTSP"],
+  #admin-streams-table-body td[data-label="Record"],
+  #admin-streams-table-body td[data-label="Actions"] {
+    display: none;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  #admin-streams-table-body tr.stream-row--buka td:nth-child(2),
+  #admin-streams-table-body tr.stream-row--buka td[data-label="Coordinates"],
+  #admin-streams-table-body tr.stream-row--buka td[data-label="RTSP"],
+  #admin-streams-table-body tr.stream-row--buka td[data-label="Record"] {
+    display: flex;
+    padding-top: 0.375rem;
+    margin-top: 0.375rem;
+    border-top: 1px solid var(--c-border);
+  }
+  /* Actions: tanpa label "ACTIONS", tombol dikumpulkan rata kanan di
+     baris paling bawah area yang terbuka. */
+  #admin-streams-table-body tr.stream-row--buka td[data-label="Actions"] {
+    display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem;
+    padding-top: 0.5rem; margin-top: 0.5rem;
+    border-top: 1px solid var(--c-border);
+  }
+  #admin-streams-table-body td[data-label="Actions"]::before { content: none; }
+  #admin-streams-table-body tr.stream-row--buka { grid-template-rows: auto auto auto auto auto auto auto; }
+
+  /* Status: kedua lencana (Active/Disabled + Connected/Disconnected)
+     tetap ada, disusun sebaris di header (bukan bertumpuk vertikal)
+     supaya tak ada data yang hilang dari tampilan tertutup. */
+  #admin-streams-table-body td[data-label="Status"] { grid-area: status; padding: 0 !important; gap: 0.25rem; }
+  #admin-streams-table-body td[data-label="Status"] > div { display: contents; }
+
+  #admin-streams-table-body tr:not(.stream-status-row)::after {
+    content: "";
+    grid-area: chev;
+    width: 0.5rem; height: 0.5rem;
+    border-right: 2px solid var(--c-text-dim);
+    border-bottom: 2px solid var(--c-text-dim);
+    transform: rotate(45deg);
+    transition: transform 0.15s;
+  }
+  #admin-streams-table-body tr.stream-row--buka::after { transform: rotate(-135deg); }
+
+  /* Keterangan grup sudah dicetak di dalam sel nama sebagai teks kecil,
+     jadi baris "ket" tidak diisi sel tersendiri. */
+
+  /* Tombol Edit/Delete cukup besar untuk jari, seukuran kartu akses. */
+  /* Seukuran lencana GRUP di Camera Access, yang ikut mengecil di ponsel. */
+  /* 0.75rem dan 0.5rem menyusut mengikuti font-akar 13px di ponsel
+     (jadi 9.75px dan 6.5px). Dipatok px supaya tetap terbaca. */
+  #admin-users-table-body .pgn-peran {
+    font-size: 10px; white-space: nowrap;
+    background: transparent !important; border: 0 !important; padding: 0 !important;
+    color: var(--c-text-muted) !important; font-weight: 700;
+  }
+  #admin-users-table-body .pgn-aksi .ang-tombol { font-size: 11px; }
+  #admin-users-table-body .ang-baris-anggota .ang-anak { padding-left: 0; }
+  #admin-users-table-body .ang-baris-anggota .ang-anak::before,
+  #admin-users-table-body .ang-baris-anggota .ang-anak::after { display: none; }
+  #admin-users-table-body .ang-baris-anggota { padding-left: calc(var(--space-3) + 0.75rem); }
+
+  /* --- Satukan grup dan anggotanya jadi satu kartu, seperti Camera
+     Access: pemicu "X ANGGOTA" jadi garis pembatas penuh, baris grup
+     yang terbuka menyambung tanpa jarak/sudut ke anggota di bawahnya,
+     dan hanya anggota terakhir yang membulatkan sudut bawah kartu. --- */
+  #admin-users-table-body .ang-pemicu {
+    width: calc(100% + var(--space-3) * 2);
+    max-width: none;
+    margin: 0.5rem calc(var(--space-3) * -1) calc(var(--space-3) * -1);
+    padding: 0.375rem var(--space-3);
+    justify-content: space-between;
+    min-height: 0;
+    border: 0;
+    border-top: 1px solid var(--c-border);
+    background: transparent;
+    border-radius: 0;
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-bold, 700);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  #admin-users-table-body .ang-pemicu-teks { flex: 0 0 auto; }
+  #admin-users-table-body .ang-baris-grup--buka .ang-pemicu { border-bottom: 1px solid var(--c-border); }
+  #admin-users-table-body .ang-baris-grup--buka {
+    margin-bottom: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom: 0 !important;
+  }
+  #admin-users-table-body .ang-baris-anggota {
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+    border-top: 1px solid var(--c-border) !important;
+    background: var(--c-surface2) !important;
+    box-shadow: none !important;
+  }
+  #admin-users-table-body .ang-baris-grup {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      "nama    iklan aksi"
+      "anggota anggota anggota";
+    row-gap: 0.125rem;
+  }
+  #admin-users-table-body .ang-baris-grup > td:nth-child(3) { grid-area: anggota; padding: 0; }
+  #admin-users-table-body .ang-baris-grup > td:nth-child(4) { grid-area: iklan; align-self: center; }
+  #admin-users-table-body .ang-baris-grup > td:nth-child(5) { grid-area: aksi; align-self: center; }
+
+  #admin-users-table-body .ang-baris-anggota--akhir {
+    margin-bottom: var(--space-3) !important;
+    border-bottom-left-radius: var(--radius-md) !important;
+    border-bottom-right-radius: var(--radius-md) !important;
+  }
+
+  #admin-users-table-body td:nth-child(5) button {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 36px;
+  }
+
+  /* --- Camera Access: anggota menyatu dengan kartu grupnya -------
+     Aturan umum di atas menjadikan tiap baris satu kartu. Untuk tabel
+     ini itu memecah grup dan anggotanya menjadi kartu-kartu terpisah,
+     padahal anggota adalah isi grup, bukan sesamanya. Kartu grup yang
+     sedang terbuka karena itu dibiarkan menyambung ke bawah tanpa jarak
+     dan tanpa sudut, sehingga terbaca sebagai satu kartu utuh. */
+
+  #akses-table-body tr {
+    display: grid;
+    grid-template-columns: 1fr 4.5rem 4.5rem;
+    grid-template-areas:
+      "nama  jml aksi"
+      "peran jml aksi"
+      "anggota anggota anggota";
+    gap: 0.125rem var(--space-2);
+    align-items: center;
+  }
+
+  /* Garis pemisah antar sel dibuang: di dalam satu kartu ia menumpuk
+     dan memenggal isi yang justru saling berhubungan. */
+  #akses-table-body td {
+    border-bottom: 0;
+    padding: 0;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  #akses-table-body td::before { display: none; }
+
+  #akses-table-body td:nth-child(1) { display: none; }
+  #akses-table-body td:nth-child(2) { grid-area: nama; font-weight: var(--fw-semi); }
+  #akses-table-body td:nth-child(3) {
+    grid-area: peran; justify-self: start;
+    font-size: var(--text-2xs); color: var(--c-text-muted);
+  }
+  #akses-table-body .ang-baris-grup > td:nth-child(3) { grid-area: anggota; }
+  #akses-table-body .ang-baris-grup {
+    grid-template-columns: 1fr 4.5rem 4.5rem;
+    grid-template-areas:
+      "nama jml aksi"
+      "anggota anggota anggota";
+  }
+  #akses-table-body td:nth-child(4) {
+    grid-area: jml;
+    display: flex; align-items: center; justify-content: flex-start;
+    justify-self: stretch;
+    font-size: var(--text-2xs); color: var(--c-text-muted);
+  }
+
+  #akses-table-body td:nth-child(5) { grid-area: aksi; justify-content: flex-end; }
+
+  /* Jumlah kamera perlu kata: tanpa judul kolom, angka sendirian tidak
+     memberi tahu apa yang dihitungnya. */
+  #akses-table-body td:nth-child(4)::after {
+    content: " kamera";
+    margin-left: 0.25rem;
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-reg);
+    color: var(--c-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Pemicu anggota berdiri sebagai pembatas di dasar kartu: bergaris atas,
+     berlatar sendiri, menempel ke daftar anggota di bawahnya. Sebagai badge
+     mengambang ia terbaca seperti keterangan yang salah tempat. */
+  #akses-table-body .ang-pemicu {
+    width: calc(100% + var(--space-3) * 2);
+    margin: 0.5rem calc(var(--space-3) * -1) calc(var(--space-3) * -1);
+    padding: 0.375rem var(--space-3);
+    justify-content: space-between;
+    min-height: 0;
+    border-top: 1px solid var(--c-border);
+    background: transparent;
+    border-radius: 0;
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-bold, 700);
+    letter-spacing: 0.06em;
+    color: var(--c-text-muted);
+  }
+  .ang-baris-grup--buka .ang-pemicu { border-bottom: 1px solid var(--c-border); }
+
+  /* Kartu grup yang terbuka menyambung ke anggotanya. */
+  .ang-baris-grup--buka {
+    margin-bottom: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  /* Anggota: latar sedikit berbeda supaya terbaca sebagai isi grup. */
+  #akses-table-body .ang-baris-anggota {
+    grid-template-columns: 1fr 4.5rem 4.5rem;
+    grid-template-areas:
+      "nama  jml aksi"
+      "peran jml aksi";
+    gap: 0.125rem var(--space-2);
+    margin-bottom: 0 !important;
+    padding: var(--space-2) var(--space-3) var(--space-2) 1.5rem !important;
+    border-radius: 0 !important;
+    border-top: 1px solid var(--c-border) !important;
+    background: var(--c-surface2) !important;
+    box-shadow: none !important;
+  }
+  #akses-table-body .ang-baris-anggota--akhir {
+    margin-bottom: var(--space-3) !important;
+    border-bottom-left-radius: var(--radius-md) !important;
+    border-bottom-right-radius: var(--radius-md) !important;
+  }
+  #akses-table-body .ang-baris-anggota > td:nth-child(2) { grid-area: nama; }
+  #akses-table-body .ang-baris-anggota > td:nth-child(3) { grid-area: peran; justify-self: start; }
+  #akses-table-body .ang-baris-anggota > td:nth-child(4) { grid-area: jml; }
+  #akses-table-body .ang-baris-anggota > td:nth-child(5) {
+    grid-area: aksi; align-self: center; justify-content: flex-end;
+  }
+  #akses-table-body .ang-baris-anggota .ang-anak { padding-left: 0; }
+  #akses-table-body .ang-baris-anggota .ang-anak::before { display: none; }
+
+  /* Tombol anggota cukup besar untuk jari. */
+  #akses-table-body .ang-baris-anggota .ang-tombol { min-height: 36px; padding-inline: var(--space-3); }
+  #akses-table-body .ang-baris-anggota .ang-tanda { min-height: 36px; padding-inline: var(--space-2); }
+  #akses-table-body .aksi-isi, #akses-table-body .aksi-isi > .ang-tanda,
+  #akses-table-body .aksi-isi > .ang-tombol { min-height: 36px; }
+  #akses-table-body .ang-baris-anggota .ang-tombol,
+  #akses-table-body .ang-baris-anggota .ang-tanda { min-height: 36px; }
 
   /* Toolbar & filter menumpuk, tidak berdesakan */
   .layout-toolbar, .layout-filter-status {
@@ -2632,3 +3393,31 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
 @media (prefers-reduced-motion: reduce) {
   .ms-badge--online .ms-badge__dot { animation: none; }
 }
+
+/* Panah yang benar-benar dapat ditekan. .app-field-icon mematikan
+   pointer-events karena umumnya hanya hiasan di tepi isian.        */
+.app-field-icon-tekan { pointer-events: auto; cursor: pointer; background: none; border: 0; padding: 0; }
+.app-field-icon-tekan:hover { color: var(--c-blue); }
+
+/* --- Override akhir: pastikan Poppins menang atas rule !important
+     global font-sans (baris ~930/973) yang datang lebih akhir di source
+     dan menyebut h1/h2/h3 langsung -- !important vs !important menang
+     berdasar urutan source, bukan spesifisitas, jadi override ini harus
+     ditaruh SETELAH rule global tersebut. */
+h1, h2, h3, .hdr-title, .sidebar-section-lbl,
+.panel-card-title, .tab-intro-title, #pb-modal-title, #modal-title, h4 {
+  font-family: var(--font-heading) !important;
+}
+#admin-streams-table-body td:nth-child(3) {
+  font-family: var(--font-heading) !important;
+}
+
+/* Switch toggle sederhana (Tampilkan Iklan) — dipakai di modal Edit User
+   (khusus tanpa grup) dan Rename Group. Tak dipakai di tempat lain. */
+.ms-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; cursor: pointer; }
+.ms-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.ms-switch__track { position: absolute; inset: 0; background: #cbd5e1; border-radius: 9999px; transition: background-color .15s; }
+.ms-switch__track::before { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 9999px; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.ms-switch input:checked + .ms-switch__track { background: #10b981; }
+.ms-switch input:checked + .ms-switch__track::before { transform: translateX(18px); }
+.dark .ms-switch__track { background: #3f4a5e; }

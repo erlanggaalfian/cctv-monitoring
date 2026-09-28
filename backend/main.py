@@ -20,7 +20,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Body, File, UploadF
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Table, ForeignKey, text, DateTime, Float, Text, UniqueConstraint
 from sqlalchemy.orm import relationship, sessionmaker, Session, declarative_base
 import bcrypt
@@ -824,14 +824,67 @@ class UserModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
-    role = Column(String(20), default="guest")  # admin, user, guest
-    
+    role = Column(String(20), default="guest")  # super_admin, admin, user, guest
+    # Catatan siapa yang membuat akun ini. Hanya keterangan — wewenang
+    # ditentukan admin_group, bukan kolom ini.
+    parent_admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # Kelompok wilayah. Akun dengan nama grup yang sama saling mengelola;
+    # lintas grup tertutup. Kosong = belum berkelompok, hanya Super Admin
+    # yang menjangkaunya. Tidak ada hubungannya dengan group_name kamera.
+    admin_group = Column(String(60), nullable=True, index=True)
+    # Iklan ditampilkan untuk user ini? Diatur SERENTAK per grup lewat
+    # endpoint /api/admin/groups/{nama}/ads, bukan diedit satu-satu.
+    show_ads = Column(Boolean, default=True, nullable=False)
+
     # Relationship
     streams = relationship("CCTVStreamModel", secondary=user_cctv_access, back_populates="users")
+
+class StreamAdminGrantModel(Base):
+    """Kamera Super Admin yang dibagikan kepada seorang Admin.
+
+    can_view dan can_playback dipisah persis seperti pemberian kepada User:
+    seseorang dapat diberi siaran langsung tanpa riwayat rekamannya.
+
+    can_reshare mengizinkan Admin meneruskan kamera itu kepada bawahannya.
+
+    can_manage sudah tidak dipakai. Sejak kredensial RTSP disandarkan pada
+    catatan pemasang (cctv_streams.created_by), kolom ini tidak menentukan
+    apa pun. Dibiarkan ada agar data lama tidak hilang.
+    """
+    __tablename__ = "stream_admin_grants"
+    stream_id = Column(Integer, ForeignKey("cctv_streams.id"), primary_key=True)
+    admin_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    can_view = Column(Boolean, default=True)
+    can_playback = Column(Boolean, default=True)
+    can_manage = Column(Boolean, default=False)
+    can_reshare = Column(Boolean, default=True)
+    granted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+
+class StreamPermissionModel(Base):
+    """Izin berbutir seorang User atau Guest atas satu kamera.
+
+    granted_by menegakkan aturan pengelolaan Guest: Admin hanya boleh
+    menyunting baris yang ia berikan sendiri.
+    """
+    __tablename__ = "stream_permissions"
+    stream_id = Column(Integer, ForeignKey("cctv_streams.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    can_view = Column(Boolean, default=True)
+    can_playback = Column(Boolean, default=False)
+    granted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
 
 class CCTVStreamModel(Base):
     __tablename__ = "cctv_streams"
     id = Column(Integer, primary_key=True, index=True)
+    # Pemilik kamera. Super Admin pembuatnya; menentukan siapa yang
+    # boleh menyunting dan siapa yang hanya menerima bagian.
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # Siapa yang memasang kamera ini. Diisi sekali saat dibuat dan tidak
+    # pernah berubah — kepemilikan boleh berpindah, fakta pemasangan tidak.
+    # Inilah dasar masking kredensial RTSP.
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     name = Column(String(100), nullable=False)
     rtsp_url = Column(String(255), nullable=False)
     group_name = Column(String(50), nullable=False, default="Default")
@@ -877,6 +930,10 @@ class ApiKeyModel(Base):
     embed_timeout_seconds = Column(Integer, nullable=False, default=300)
     click_to_play = Column(Boolean, default=True)
     include_playback = Column(Boolean, default=False)
+    # Pemilik kunci: dipakai menyaring agar Admin tidak melihat atau
+    # menghapus kunci milik Super Admin maupun Admin lain.
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"),
+                      nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class ApiKeyCameraModel(Base):
@@ -1216,6 +1273,80 @@ def seed_database():
                 print(f"Database Migration Error (group_name): {e}")
                 db.rollback()
 
+        # Automated Schema Migration: kelompok wilayah (admin_group)
+        try:
+            db.execute(text("SELECT admin_group FROM users LIMIT 1"))
+        except Exception:
+            print("Database Migration: Adding admin_group column to users...")
+            db.rollback()
+            try:
+                db.execute(text(
+                    "ALTER TABLE users ADD COLUMN admin_group VARCHAR(60) NULL"))
+                db.execute(text(
+                    "CREATE INDEX ix_users_admin_group ON users (admin_group)"))
+                # Admin yang sudah ada masing-masing diberi grup sendiri,
+                # dinamai menurut namanya, dan akun bawahannya ikut serta.
+                # Tanpa ini mereka mendadak kehilangan wilayah.
+                admins = db.execute(text(
+                    "SELECT id, username FROM users WHERE role = 'admin'"
+                )).fetchall()
+                for aid, uname in admins:
+                    nama = f"grup-{uname}"[:60]
+                    db.execute(
+                        text("UPDATE users SET admin_group = :g WHERE id = :i"),
+                        {"g": nama, "i": aid})
+                    db.execute(
+                        text("UPDATE users SET admin_group = :g "
+                             "WHERE parent_admin_id = :i"),
+                        {"g": nama, "i": aid})
+                db.commit()
+                print(f"Database Migration: admin_group added, "
+                      f"{len(admins)} grup dibuat dari admin yang ada.")
+            except Exception as e:
+                print(f"Database Migration Error (admin_group): {e}")
+                db.rollback()
+
+        # Automated Schema Migration: pisahkan live/rekaman pada grant Admin
+        try:
+            db.execute(text("SELECT can_view FROM stream_admin_grants LIMIT 1"))
+        except Exception:
+            print("Database Migration: Adding can_view/can_playback to stream_admin_grants...")
+            db.rollback()
+            try:
+                db.execute(text(
+                    "ALTER TABLE stream_admin_grants "
+                    "ADD COLUMN can_view TINYINT(1) NOT NULL DEFAULT 1"))
+                db.execute(text(
+                    "ALTER TABLE stream_admin_grants "
+                    "ADD COLUMN can_playback TINYINT(1) NOT NULL DEFAULT 1"))
+                # Pemberian lama berarti keduanya, jadi keduanya dinyalakan —
+                # tidak ada yang kehilangan akses karena pemisahan ini.
+                db.commit()
+                print("Database Migration: can_view/can_playback added successfully.")
+            except Exception as e:
+                print(f"Database Migration Error (grant live/rekaman): {e}")
+                db.rollback()
+
+        # Automated Schema Migration: catat pemasang kamera (created_by)
+        try:
+            db.execute(text("SELECT created_by FROM cctv_streams LIMIT 1"))
+        except Exception:
+            print("Database Migration: Adding created_by column to cctv_streams...")
+            db.rollback()
+            try:
+                db.execute(text(
+                    "ALTER TABLE cctv_streams ADD COLUMN created_by INT NULL"))
+                # Kamera lama: pemasangnya dianggap pemiliknya. Satu-satunya
+                # tebakan yang tersedia, dan yang mempertahankan perilaku lama.
+                db.execute(text(
+                    "UPDATE cctv_streams SET created_by = owner_id "
+                    "WHERE created_by IS NULL"))
+                db.commit()
+                print("Database Migration: created_by column added successfully.")
+            except Exception as e:
+                print(f"Database Migration Error (created_by): {e}")
+                db.rollback()
+
         # Automated Schema Migration: Add coordinates column if it does not exist
         try:
             db.execute(text("SELECT coordinates FROM cctv_streams LIMIT 1"))
@@ -1236,7 +1367,9 @@ def seed_database():
             
             admin_user = UserModel(username="admin", password_hash=hashed_pass, role="admin")
             operator_user = UserModel(username="operator", password_hash=hashed_pass, role="user")
-            viewer_user = UserModel(username="viewer", password_hash=hashed_pass, role="guest")
+            # Berperan user, bukan guest: peran guest disediakan lewat akun
+            # bawaan bernama 'guest' saja, agar tidak ada dua guest.
+            viewer_user = UserModel(username="viewer", password_hash=hashed_pass, role="user")
             db.add_all([admin_user, operator_user, viewer_user])
             db.commit()
 
@@ -1461,7 +1594,9 @@ class StreamPaginatedResponse(BaseModel):
 class StreamAdminResponse(BaseModel):
     id: int
     name: str
-    rtsp_url: str
+    # Opsional karena dikosongkan saat masking: Admin yang hanya berhak
+    # melihat kamera Super Admin tidak menerima kredensial RTSP-nya.
+    rtsp_url: Optional[str] = ""
     group_name: str
     coordinates: Optional[str] = ""
     is_active: bool
@@ -1470,6 +1605,9 @@ class StreamAdminResponse(BaseModel):
     record_path: Optional[str] = ""
     record_disk: Optional[str] = ""
     record_retention_days: int = 7
+    # Dipakai layar untuk memutuskan menawarkan tombol sunting/hapus atau
+    # tidak. Ditentukan server; layar tidak menghitungnya sendiri.
+    dipasang_sendiri: bool = True
 
     class Config:
         from_attributes = True
@@ -1579,20 +1717,112 @@ class UserAdminResponse(BaseModel):
     id: int
     username: str
     role: str
+    # Catatan siapa yang membuat akun ini. Tidak memberi wewenang apa pun;
+    # yang menentukan adalah admin_group.
+    parent_admin_id: Optional[int] = None
+    # Nama pembuatnya, supaya layar tidak perlu menebak dari id.
+    dibuat_oleh: Optional[str] = None
+    # Kelompok wilayah. Kosong berarti belum berkelompok.
+    admin_group: Optional[str] = None
+    show_ads: bool = True
     stream_ids: List[int]
+
+class PenerimaKamera(BaseModel):
+    """Satu penerima izin atas sebuah kamera.
+
+    can_view dan can_playback sengaja terpisah: menonton siaran langsung dan
+    menelusuri rekaman adalah dua kewenangan berbeda.
+    """
+    user_id: int
+    can_view: bool = True
+    can_playback: bool = False
+
+
+class KameraUntukAdmin(BaseModel):
+    """Satu baris pemberian kamera kepada Admin.
+
+    can_view dan can_playback dipisah seperti pemberian kepada User.
+    can_manage masih diterima demi pemanggil lama, tetapi diabaikan.
+    """
+    stream_id: int
+    can_view: bool = True
+    can_playback: bool = True
+    can_reshare: bool = True
+    can_manage: bool = False
+
+class AksesAdminUpdate(BaseModel):
+    kamera: List[KameraUntukAdmin] = []
+
+
+class KameraDiberikan(BaseModel):
+    """Satu kamera yang diberikan kepada sebuah akun."""
+    stream_id: int
+    can_view: bool = True
+    can_playback: bool = False
+
+
+class AksesAkunUpdate(BaseModel):
+    kamera: List[KameraDiberikan] = []
+
+
+class BerbagiKameraUpdate(BaseModel):
+    penerima: List[PenerimaKamera] = []
+
+
+class PemilikKameraUpdate(BaseModel):
+    # None atau 0 berarti kamera dilepas, tidak dimiliki Admin mana pun.
+    owner_id: Optional[int] = None
+
 
 class UserAccessUpdate(BaseModel):
     stream_ids: List[int]
+
+# Peran yang sah. Harus sepadan dengan ENUM kolom users.role; peran di luar
+# daftar ini ditolak di gerbang API, bukan dibiarkan menjadi galat 500 dari
+# basis data.
+PERAN_SAH = ("super_admin", "admin", "user", "guest")
+
+
+def _periksa_peran(nilai: str) -> str:
+    bersih = (nilai or "").strip().lower()
+    if bersih not in PERAN_SAH:
+        raise ValueError(
+            f"Peran tidak dikenal: {nilai!r}. Pilihan: {', '.join(PERAN_SAH)}")
+    return bersih
+
 
 class UserCreate(BaseModel):
     username: str
     password: str
     role: str
+    # Admin yang mengelola akun ini. Hanya Super Admin yang boleh mengisinya;
+    # bagi Admin, nilainya selalu dipaksa menjadi dirinya sendiri.
+    parent_admin_id: Optional[int] = None
+    # Grup wilayah. Bagi Admin nilainya dipaksa mengikuti grupnya sendiri.
+    admin_group: Optional[str] = None
+
+    @field_validator("role")
+    @classmethod
+    def _peran(cls, v):
+        return _periksa_peran(v)
+
 
 class UserUpdate(BaseModel):
     username: str
     password: Optional[str] = None
     role: str
+    # None berarti "jangan ubah". Untuk melepas pengelolaan, kirim 0.
+    parent_admin_id: Optional[int] = None
+    # None berarti "jangan ubah"; string kosong melepas akun dari grupnya.
+    admin_group: Optional[str] = None
+    # Hanya dipakai utk akun SUPER_ADMIN: perannya independen, tak ikut
+    # toggle grup/tanpa-grup krn wewenangnya beda dari akun biasa.
+    show_ads: Optional[bool] = None
+
+    @field_validator("role")
+    @classmethod
+    def _peran(cls, v):
+        return _periksa_peran(v)
 
 # --- Helper Functions ---
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -1710,6 +1940,42 @@ def guest_login(db: Session = Depends(get_db)):
     }
 
 # 2. Get Authorized Streams (Role-Based Filtering with Pagination)
+def kamera_dapat_ditonton(pengguna, db):
+    """Semua kamera aktif yang berhak ditonton pengguna ini.
+
+    Admin memperoleh kamera lewat tiga jalan yang berbeda — pivot lama,
+    kepemilikan, dan pemberian Super Admin — dan ketiganya harus tampil di
+    daftar yang sama. Memakai hanya pivot lama membuat kamera pemberian
+    tidak pernah dapat ditemukan meskipun izinnya sudah benar.
+    """
+    kamera = {s.id: s for s in getattr(pengguna, "streams", []) if s.is_active}
+
+    if _peran(pengguna) == "admin":
+        uid = _id_pengguna(pengguna)
+
+        for s in db.query(CCTVStreamModel).filter(
+                CCTVStreamModel.owner_id == uid,
+                CCTVStreamModel.is_active == True).all():
+            kamera[s.id] = s
+
+        # Hanya pemberian yang mencakup siaran langsung. Kamera yang
+        # diberikan untuk rekamannya saja tidak muncul di daftar ini —
+        # halaman rekaman punya daftarnya sendiri.
+        beri = [g for g in db.query(StreamAdminGrantModel).filter(
+            StreamAdminGrantModel.admin_id == uid).all()
+            if bool(getattr(g, "can_view", True))]
+        if beri:
+            for s in db.query(CCTVStreamModel).filter(
+                    CCTVStreamModel.id.in_([g.stream_id for g in beri]),
+                    CCTVStreamModel.is_active == True).all():
+                kamera[s.id] = s
+
+    # Urutan tetap: grup lalu nama, supaya halaman demi halaman tidak
+    # berpindah-pindah isi di antara permintaan.
+    return sorted(kamera.values(),
+                  key=lambda s: ((s.group_name or "").lower(), (s.name or "").lower()))
+
+
 @app.get("/api/streams", response_model=StreamPaginatedResponse)
 async def get_streams(
     page: int = 1,
@@ -1724,7 +1990,7 @@ async def get_streams(
     if page < 1:
         page = 1
 
-    if (user.role or "").lower() == "admin":
+    if kuasa_penuh(user):
 
         query = db.query(CCTVStreamModel).filter(CCTVStreamModel.is_active == True)
         if group:
@@ -1734,7 +2000,7 @@ async def get_streams(
         offset = (page - 1) * limit
         streams = query.offset(offset).limit(limit).all()
     else:
-        all_streams = [s for s in user.streams if s.is_active]
+        all_streams = kamera_dapat_ditonton(user, db)
         if group:
             all_streams = [s for s in all_streams if s.group_name == group]
             
@@ -1783,10 +2049,11 @@ async def force_reconnect_stream(
     db: Session = Depends(get_db)
 ):
     # 1. Verify access authorization
-    if (user.role or "").lower() == "admin":
+    if kuasa_penuh(user):
         stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
     else:
-        stream = next((s for s in user.streams if s.id == stream_id and s.is_active), None)
+        stream = next((s for s in kamera_dapat_ditonton(user, db)
+                       if s.id == stream_id), None)
         
     if not stream:
         raise HTTPException(
@@ -1835,10 +2102,404 @@ async def force_reconnect_stream(
         "connection_status": status_val
     }
 
+KUASA_PENUH = ("super_admin",)
+
+
+def kuasa_penuh(user) -> bool:
+    """Benar bila pengguna memegang kuasa penuh atas seluruh kamera.
+
+    Sejak peran digeser menjadi empat tingkat, hanya `super_admin` yang
+    setara dengan `admin` lama. Peran `admin` yang sekarang adalah bekas
+    `user`: ia mengelola bawahannya sendiri, bukan segalanya, dan wewenang
+    itu diberikan pada tahap berikutnya.
+    """
+    return (getattr(user, "role", "") or "").lower() in KUASA_PENUH
+
+
 # --- Admin API Endpoints (Admin Role Guarded) ---
 
+# ── Lapisan otorisasi berbutir ──────────────────────────────────────────────
+#
+# Empat pertanyaan berbeda tentang satu kamera, sengaja dipisah:
+#
+#   boleh_tonton   — siaran langsung
+#   boleh_playback — rekaman (bisa diberikan terpisah dari siaran langsung)
+#   boleh_ubah     — sunting/hapus kamera; inilah dasar masking
+#   boleh_bagi     — teruskan akses kepada bawahan; inilah reshare
+#
+# Semua menerima UserModel maupun ApiKeyPrincipal. Kunci API berperan
+# "apikey" sehingga tidak pernah lolos jalur kuasa penuh.
+
+
+def _peran(pengguna) -> str:
+    return (getattr(pengguna, "role", "") or "").lower()
+
+
+def _id_pengguna(pengguna):
+    return getattr(pengguna, "id", None)
+
+
+def _grant_admin(db, stream_id, admin_id):
+    """Baris pembagian kamera Super Admin kepada seorang Admin."""
+    if not admin_id:
+        return None
+    return db.query(StreamAdminGrantModel).filter(
+        StreamAdminGrantModel.stream_id == stream_id,
+        StreamAdminGrantModel.admin_id == admin_id,
+    ).first()
+
+
+def _izin_pengguna(db, stream_id, user_id):
+    """Baris izin seorang User/Guest atas satu kamera."""
+    if not user_id:
+        return None
+    return db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.stream_id == stream_id,
+        StreamPermissionModel.user_id == user_id,
+    ).first()
+
+
+def boleh_tonton(pengguna, stream_id, db) -> bool:
+    """Boleh melihat siaran langsung kamera ini?"""
+    if kuasa_penuh(pengguna):
+        return True
+
+    peran = _peran(pengguna)
+    uid = _id_pengguna(pengguna)
+
+    # Kunci API: aksesnya sudah dibatasi daftar kamera pada kunci itu sendiri.
+    if peran == "apikey":
+        return any(s.id == stream_id for s in getattr(pengguna, "streams", []))
+
+    if peran == "admin":
+        # Kamera miliknya sendiri, atau kamera yang dibagikan kepadanya.
+        stream = db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id == stream_id).first()
+        if stream and stream.owner_id == uid:
+            return True
+        pemberian = _grant_admin(db, stream_id, uid)
+        return pemberian is not None and bool(
+            getattr(pemberian, "can_view", True))
+
+    izin = _izin_pengguna(db, stream_id, uid)
+    if izin is not None:
+        return bool(izin.can_view)
+
+    # Selama Tahap B tabel izin masih kosong: jatuh kembali ke pivot lama
+    # supaya tidak ada yang kehilangan akses sebelum Tahap C memindahkannya.
+    return any(s.id == stream_id for s in getattr(pengguna, "streams", []))
+
+
+def boleh_playback(pengguna, stream_id, db) -> bool:
+    """Boleh membuka rekaman kamera ini?
+
+    Dipisah dari boleh_tonton agar seseorang dapat diberi siaran langsung
+    tanpa riwayat rekamannya.
+    """
+    if kuasa_penuh(pengguna):
+        return True
+
+    peran = _peran(pengguna)
+    uid = _id_pengguna(pengguna)
+
+    if peran == "apikey":
+        kunci = getattr(pengguna, "key_record", None)
+        if kunci is not None and not getattr(kunci, "include_playback", False):
+            return False
+        return any(s.id == stream_id for s in getattr(pengguna, "streams", []))
+
+    if peran == "admin":
+        stream = db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id == stream_id).first()
+        if stream and stream.owner_id == uid:
+            return True
+        pemberian = _grant_admin(db, stream_id, uid)
+        return pemberian is not None and bool(
+            getattr(pemberian, "can_playback", True))
+
+    izin = _izin_pengguna(db, stream_id, uid)
+    if izin is not None:
+        return bool(izin.can_playback)
+
+    return any(s.id == stream_id for s in getattr(pengguna, "streams", []))
+
+
+def dipasang_sendiri(stream, uid) -> bool:
+    """Kamera ini dipasang oleh pengguna ini?
+
+    Kamera lama tanpa catatan pemasang jatuh kembali ke pemilik, sebab
+    dahulu keduanya selalu sama.
+    """
+    if stream is None:
+        return False
+    pemasang = getattr(stream, "created_by", None)
+    if pemasang is None:
+        pemasang = stream.owner_id
+    return pemasang == uid
+
+
+def boleh_lihat_rtsp(pengguna, stream_id, db) -> bool:
+    """Boleh melihat kredensial RTSP kamera ini?
+
+    Sengaja dipisahkan dari boleh_ubah(). Admin dapat diberi wewenang
+    menyunting kamera Super Admin, tetapi kredensialnya tetap bukan
+    miliknya untuk dilihat — kamera itu bukan pasangannya.
+    """
+    if kuasa_penuh(pengguna):
+        return True
+    if _peran(pengguna) != "admin":
+        return False
+    stream = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id == stream_id).first()
+    return dipasang_sendiri(stream, _id_pengguna(pengguna))
+
+
+def boleh_ubah(pengguna, stream_id, db) -> bool:
+    """Boleh menyunting atau menghapus kamera ini?
+
+    Inilah dasar masking. Admin yang menerima kamera Super Admin menjawab
+    tidak di sini, sehingga rtsp_url tidak pernah dikirim kepadanya.
+    """
+    if kuasa_penuh(pengguna):
+        return True
+
+    if _peran(pengguna) != "admin":
+        return False
+
+    uid = _id_pengguna(pengguna)
+    stream = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id == stream_id).first()
+    if stream is None:
+        return False
+
+    # Kamera pasangannya sendiri: bebas disunting.
+    if dipasang_sendiri(stream, uid):
+        return True
+
+    # Kamera pasangan Super Admin tidak dapat disunting maupun dihapus
+    # Admin, sekalipun kepemilikannya berpindah atau ia diberi can_manage:
+    # yang dibagikan adalah tontonan, bukan kendali atas perangkatnya.
+    return False
+
+
+def boleh_bagi(pengguna, stream_id, db) -> bool:
+    """Boleh meneruskan akses kamera ini kepada bawahan?
+
+    Sengaja terpisah dari boleh_ubah: Admin boleh membagikan kamera Super
+    Admin kepada User bawahannya tanpa boleh menyunting kameranya.
+    """
+    if kuasa_penuh(pengguna):
+        return True
+
+    if _peran(pengguna) != "admin":
+        return False
+
+    uid = _id_pengguna(pengguna)
+    stream = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id == stream_id).first()
+    if stream is None:
+        return False
+
+    if stream.owner_id == uid:
+        return True
+
+    grant = _grant_admin(db, stream_id, uid)
+    return bool(grant and grant.can_reshare)
+
+
+def boleh_kelola_izin(pengguna, stream_id, target_user_id, db) -> bool:
+    """Boleh menyunting atau mencabut izin orang lain atas kamera ini?
+
+    Menegakkan aturan Guest: seorang Admin hanya boleh menyentuh pemberian
+    yang ia buat sendiri. Pemberian dari Super Admin atau Admin lain ditolak,
+    bukan sekadar disembunyikan di layar.
+    """
+    if kuasa_penuh(pengguna):
+        return True
+
+    if _peran(pengguna) != "admin":
+        return False
+
+    if not boleh_bagi(pengguna, stream_id, db):
+        return False
+
+    izin = _izin_pengguna(db, stream_id, target_user_id)
+    if izin is None:
+        return True  # pemberian baru
+
+    return izin.granted_by == _id_pengguna(pengguna)
+
+
+def verify_pengelola_pengguna(user: UserModel = Depends(get_authenticated_user)):
+    """Gerbang pengelolaan pengguna: Super Admin dan Admin.
+
+    Ruang gerak Admin dipersempit di dalam tiap endpoint, bukan di gerbang
+    ini: ia hanya menyentuh akun bawahannya sendiri.
+    """
+    if _peran(user) not in ("super_admin", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required"
+        )
+    return user
+
+
+# Nama akun guest bawaan. Peran guest hanya boleh melekat pada akun ini.
+NAMA_GUEST = "guest"
+
+
+def tolak_guest_baru(peran, db, target=None):
+    """Cegah lahirnya akun guest kedua.
+
+    Peran guest dipakai bersama lewat satu akun bawaan tanpa sandi. Akun
+    guest tambahan berarti pintu masuk tanpa sandi yang tidak terlacak, jadi
+    ditolak bagi siapa pun — Super Admin sekalipun.
+    """
+    if (peran or "").strip().lower() != "guest":
+        return
+    # Akun guest bawaan sendiri boleh tetap berperan guest.
+    if target is not None and target.username == NAMA_GUEST:
+        return
+    raise HTTPException(
+        status_code=400,
+        detail=(f"Akun guest hanya satu, yaitu '{NAMA_GUEST}'. "
+                "Gunakan peran user untuk akses terbatas lainnya."))
+
+
+def grup_akun_baru(pengelola, user_data, db):
+    """Grup untuk akun yang sedang dibuat.
+
+    Admin selalu mewarisi grup pembuatnya. Yang perlu penanganan khusus
+    hanya Admin baru tanpa grup: bila dibiarkan kosong ia tidak akan dapat
+    mengelola akun yang kelak ia buat sendiri.
+    """
+    grup = tentukan_grup(pengelola, user_data.admin_group)
+    if grup:
+        return grup
+    if _peran(user_data) == "admin":
+        return grup_bawaan_admin(user_data.username)
+    return None
+
+
+def grup_bawaan_admin(nama_akun):
+    """Nama grup untuk Admin yang lahir tanpa grup.
+
+    Sama dengan pola migrasi admin lama, supaya nama grup yang muncul di
+    layar tidak berbeda bentuk antara akun lama dan akun baru.
+    """
+    return f"grup-{nama_akun}"[:60]
+
+
+def tentukan_grup(pengelola, diminta, bawaan=None):
+    """Grup mana yang berlaku untuk akun yang sedang dibuat atau diubah.
+
+    Admin tidak dapat menaruh akun di luar grupnya sendiri. Kirimannya
+    diabaikan diam-diam alih-alih ditolak: layar tidak pernah menawarkan
+    pilihan itu kepadanya, jadi kiriman menyimpang hanya datang dari
+    pemanggil yang mengarang sendiri.
+    """
+    if not kuasa_penuh(pengelola):
+        return getattr(pengelola, "admin_group", None)
+    if diminta is None:
+        return bawaan
+    bersih = (diminta or "").strip()[:60]
+    return bersih or None
+
+
+def periksa_pengelola(nilai, target_id, db):
+    """Pastikan calon pengelola benar-benar seorang Admin yang sah.
+
+    Mengembalikan id pengelola, atau None bila pengelolaan dilepas. Nilai 0
+    dipakai sebagai isyarat "lepaskan", sebab None sudah berarti "jangan
+    ubah" pada permintaan pembaruan.
+    """
+    if nilai in (None, 0):
+        return None
+
+    calon = db.query(UserModel).filter(UserModel.id == nilai).first()
+    if calon is None:
+        raise HTTPException(
+            status_code=404, detail="Admin pengelola tidak ditemukan")
+
+    if _peran(calon) not in ("admin", "super_admin"):
+        raise HTTPException(
+            status_code=400,
+            detail="Pengelola harus berperan admin atau super admin")
+
+    if target_id is not None and calon.id == target_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Akun tidak dapat mengelola dirinya sendiri")
+
+    return calon.id
+
+
+def bawahan_saya(pengelola, target, db) -> bool:
+    """Apakah akun `target` berada di bawah `pengelola`?
+
+    Super Admin membawahi semua. Admin hanya membawahi akun yang ia buat,
+    ditandai parent_admin_id. Tanpa batas ini seorang Admin dapat mengubah
+    sandi Admin lain dan mengambil alih kameranya.
+    """
+    if kuasa_penuh(pengelola):
+        return True
+    if _peran(pengelola) != "admin":
+        return False
+
+    grup_saya = getattr(pengelola, "admin_group", None)
+    grup_target = getattr(target, "admin_group", None)
+
+    # Grup adalah satu-satunya penentu wewenang. parent_admin_id hanya
+    # catatan siapa yang membuat akun dan tidak memberi hak apa pun —
+    # kalau ia ikut menentukan, memindahkan akun antar-grup tidak benar-
+    # benar memindahkan wilayahnya.
+    if not grup_saya:
+        return False
+    if grup_target != grup_saya:
+        return False
+
+    # Sesama Admin tidak saling mengelola, sekalipun segrup. Hanya Super
+    # Admin yang menata Admin; tanpa batas ini satu Admin dapat mengubah
+    # sandi rekan segrupnya dan mengambil alih wilayah bersama.
+    return _peran(target) not in ("admin", "super_admin")
+
+
+def verify_pengelola_kamera(user: UserModel = Depends(get_authenticated_user)):
+    """Gerbang panel kamera: Super Admin dan Admin.
+
+    Terpisah dari verify_admin_role dengan sengaja. Panel kamera kini dibagi
+    per pemilik sehingga aman dibuka untuk Admin, sedangkan pengelolaan
+    pengguna, kunci API, pemindaian jaringan, dan log tetap tertutup baginya.
+    """
+    peran = (getattr(user, "role", "") or "").strip().lower()
+    if peran not in ("super_admin", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required"
+        )
+    return user
+
+
+def saring_rtsp(stream, pengguna, db):
+    """Kosongkan rtsp_url bila pengguna tak berhak mengubah kamera ini.
+
+    Inilah titik masking. Dikerjakan di lapisan tanggapan, bukan dengan
+    menyandikan kolomnya, sebab perekaman butuh kredensial apa adanya.
+    """
+    if boleh_lihat_rtsp(pengguna, stream.id, db):
+        salinan = StreamAdminResponse.model_validate(stream)
+        salinan.dipasang_sendiri = True
+        return salinan
+    # Bukan pasangannya: kredensial disamarkan dan layar diberi tahu supaya
+    # tombol sunting/hapus tidak ditawarkan.
+    salinan = StreamAdminResponse.model_validate(stream)
+    salinan.rtsp_url = ""
+    salinan.dipasang_sendiri = False
+    return salinan
+
+
 def verify_admin_role(user: UserModel = Depends(get_authenticated_user)):
-    if (user.role or "").lower() != "admin":
+    if not kuasa_penuh(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrative privileges required"
@@ -1848,42 +2509,42 @@ def verify_admin_role(user: UserModel = Depends(get_authenticated_user)):
 # 3. CRUD: Get All Streams (Admin version with RTSP details)
 @app.get("/api/admin/streams", response_model=List[StreamAdminResponse])
 async def admin_get_streams(
-    admin: UserModel = Depends(verify_admin_role), 
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
-    streams = db.query(CCTVStreamModel).all()
-    # Always read connection status from background cache to prevent page hangs
-    statuses = []
-    for s in streams:
-        if s.id in RTSP_STATUS_CACHE:
-            statuses.append(RTSP_STATUS_CACHE[s.id]["status"])
-        else:
-            statuses.append("offline")
+    # Super Admin melihat seluruh inventaris; Admin hanya kamera miliknya
+    # sendiri dan kamera yang dibagikan kepadanya.
+    if kuasa_penuh(admin):
+        streams = db.query(CCTVStreamModel).all()
+        hasil = [StreamAdminResponse.model_validate(s) for s in streams]
+        for r in hasil:
+            r.dipasang_sendiri = True
+    else:
+        semua = db.query(CCTVStreamModel).all()
+        streams = [s for s in semua if boleh_tonton(admin, s.id, db)]
+        # Kredensial kamera yang tak berhak ia ubah disembunyikan di sini.
+        hasil = [saring_rtsp(s, admin, db) for s in streams]
 
-    return [
-        StreamAdminResponse(
-            id=s.id,
-            name=s.name,
-            rtsp_url=s.rtsp_url,
-            group_name=s.group_name,
-            coordinates=s.coordinates,
-            is_active=s.is_active,
-            status=status_val,
-            record_enabled=s.record_enabled or False,
-            record_path=s.record_path or "",
-            record_disk=s.record_disk or "",
-            record_retention_days=s.record_retention_days or 7
-        ) for s, status_val in zip(streams, statuses)
-    ]
+    # Status koneksi dibaca dari cache background monitor supaya halaman
+    # tak menunggu probe RTSP langsung (bisa lambat/timeout).
+    for s, r in zip(streams, hasil):
+        cached = RTSP_STATUS_CACHE.get(s.id)
+        r.status = cached["status"] if cached else "offline"
+
+    return hasil
 
 # 4. CRUD: Create Stream
 @app.post("/api/admin/streams", response_model=StreamAdminResponse)
 async def admin_create_stream(
     stream: StreamCreateUpdate,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
+    # Pemilik dicatat sejak awal: tanpa itu penyaringan daftar kamera
+    # tidak punya dasar dan Admin dapat menyunting kamera orang lain.
     db_stream = CCTVStreamModel(
+        owner_id=admin.id,
+        created_by=admin.id,
         name=stream.name,
         rtsp_url=stream.rtsp_url,
         group_name=stream.group_name,
@@ -1906,13 +2567,21 @@ async def admin_create_stream(
 async def admin_update_stream(
     stream_id: int,
     stream_data: StreamCreateUpdate,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
     db_stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
     if not db_stream:
         raise HTTPException(status_code=404, detail="Stream not found")
-    
+
+    # Admin dapat melihat kamera pemberian Super Admin, tetapi tidak
+    # menyuntingnya. Pemeriksaan di sini, bukan di layar, supaya permintaan
+    # yang dibuat langsung ke API tetap ditolak.
+    if not boleh_ubah(admin, stream_id, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang mengubah kamera ini")
+
     db_stream.name = stream_data.name
     db_stream.rtsp_url = stream_data.rtsp_url
     db_stream.group_name = stream_data.group_name
@@ -1937,13 +2606,18 @@ async def admin_update_stream(
 @app.delete("/api/admin/streams/{stream_id}")
 def admin_delete_stream(
     stream_id: int,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
     db_stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
     if not db_stream:
         raise HTTPException(status_code=404, detail="Stream not found")
-    
+
+    if not boleh_ubah(admin, stream_id, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang menghapus kamera ini")
+
     # Force delete existing path config in MediaMTX & clear cache
     delete_single_mediamtx_path(f"stream_{stream_id}")
     delete_single_mediamtx_path(f"stream_{stream_id}_sub")
@@ -1956,7 +2630,7 @@ def admin_delete_stream(
 # 7. User Manager: Get All Users & Roles with Stream Mappings
 @app.get("/api/admin/users", response_model=List[UserAdminResponse])
 def admin_get_users(
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_pengguna),
     db: Session = Depends(get_db)
 ):
     # Ensure default guest account exists in DB so admin can map permissions from day one
@@ -1970,54 +2644,1062 @@ def admin_get_users(
         db.refresh(guest)
         
     users = db.query(UserModel).all()
+    if not kuasa_penuh(admin):
+        # Admin melihat dirinya sendiri dan akun yang ia buat, tidak lebih.
+        users = [u for u in users
+                 if u.id == admin.id or bawahan_saya(admin, u, db)]
+    # Nama pembuat dikumpulkan sekali; menanyakannya per baris berarti
+    # satu kueri untuk tiap akun.
+    nama_pembuat = {}
+    id_pembuat = {u.parent_admin_id for u in users if u.parent_admin_id}
+    if id_pembuat:
+        nama_pembuat = {
+            p.id: p.username for p in db.query(UserModel).filter(
+                UserModel.id.in_(id_pembuat)).all()}
+
     return [
         UserAdminResponse(
             id=u.id,
             username=u.username,
             role=u.role,
+            parent_admin_id=u.parent_admin_id,
+            dibuat_oleh=nama_pembuat.get(u.parent_admin_id),
+            admin_group=u.admin_group,
+            show_ads=u.show_ads,
             stream_ids=[s.id for s in u.streams]
         ) for u in users
     ]
 
+class GroupAdsToggle(BaseModel):
+    show_ads: bool
+
+@app.put("/api/admin/groups/{group_name}/ads")
+def toggle_group_ads(
+    group_name: str,
+    payload: GroupAdsToggle,
+    admin: UserModel = Depends(verify_pengelola_pengguna),
+    db: Session = Depends(get_db)
+):
+    """Nyalakan/matikan iklan untuk SEMUA anggota satu grup sekaligus.
+
+    group_name == "__tanpa_grup__" menyasar user dengan admin_group NULL.
+    """
+    query = db.query(UserModel)
+    if group_name == "__tanpa_grup__":
+        # SUPER_ADMIN independen dari toggle ini (diatur sendiri lewat
+        # PUT /admin/users/{id}), walau admin_group-nya sama-sama NULL.
+        query = query.filter(
+            UserModel.admin_group.is_(None),
+            UserModel.role != "super_admin",
+        )
+    else:
+        query = query.filter(UserModel.admin_group == group_name)
+
+    if not kuasa_penuh(admin):
+        query = query.filter(UserModel.id.in_(
+            [u.id for u in query.all() if bawahan_saya(admin, u, db)]
+        ))
+
+    jumlah = query.update({UserModel.show_ads: payload.show_ads}, synchronize_session=False)
+    db.commit()
+    return {"group": group_name, "show_ads": payload.show_ads, "updated": jumlah}
+
 # 8. User Manager: Update user access mapping (Many-to-Many)
+@app.get("/api/admin/admins/{admin_id}/camera-grants")
+def admin_lihat_pemberian_admin(
+    admin_id: int,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Kamera apa saja yang dipegang seorang Admin, berikut caranya."""
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat mengatur pemberian ke Admin")
+
+    sasaran = db.query(UserModel).filter(UserModel.id == admin_id).first()
+    if not sasaran:
+        raise HTTPException(status_code=404, detail="Akun tidak ditemukan")
+    if _peran(sasaran) != "admin":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Akun '{sasaran.username}' berperan {sasaran.role}, "
+                   "bukan admin")
+
+    beri = {g.stream_id: g for g in db.query(StreamAdminGrantModel).filter(
+        StreamAdminGrantModel.admin_id == admin_id).all()}
+
+    daftar = []
+    for k in db.query(CCTVStreamModel).order_by(
+            CCTVStreamModel.group_name, CCTVStreamModel.name).all():
+        g = beri.get(k.id)
+        milik = (k.owner_id == admin_id)
+        daftar.append({
+            "stream_id": k.id,
+            "stream_name": k.name,
+            "group_name": k.group_name or "Default",
+            # Kamera miliknya sendiri tidak perlu diberikan; ditandai supaya
+            # layar tidak menawarkan pemberian yang tak ada gunanya.
+            "pemilik": milik,
+            "diberikan": g is not None,
+            "can_view": bool(getattr(g, "can_view", True)) if g else False,
+            "can_playback": bool(getattr(g, "can_playback", True)) if g else False,
+            "can_reshare": bool(g.can_reshare) if g else False,
+        })
+
+    return {"admin_id": sasaran.id, "username": sasaran.username,
+            "kamera": daftar}
+
+
+@app.post("/api/admin/admins/{admin_id}/camera-grants")
+def admin_atur_pemberian_admin(
+    admin_id: int,
+    data: AksesAdminUpdate,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Tetapkan kamera apa saja yang dibagikan kepada seorang Admin."""
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat mengatur pemberian ke Admin")
+
+    sasaran = db.query(UserModel).filter(UserModel.id == admin_id).first()
+    if not sasaran:
+        raise HTTPException(status_code=404, detail="Akun tidak ditemukan")
+    if _peran(sasaran) != "admin":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Akun '{sasaran.username}' berperan {sasaran.role}, "
+                   "bukan admin")
+
+    diminta = {k.stream_id: k for k in data.kamera}
+    if diminta:
+        kamera = {s.id: s for s in db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id.in_(diminta)).all()}
+        hilang = set(diminta) - set(kamera)
+        if hilang:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Kamera tidak ditemukan: {sorted(hilang)}")
+        for sid, s in kamera.items():
+            # Kamera miliknya sendiri sudah sepenuhnya di tangannya;
+            # pemberian tambahan hanya membingungkan.
+            if s.owner_id == admin_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Kamera '{s.name}' sudah milik "
+                           f"'{sasaran.username}'")
+
+    lama = db.query(StreamAdminGrantModel).filter(
+        StreamAdminGrantModel.admin_id == admin_id).all()
+    ada = {g.stream_id: g for g in lama}
+
+    for g in lama:
+        if g.stream_id not in diminta:
+            db.delete(g)
+
+    for sid, k in diminta.items():
+        g = ada.get(sid)
+        if g is None:
+            db.add(StreamAdminGrantModel(
+                stream_id=sid, admin_id=admin_id,
+                can_view=k.can_view, can_playback=k.can_playback,
+                can_reshare=k.can_reshare,
+                granted_by=pengelola.id))
+            continue
+        g.can_view = k.can_view
+        g.can_playback = k.can_playback
+        g.can_reshare = k.can_reshare
+        g.granted_by = pengelola.id
+
+    db.commit()
+
+    return {"message": "Pemberian kamera diperbarui",
+            "jumlah_kamera": len(diminta)}
+
+
+@app.post("/api/admin/users/{user_id}/camera-access")
+def admin_atur_akses_akun(
+    user_id: int,
+    data: AksesAkunUpdate,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Tetapkan kamera apa saja yang dipegang satu akun.
+
+    Live dan rekaman ditetapkan terpisah. Berlaku untuk User dan Guest saja:
+    Super Admin sudah melihat segalanya, dan Admin memperoleh kamera lewat
+    kepemilikan, bukan lewat daftar ini.
+    """
+    akun = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not akun:
+        raise HTTPException(status_code=404, detail="Akun tidak ditemukan")
+    if akun.role not in ("user", "guest"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Akun '{akun.username}' berperan {akun.role} dan tidak "
+                   "menerima izin per kamera")
+
+    penuh = kuasa_penuh(pengelola)
+    if not penuh and not bawahan_saya(pengelola, akun, db):
+        raise HTTPException(
+            status_code=403, detail="Akun ini bukan bawahan Anda")
+
+    diminta = {k.stream_id: k for k in data.kamera}
+    if diminta:
+        kamera = {s.id: s for s in db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id.in_(diminta)).all()}
+        hilang = set(diminta) - set(kamera)
+        if hilang:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Kamera tidak ditemukan: {sorted(hilang)}")
+        for sid in diminta:
+            if not boleh_bagi(pengelola, sid, db):
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Anda tidak berwenang membagikan kamera {sid}")
+        for sid, k in diminta.items():
+            if not k.can_view and not k.can_playback:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Kamera {sid} tanpa izin apa pun; keluarkan saja "
+                           "dari daftar")
+
+    lama = db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.user_id == user_id).all()
+    ada = {i.stream_id: i for i in lama}
+
+    dilewati = []
+    for i in lama:
+        if i.stream_id in diminta:
+            continue
+        # Admin hanya boleh mencabut pemberiannya sendiri; pemberian Super
+        # Admin atau Admin lain dibiarkan utuh.
+        if penuh or i.granted_by == pengelola.id:
+            db.delete(i)
+        else:
+            dilewati.append(i.stream_id)
+
+    for sid, k in diminta.items():
+        i = ada.get(sid)
+        if i is None:
+            db.add(StreamPermissionModel(
+                stream_id=sid, user_id=user_id,
+                can_view=k.can_view, can_playback=k.can_playback,
+                granted_by=pengelola.id))
+            continue
+        if not penuh and i.granted_by not in (None, pengelola.id):
+            dilewati.append(sid)
+            continue
+        i.can_view = k.can_view
+        i.can_playback = k.can_playback
+        i.granted_by = pengelola.id
+
+    db.commit()
+
+    # Tabel lama tetap disinkron agar layar dan laporan yang masih
+    # membacanya tidak menampilkan angka yang bertentangan.
+    sid_akhir = {i.stream_id for i in db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.user_id == user_id).all()}
+    akun.streams = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id.in_(sid_akhir)).all() if sid_akhir else []
+    db.commit()
+
+    return {
+        "message": "Akses akun diperbarui",
+        "jumlah_kamera": len(diminta),
+        "dilewati_bukan_milik_anda": sorted(set(dilewati)),
+    }
+
+
+@app.get("/api/admin/users/{user_id}/camera-access")
+def admin_lihat_akses_akun(
+    user_id: int,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Kamera apa saja yang dapat diberikan ke akun ini, berikut keadaannya."""
+    akun = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not akun:
+        raise HTTPException(status_code=404, detail="Akun tidak ditemukan")
+    if akun.role not in ("user", "guest"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Akun '{akun.username}' berperan {akun.role} dan tidak "
+                   "menerima izin per kamera")
+
+    penuh = kuasa_penuh(pengelola)
+    if not penuh and not bawahan_saya(pengelola, akun, db):
+        raise HTTPException(
+            status_code=403, detail="Akun ini bukan bawahan Anda")
+
+    izin = {i.stream_id: i for i in db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.user_id == user_id).all()}
+
+    kamera = db.query(CCTVStreamModel).order_by(
+        CCTVStreamModel.group_name, CCTVStreamModel.name).all()
+    if not penuh:
+        kamera = [k for k in kamera if boleh_bagi(pengelola, k.id, db)]
+
+    daftar = []
+    for k in kamera:
+        i = izin.get(k.id)
+        milik_saya = penuh or i is None or i.granted_by in (None, pengelola.id)
+        daftar.append({
+            "stream_id": k.id,
+            "stream_name": k.name,
+            "group_name": k.group_name or "Default",
+            "can_view": bool(i.can_view) if i else False,
+            "can_playback": bool(i.can_playback) if i else False,
+            # Pemberian orang lain: tampil, tetapi tidak dapat diubah.
+            "terkunci": not milik_saya,
+        })
+
+    return {"user_id": akun.id, "username": akun.username,
+            "role": akun.role, "kamera": daftar}
+
+
+def _anggota_grup(nama_grup, db):
+    """Admin anggota sebuah grup. Kosong berarti grupnya tidak ada."""
+    return db.query(UserModel).filter(
+        UserModel.admin_group == nama_grup).order_by(
+        UserModel.username).all()
+
+
+def _admin_grup(nama_grup, db):
+    orang = [u for u in _anggota_grup(nama_grup, db) if _peran(u) == "admin"]
+    if not orang:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Grup '{nama_grup}' tidak punya admin")
+    return orang
+
+
+class GrupRename(BaseModel):
+    nama_baru: str
+
+    @field_validator("nama_baru")
+    @classmethod
+    def _nama(cls, v):
+        v = (v or "").strip()
+        if not v:
+            raise ValueError("Nama grup tidak boleh kosong")
+        if len(v) > 60:
+            raise ValueError("Nama grup maksimal 60 karakter")
+        return v
+
+
+@app.put("/api/admin/groups/{nama_grup}")
+def admin_ganti_nama_grup(
+    nama_grup: str,
+    data: GrupRename,
+    pengelola: UserModel = Depends(verify_pengelola_pengguna),
+    db: Session = Depends(get_db)
+):
+    """Pindahkan seluruh anggota sebuah grup ke nama baru.
+
+    Satu transaksi: entah semua anggota ikut pindah, atau tak satu pun.
+    Memindahkan mereka satu per satu dari frontend membuat grup terbelah
+    bila salah satu permintaan gagal di tengah jalan.
+    """
+    # Nama grup menentukan wewenang orang lain, jadi hanya kuasa penuh
+    # yang boleh mengubahnya -- sama seperti penyerahan kamera ke grup.
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat mengubah nama grup")
+
+    lama = (nama_grup or "").strip()
+    baru = data.nama_baru
+    if not lama:
+        raise HTTPException(status_code=400, detail="Nama grup tidak sah")
+
+    anggota = db.query(UserModel).filter(UserModel.admin_group == lama).all()
+    if not anggota:
+        raise HTTPException(
+            status_code=404, detail=f"Grup '{lama}' tidak ditemukan")
+
+    if baru == lama:
+        return {"pesan": "Nama grup tidak berubah", "jumlah": 0}
+
+    # Menggabungkan dua grup mengubah siapa melihat apa tanpa diminta,
+    # jadi nama yang sudah dipakai ditolak.
+    bentrok = db.query(UserModel).filter(UserModel.admin_group == baru).count()
+    if bentrok:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Grup '{baru}' sudah ada; pilih nama lain")
+
+    try:
+        for a in anggota:
+            a.admin_group = baru
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail="Gagal mengubah nama grup")
+
+    return {"pesan": f"Grup '{lama}' menjadi '{baru}'", "jumlah": len(anggota)}
+
+
+@app.get("/api/admin/groups/{nama_grup}/camera-grants")
+def admin_lihat_pemberian_grup(
+    nama_grup: str,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Kamera apa saja yang dipegang sebuah grup."""
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat menyerahkan kamera ke grup")
+
+    orang = _admin_grup(nama_grup, db)
+    id_orang = {o.id for o in orang}
+
+    # Izin sebuah kamera dianggap dipegang grup bila SEMUA anggotanya
+    # memegangnya. Bila hanya sebagian, keadaan itu tidak utuh dan layar
+    # perlu menampilkannya sebagai belum diberikan supaya penyimpanan
+    # berikutnya merapikannya.
+    per_kamera = {}
+    for g in db.query(StreamAdminGrantModel).filter(
+            StreamAdminGrantModel.admin_id.in_(id_orang)).all():
+        per_kamera.setdefault(g.stream_id, []).append(g)
+
+    daftar = []
+    for k in db.query(CCTVStreamModel).order_by(
+            CCTVStreamModel.group_name, CCTVStreamModel.name).all():
+        baris = per_kamera.get(k.id, [])
+        utuh = len(baris) == len(orang)
+        milik = k.owner_id in id_orang
+        daftar.append({
+            "stream_id": k.id,
+            "stream_name": k.name,
+            "group_name": k.group_name or "Default",
+            "pemilik": milik,
+            "diberikan": utuh,
+            "can_view": utuh and all(
+                bool(getattr(g, "can_view", True)) for g in baris),
+            "can_playback": utuh and all(
+                bool(getattr(g, "can_playback", True)) for g in baris),
+            "can_reshare": utuh and all(bool(g.can_reshare) for g in baris),
+        })
+
+    return {"grup": nama_grup,
+            "anggota": [{"user_id": o.id, "username": o.username}
+                        for o in orang],
+            "kamera": daftar}
+
+
+@app.post("/api/admin/groups/{nama_grup}/camera-grants")
+def admin_atur_pemberian_grup(
+    nama_grup: str,
+    data: AksesAdminUpdate,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Serahkan sekumpulan kamera kepada seluruh anggota sebuah grup."""
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat menyerahkan kamera ke grup")
+
+    orang = _admin_grup(nama_grup, db)
+    id_orang = [o.id for o in orang]
+
+    diminta = {k.stream_id: k for k in data.kamera}
+    if diminta:
+        kamera = {s.id: s for s in db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id.in_(diminta)).all()}
+        hilang = set(diminta) - set(kamera)
+        if hilang:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Kamera tidak ditemukan: {sorted(hilang)}")
+
+    lama = db.query(StreamAdminGrantModel).filter(
+        StreamAdminGrantModel.admin_id.in_(id_orang)).all()
+    ada = {(g.admin_id, g.stream_id): g for g in lama}
+
+    for g in lama:
+        if g.stream_id not in diminta:
+            db.delete(g)
+
+    for sid, k in diminta.items():
+        for uid in id_orang:
+            # Pemilik kamera tidak perlu diberi kameranya sendiri; barisnya
+            # akan mubazir dan menyesatkan saat dibaca kembali.
+            pemilik = db.query(CCTVStreamModel).filter(
+                CCTVStreamModel.id == sid).first()
+            if pemilik is not None and pemilik.owner_id == uid:
+                continue
+            g = ada.get((uid, sid))
+            if g is None:
+                db.add(StreamAdminGrantModel(
+                    stream_id=sid, admin_id=uid,
+                    can_view=k.can_view, can_playback=k.can_playback,
+                    can_reshare=k.can_reshare,
+                    granted_by=pengelola.id))
+                continue
+            g.can_view = k.can_view
+            g.can_playback = k.can_playback
+            g.can_reshare = k.can_reshare
+            g.granted_by = pengelola.id
+
+    db.commit()
+
+    return {"message": f"Kamera grup '{nama_grup}' diperbarui",
+            "jumlah_kamera": len(diminta),
+            "jumlah_anggota": len(id_orang)}
+
+
+@app.get("/api/admin/access-overview")
+def admin_ikhtisar_akses(
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Akun mana memegang kamera mana, seluruh peran sekaligus.
+
+    Dikembalikan dua arah dari data yang sama supaya layar dapat menukar
+    tampilan tanpa memanggil ulang: per akun, dan per kamera.
+    """
+    penuh = kuasa_penuh(pengelola)
+
+    kamera = db.query(CCTVStreamModel).order_by(CCTVStreamModel.name).all()
+    if not penuh:
+        # Admin hanya melihat kamera yang benar-benar ia pegang.
+        kamera = [k for k in kamera if boleh_bagi(pengelola, k.id, db)]
+    id_kamera = {k.id for k in kamera}
+    nama_kamera = {k.id: k.name for k in kamera}
+
+    akun = db.query(UserModel).order_by(UserModel.username).all()
+    if not penuh:
+        akun = [u for u in akun
+                if u.id == pengelola.id or bawahan_saya(pengelola, u, db)]
+
+    grant_admin = {}
+    for g in db.query(StreamAdminGrantModel).all():
+        grant_admin.setdefault(g.admin_id, []).append(g)
+
+    izin = db.query(StreamPermissionModel).all()
+    per_akun = {}
+    for i in izin:
+        if i.stream_id in id_kamera:
+            per_akun.setdefault(i.user_id, []).append(i)
+
+    # Admin tidak berbaris sendiri: kameranya mengikuti grupnya, dan
+    # baris grup itulah tempat mengaturnya. User tetap berbaris walau
+    # punya grup, sebab kamera User diberikan satu per satu, bukan
+    # diwarisi dari grup — tanpa baris ini ia tak dapat diatur di mana pun.
+    def _kamera_akun(u):
+        """Kamera satu akun bukan-Admin, dari izin atas namanya sendiri.
+
+        Dipakai baris akun maupun baris anggota grup. Satu sumber, agar
+        angka di kedua tempat tidak dapat berselisih.
+        """
+        daftar = []
+        if kuasa_penuh(u):
+            # Tanpa satu baris izin pun; kewenangannya melekat pada peran.
+            for k in kamera:
+                daftar.append({"stream_id": k.id, "stream_name": k.name,
+                               "cara": "penuh", "can_view": True,
+                               "can_playback": True})
+        else:
+            dimiliki = {d["stream_id"] for d in daftar}
+            for i in per_akun.get(u.id, []):
+                if i.stream_id in dimiliki:
+                    continue
+                daftar.append({
+                    "stream_id": i.stream_id,
+                    "stream_name": nama_kamera.get(i.stream_id, "?"),
+                    "cara": "pemberian",
+                    "can_view": bool(i.can_view),
+                    "can_playback": bool(i.can_playback)})
+        daftar.sort(key=lambda d: d["stream_name"])
+        return daftar
+
+    baris_akun = []
+    for u in akun:
+        # Penghuni grup tampil di dalam grupnya, tidak berbaris dua kali.
+        if _peran(u) == "admin" or (u.admin_group or "").strip():
+            continue
+        daftar = _kamera_akun(u)
+        baris_akun.append({
+            "user_id": u.id, "username": u.username, "role": u.role,
+            "jumlah": len(daftar), "kamera": daftar,
+            # Super Admin tidak punya baris untuk disunting; Admin diatur
+            # lewat kepemilikan kamera, bukan lewat daftar centang.
+            "cara_atur": ("tidak_perlu" if kuasa_penuh(u)
+                          else "pemberian")})
+
+    # ── Baris grup ──────────────────────────────────────────────────────
+    # Satu baris untuk tiap grup yang punya Admin. Kamera yang tampil adalah
+    # gabungan: milik anggotanya, dan yang diserahkan kepada grup.
+    # Semua penghuni dihimpun, Admin maupun User, agar satu grup terbaca
+    # sebagai satu kesatuan. Admin lebih dulu, lalu menurut nama.
+    anggota = {}
+    for u in db.query(UserModel).order_by(UserModel.username).all():
+        if u.admin_group and not kuasa_penuh(u):
+            anggota.setdefault(u.admin_group, []).append(u)
+    for _daftar in anggota.values():
+        _daftar.sort(key=lambda o: (_peran(o) != "admin", o.username))
+
+    def _kamera_anggota_bagi(orang, kamera_grup):
+        """Kamera yang dipegang satu penghuni grup.
+
+        Admin mewarisi seluruh kamera grupnya. User tidak mewarisi apa pun
+        — kameranya diberikan satu per satu — jadi yang tampil hanyalah
+        pemberian atas namanya sendiri. Menyamakan keduanya akan
+        menjanjikan kamera yang tak sungguh dapat ia buka.
+        """
+        if _peran(orang) == "admin":
+            return sorted(kamera_grup.values(),
+                          key=lambda d: d["stream_name"])
+        return _kamera_akun(orang)
+
+    baris_grup = []
+    for nama_grup in sorted(anggota):
+        semua = anggota[nama_grup]
+        orang = semua
+        if not penuh and not any(
+                o.id == pengelola.id or bawahan_saya(pengelola, o, db)
+                for o in semua):
+            continue
+
+        # Yang menyumbang kamera ke grup hanyalah Admin. Kamera User adalah
+        # pemberian atas namanya sendiri; menyertakannya di sini akan
+        # membuat kamera itu tampak dimiliki seluruh grup.
+        penyumbang = [o for o in orang if _peran(o) == "admin"]
+
+        per_kamera_grup = {}
+        for o in penyumbang:
+            for k in kamera:
+                if k.owner_id == o.id:
+                    per_kamera_grup[k.id] = {
+                        "stream_id": k.id, "stream_name": k.name,
+                        "cara": "pemilik", "can_view": True,
+                        "can_playback": True, "can_reshare": True}
+            for g in grant_admin.get(o.id, []):
+                if g.stream_id not in id_kamera:
+                    continue
+                if per_kamera_grup.get(g.stream_id, {}).get("cara") == "pemilik":
+                    continue
+                # Bila anggota berbeda memegang izin yang berbeda atas kamera
+                # yang sama, yang ditampilkan adalah yang terluas — itulah
+                # yang sesungguhnya dapat dilakukan grup ini.
+                lama = per_kamera_grup.get(g.stream_id)
+                baru = {
+                    "stream_id": g.stream_id,
+                    "stream_name": nama_kamera.get(g.stream_id, "?"),
+                    "cara": "dibagikan",
+                    "can_view": bool(getattr(g, "can_view", True)),
+                    "can_playback": bool(getattr(g, "can_playback", True)),
+                    "can_reshare": bool(g.can_reshare)}
+                if lama:
+                    for kunci in ("can_view", "can_playback", "can_reshare"):
+                        baru[kunci] = lama.get(kunci) or baru[kunci]
+                per_kamera_grup[g.stream_id] = baru
+
+        daftar_grup = sorted(per_kamera_grup.values(),
+                             key=lambda d: d["stream_name"])
+
+        def _kamera_anggota(o, _kg=per_kamera_grup):
+            return _kamera_anggota_bagi(o, _kg)
+
+        baris_grup.append({
+            "grup": nama_grup,
+            "anggota": [{"user_id": o.id, "username": o.username,
+                         "role": o.role,
+                         # Admin mengikuti kamera grupnya dengan sendirinya;
+                         # User diatur satu per satu oleh Super Admin.
+                         "otomatis": _peran(o) == "admin",
+                         "jumlah_kamera": len(_kamera_anggota(o)),
+                         # Nama kameranya ikut dikirim: baris anggota
+                         # berdiri sejajar kolom tabel, dan kolom Kamera
+                         # di sana tidak dapat diisi oleh angka saja.
+                         "kamera": _kamera_anggota(o)}
+                        for o in semua],
+            "jumlah": len(daftar_grup),
+            "kamera": daftar_grup,
+            # Hanya Super Admin yang menyerahkan kamera kepada grup, dan
+            # hanya bila grup itu punya Admin untuk menerimanya.
+            "cara_atur": ("grup" if (penuh and penyumbang)
+                          else "tidak_perlu")})
+
+    baris_kamera = []
+    for k in kamera:
+        pemegang = []
+        # Grup lebih dulu: itulah pemegang sesungguhnya bagi sisi Admin.
+        for bg in baris_grup:
+            for d in bg["kamera"]:
+                if d["stream_id"] == k.id:
+                    pemegang.append({
+                        "user_id": None, "username": bg["grup"],
+                        "role": "grup", "cara": d["cara"],
+                        "can_view": d["can_view"],
+                        "can_playback": d["can_playback"]})
+        # Anggota grup memegang kameranya sendiri-sendiri: Admin ikut
+        # kamera grupnya, User diberi satu per satu. Tanpa ini, arah
+        # Per Kamera hanya menyebut grupnya dan orang yang benar-benar
+        # dapat menonton tidak kelihatan.
+        for bg in baris_grup:
+            for o in bg["anggota"]:
+                for d in o.get("kamera", []):
+                    if d["stream_id"] == k.id:
+                        pemegang.append({
+                            "user_id": o["user_id"], "username": o["username"],
+                            "role": o["role"], "cara": d["cara"],
+                            "can_view": d["can_view"],
+                            "can_playback": d["can_playback"]})
+        for b in baris_akun:
+            for d in b["kamera"]:
+                if d["stream_id"] == k.id:
+                    pemegang.append({
+                        "user_id": b["user_id"], "username": b["username"],
+                        "role": b["role"], "cara": d["cara"],
+                        "can_view": d["can_view"],
+                        "can_playback": d["can_playback"]})
+        baris_kamera.append({
+            "stream_id": k.id, "stream_name": k.name,
+            "group_name": k.group_name, "owner_id": k.owner_id,
+            "jumlah": len(pemegang), "pemegang": pemegang})
+
+    return {"per_akun": baris_akun, "per_grup": baris_grup,
+            "per_kamera": baris_kamera,
+            "boleh_pindah_pemilik": penuh}
+
+
+def _kamera_terjangkau(stream_id, pengelola, db):
+    """Ambil kamera itu, atau tolak kalau di luar wewenangnya."""
+    stream = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id == stream_id).first()
+    if not stream:
+        raise HTTPException(status_code=404, detail="Kamera tidak ditemukan")
+    if not boleh_bagi(pengelola, stream_id, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang membagikan kamera ini")
+    return stream
+
+
+@app.get("/api/admin/streams/{stream_id}/sharing")
+def admin_lihat_berbagi_kamera(
+    stream_id: int,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Siapa saja yang berhak atas satu kamera.
+
+    Mengembalikan seluruh akun yang dapat diberi izin, masing-masing dengan
+    keadaannya sekarang, sehingga layar tidak perlu memadukan dua daftar
+    sendiri. Baris pemberian orang lain ditandai terkunci — Admin hanya boleh
+    mencabut pemberiannya sendiri.
+    """
+    stream = _kamera_terjangkau(stream_id, pengelola, db)
+    penuh = kuasa_penuh(pengelola)
+
+    izin = {
+        i.user_id: i for i in db.query(StreamPermissionModel).filter(
+            StreamPermissionModel.stream_id == stream_id).all()
+    }
+    pemberi = {
+        u.id: u.username for u in db.query(UserModel).filter(
+            UserModel.id.in_({i.granted_by for i in izin.values()
+                              if i.granted_by})).all()
+    } if izin else {}
+
+    # Hanya akun yang memang menerima izin lewat daftar ini. Admin memperoleh
+    # kamera lewat kepemilikan, bukan lewat pencentangan.
+    calon = db.query(UserModel).filter(
+        UserModel.role.in_(["user", "guest"])).all()
+    if not penuh:
+        calon = [u for u in calon if bawahan_saya(pengelola, u, db)]
+
+    daftar = []
+    for u in sorted(calon, key=lambda x: x.username):
+        i = izin.get(u.id)
+        milik_saya = penuh or (i is not None and i.granted_by == pengelola.id)
+        daftar.append({
+            "user_id": u.id,
+            "username": u.username,
+            "role": u.role,
+            "can_view": bool(i.can_view) if i else False,
+            "can_playback": bool(i.can_playback) if i else False,
+            "granted_by": i.granted_by if i else None,
+            "granted_by_username": pemberi.get(i.granted_by) if i else None,
+            # Baris pemberian orang lain: tampil, tetapi tidak dapat diubah.
+            "terkunci": bool(i is not None and not milik_saya),
+        })
+
+    admin_list = [
+        {"id": a.id, "username": a.username}
+        for a in db.query(UserModel).filter(
+            UserModel.role == "admin").order_by(UserModel.username).all()
+    ] if penuh else []
+
+    return {
+        "stream_id": stream.id,
+        "stream_name": stream.name,
+        "owner_id": stream.owner_id,
+        "boleh_pindah_pemilik": penuh,
+        "penerima": daftar,
+        "admin_tersedia": admin_list,
+    }
+
+
+@app.post("/api/admin/streams/{stream_id}/sharing")
+def admin_atur_berbagi_kamera(
+    stream_id: int,
+    data: BerbagiKameraUpdate,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Tetapkan siapa saja yang berhak atas satu kamera."""
+    _kamera_terjangkau(stream_id, pengelola, db)
+    penuh = kuasa_penuh(pengelola)
+
+    diminta = {p.user_id: p for p in data.penerima}
+    if diminta:
+        akun = {u.id: u for u in db.query(UserModel).filter(
+            UserModel.id.in_(diminta)).all()}
+        hilang = set(diminta) - set(akun)
+        if hilang:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Akun tidak ditemukan: {sorted(hilang)}")
+        for uid, u in akun.items():
+            # Super Admin melihat segalanya; Admin memperoleh kamera lewat
+            # kepemilikan. Keduanya tidak menerima izin per kamera.
+            if u.role not in ("user", "guest"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Akun '{u.username}' berperan {u.role} dan tidak "
+                           "menerima izin per kamera")
+            if not penuh and not bawahan_saya(pengelola, u, db):
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"'{u.username}' bukan bawahan Anda")
+        for uid, p in diminta.items():
+            # Baris tanpa kewenangan apa pun sama saja dengan tidak diberi,
+            # dan menyimpannya membuat daftar tampak berisi padahal kosong.
+            if not p.can_view and not p.can_playback:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Penerima {uid} tanpa izin apa pun; keluarkan "
+                           "saja dari daftar")
+
+    lama = db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.stream_id == stream_id).all()
+    ada = {i.user_id: i for i in lama}
+
+    ditolak = []
+    for i in lama:
+        if i.user_id in diminta:
+            continue
+        # Admin hanya boleh mencabut pemberiannya sendiri; pemberian Super
+        # Admin atau Admin lain dibiarkan utuh.
+        if penuh or i.granted_by == pengelola.id:
+            db.delete(i)
+        else:
+            ditolak.append(i.user_id)
+
+    for uid, p in diminta.items():
+        i = ada.get(uid)
+        if i is None:
+            db.add(StreamPermissionModel(
+                stream_id=stream_id, user_id=uid,
+                can_view=p.can_view, can_playback=p.can_playback,
+                granted_by=pengelola.id))
+            continue
+        if not penuh and i.granted_by not in (None, pengelola.id):
+            ditolak.append(uid)
+            continue
+        i.can_view = p.can_view
+        i.can_playback = p.can_playback
+        i.granted_by = pengelola.id
+
+    db.commit()
+
+    # Tabel lama tetap disinkron agar layar dan laporan yang masih
+    # membacanya tidak menampilkan angka yang bertentangan.
+    for uid in set(diminta) | set(ada):
+        u = db.query(UserModel).filter(UserModel.id == uid).first()
+        if not u:
+            continue
+        sid = {i.stream_id for i in db.query(StreamPermissionModel).filter(
+            StreamPermissionModel.user_id == uid).all()}
+        u.streams = db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.id.in_(sid)).all() if sid else []
+    db.commit()
+
+    return {
+        "message": "Izin kamera diperbarui",
+        "jumlah_penerima": len(diminta),
+        # Bukan galat: pemberian orang lain memang dibiarkan utuh. Dikembalikan
+        # supaya layar dapat menerangkannya, bukan diam-diam.
+        "dilewati_bukan_milik_anda": sorted(set(ditolak)),
+    }
+
+
+@app.post("/api/admin/streams/{stream_id}/owner")
+def admin_pindah_pemilik_kamera(
+    stream_id: int,
+    data: PemilikKameraUpdate,
+    pengelola: UserModel = Depends(verify_pengelola_kamera),
+    db: Session = Depends(get_db)
+):
+    """Pindahkan kepemilikan kamera ke Admin lain, atau lepaskan.
+
+    Khusus Super Admin. Kalau Admin boleh memindahkannya, ia dapat melempar
+    kameranya ke Admin lain atau merebut kamera orang.
+
+    Pemberian yang sudah ada TIDAK dicabut; jumlahnya dikembalikan agar layar
+    dapat memperingatkan.
+    """
+    if not kuasa_penuh(pengelola):
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin yang dapat memindahkan pemilik kamera")
+
+    stream = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id == stream_id).first()
+    if not stream:
+        raise HTTPException(status_code=404, detail="Kamera tidak ditemukan")
+
+    baru = data.owner_id or None
+    if baru is not None:
+        calon = db.query(UserModel).filter(UserModel.id == baru).first()
+        if not calon:
+            raise HTTPException(status_code=404, detail="Admin tidak ditemukan")
+        if calon.role not in ("admin", "super_admin"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{calon.username}' berperan {calon.role}; hanya Admin "
+                       "yang dapat memiliki kamera")
+
+    lama = stream.owner_id
+    stream.owner_id = baru
+    db.commit()
+
+    terdampak = db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.stream_id == stream_id).count()
+
+    return {
+        "message": "Pemilik kamera diperbarui",
+        "owner_id": baru,
+        "owner_id_sebelumnya": lama,
+        # Sengaja dibiarkan: mencabut diam-diam membuat orang kehilangan
+        # tontonan tanpa ada yang tahu sebabnya.
+        "pemberian_dipertahankan": terdampak,
+    }
+
+
 @app.post("/api/admin/users/{user_id}/access")
 def admin_update_user_access(
     user_id: int,
     access_data: UserAccessUpdate,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_pengguna),
     db: Session = Depends(get_db)
 ):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if (user.role or "").lower() == "admin":
+    if kuasa_penuh(user):
         raise HTTPException(status_code=400, detail="Admin access mappings cannot be modified (admins automatically inherit all streams)")
 
-    # Fetch corresponding streams
-    streams = db.query(CCTVStreamModel).filter(CCTVStreamModel.id.in_(access_data.stream_ids)).all()
-    
-    # Assign the new relationship list
+    if not kuasa_penuh(admin) and not bawahan_saya(admin, user, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda hanya dapat mengatur akses bawahan Anda")
+
+    diminta = set(access_data.stream_ids)
+    streams = db.query(CCTVStreamModel).filter(
+        CCTVStreamModel.id.in_(diminta)).all() if diminta else []
+    sah = {s.id for s in streams}
+    hilang = diminta - sah
+    if hilang:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Kamera tidak ditemukan: {sorted(hilang)}")
+
+    # Hanya kamera yang benar-benar boleh ia bagikan.
+    if not kuasa_penuh(admin):
+        ditolak = [s.id for s in streams if not boleh_bagi(admin, s.id, db)]
+        if ditolak:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Anda tidak berwenang membagikan kamera: {ditolak}")
+
+    # Pemberian ditulis ke stream_permissions, tempat boleh_tonton dan
+    # boleh_playback membacanya. Menulis ke user.streams saja tidak lagi
+    # cukup sejak izin tonton dan izin rekaman dipisah.
+    lama = db.query(StreamPermissionModel).filter(
+        StreamPermissionModel.user_id == user_id).all()
+    for izin in lama:
+        # Admin hanya boleh mencabut pemberiannya sendiri; pemberian Super
+        # Admin atau Admin lain dibiarkan utuh.
+        if izin.stream_id in sah:
+            continue
+        if kuasa_penuh(admin) or izin.granted_by == admin.id:
+            db.delete(izin)
+
+    ada = {i.stream_id for i in lama}
+    for sid in sah:
+        if sid in ada:
+            continue
+        db.add(StreamPermissionModel(
+            stream_id=sid, user_id=user_id,
+            can_view=True, can_playback=True, granted_by=admin.id))
+
+    # Tabel lama tetap diperbarui agar layar dan laporan yang masih
+    # membacanya tidak menampilkan angka yang bertentangan.
     user.streams = streams
     db.commit()
-    
+
     return {"message": f"Access mapped for user {user.username}. Authorized {len(streams)} cameras."}
 
 # 9. User Manager: Create User
 @app.post("/api/admin/users", response_model=UserAdminResponse)
 def admin_create_user(
     user_data: UserCreate,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_pengguna),
     db: Session = Depends(get_db)
 ):
     existing = db.query(UserModel).filter(UserModel.username == user_data.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")
-    
+
+    tolak_guest_baru(user_data.role, db)
+
+    # Admin boleh mencetak sesamanya — akun itu tetap terkurung di grupnya,
+    # jadi wewenangnya tidak melebar. Super Admin tetap tidak dapat dicetak
+    # dari bawah; kalau boleh, batas ini dapat dilangkahi hanya dengan
+    # membuat akun baru.
+    if not kuasa_penuh(admin):
+        if user_data.role not in ("admin", "user", "guest"):
+            raise HTTPException(
+                status_code=403,
+                detail="Anda tidak dapat membuat akun super admin")
+        # Admin tanpa grup tidak punya wilayah untuk menampung akun baru.
+        if user_data.role == "admin" and not getattr(admin, "admin_group", None):
+            raise HTTPException(
+                status_code=403,
+                detail="Anda belum tergabung dalam grup, "
+                       "sehingga belum dapat membuat admin")
+
     hashed_pass = get_password_hash(user_data.password)
     new_user = UserModel(
         username=user_data.username,
         password_hash=hashed_pass,
-        role=user_data.role
+        role=user_data.role,
+        # Super Admin memilih siapa pengelolanya; Admin selalu menjadi
+        # pengelola akun yang ia buat sendiri.
+        parent_admin_id=(periksa_pengelola(user_data.parent_admin_id, None, db)
+                         if kuasa_penuh(admin) else admin.id),
+        # Super Admin memilih grupnya; Admin selalu menaruh di grupnya sendiri.
+        admin_group=grup_akun_baru(admin, user_data, db)
     )
     db.add(new_user)
     db.commit()
@@ -2026,6 +3708,11 @@ def admin_create_user(
         id=new_user.id,
         username=new_user.username,
         role=new_user.role,
+        parent_admin_id=new_user.parent_admin_id,
+        dibuat_oleh=(db.query(UserModel).filter(
+            UserModel.id == new_user.parent_admin_id).first().username
+            if new_user.parent_admin_id else None),
+        admin_group=new_user.admin_group,
         stream_ids=[]
     )
 
@@ -2034,21 +3721,62 @@ def admin_create_user(
 def admin_update_user(
     user_id: int,
     user_data: UserUpdate,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_pengguna),
     db: Session = Depends(get_db)
 ):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if not kuasa_penuh(admin):
+        if not bawahan_saya(admin, user, db):
+            raise HTTPException(
+                status_code=403,
+                detail="Anda hanya dapat mengubah akun bawahan Anda")
+        # Super Admin tidak dapat dicetak dari bawah.
+        if user_data.role not in ("admin", "user", "guest"):
+            raise HTTPException(
+                status_code=403,
+                detail="Anda tidak dapat menetapkan peran super admin")
     
     if user.username != user_data.username:
         existing = db.query(UserModel).filter(UserModel.username == user_data.username).first()
         if existing:
             raise HTTPException(status_code=400, detail="Username already exists")
     
+    # Mengubah peran akun lain menjadi guest sama saja dengan membuat guest
+    # baru, hanya lewat jalur belakang.
+    tolak_guest_baru(user_data.role, db, target=user)
+
     user.username = user_data.username
     user.role = user_data.role
+
+    # Hanya Super Admin yang boleh memindahkan pengelolaan. Kalau Admin
+    # boleh, ia dapat menarik bawahan Admin lain menjadi miliknya.
+    if user_data.parent_admin_id is not None:
+        if not kuasa_penuh(admin):
+            raise HTTPException(
+                status_code=403,
+                detail="Hanya super admin yang dapat mengubah admin pengelola")
+        user.parent_admin_id = periksa_pengelola(
+            user_data.parent_admin_id, user.id, db)
+
+    # Memindahkan akun antar-grup mengubah siapa saja yang menjangkaunya,
+    # jadi hanya Super Admin yang boleh. Admin yang mengirimnya diabaikan.
+    if user_data.admin_group is not None and kuasa_penuh(admin):
+        user.admin_group = tentukan_grup(
+            admin, user_data.admin_group, user.admin_group)
     
+    # Akun yang baru naik menjadi Admin pun tidak boleh terdampar tanpa
+    # grup, dengan alasan yang sama seperti saat pembuatan.
+    if user.role == "admin" and not user.admin_group:
+        user.admin_group = grup_bawaan_admin(user.username)
+
+    # SUPER_ADMIN independen dari toggle grup/tanpa-grup: nilainya
+    # diatur langsung di sini, bukan lewat endpoint groups/*/ads.
+    if user.role == "super_admin" and user_data.show_ads is not None:
+        user.show_ads = user_data.show_ads
+
     if user_data.password and user_data.password.strip():
         user.password_hash = get_password_hash(user_data.password)
         
@@ -2058,6 +3786,11 @@ def admin_update_user(
         id=user.id,
         username=user.username,
         role=user.role,
+        parent_admin_id=user.parent_admin_id,
+        dibuat_oleh=(db.query(UserModel).filter(
+            UserModel.id == user.parent_admin_id).first().username
+            if user.parent_admin_id else None),
+        admin_group=user.admin_group,
         stream_ids=[s.id for s in user.streams]
     )
 
@@ -2065,15 +3798,29 @@ def admin_update_user(
 @app.delete("/api/admin/users/{user_id}")
 def admin_delete_user(
     user_id: int,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_pengguna),
     db: Session = Depends(get_db)
 ):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     if user.id == admin.id:
         raise HTTPException(status_code=400, detail="Cannot delete your own admin account")
+
+    # Akun guest bawaan dipakai bersama. Kalau dihapus, login tamu akan
+    # membuatnya ulang diam-diam dengan sandi acak, sehingga pemberian akses
+    # yang menempel padanya ikut hilang tanpa jejak.
+    if user.username == NAMA_GUEST:
+        raise HTTPException(
+            status_code=400,
+            detail="Akun guest bawaan tidak dapat dihapus")
+
+    # Admin hanya boleh menutup akun yang ia buat sendiri.
+    if not kuasa_penuh(admin) and not bawahan_saya(admin, user, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda hanya dapat menghapus akun bawahan Anda")
         
     db.delete(user)
     db.commit()
@@ -2361,13 +4108,13 @@ async def get_playback_principal(
 
 
 def _user_has_stream_access(user, stream_id, db):
-    """Check if user has access to a stream (admin = all, user = assigned, guest = assigned)."""
-    if (user.role or "").lower() == "admin":
-        return True
-    stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
-    if not stream:
-        return False
-    return stream in user.streams
+    """Boleh membuka rekaman kamera ini?
+
+    Pembungkus tipis boleh_playback(), dipertahankan supaya pemanggil lama
+    tidak perlu diubah sekaligus memastikan hanya ada satu sumber kebenaran
+    tentang izin rekaman.
+    """
+    return boleh_playback(user, stream_id, db)
 
 
 def _camera_rec_dir(stream) -> str:
@@ -2459,14 +4206,14 @@ def get_recording_cameras(
     db: Session = Depends(get_db)
 ):
     """List cameras with recording enabled, filtered by user access."""
-    if (user.role or "").lower() == "admin":
+    if kuasa_penuh(user):
         streams = db.query(CCTVStreamModel).filter(CCTVStreamModel.record_enabled == True).all()
     else:
-        accessible_ids = [s.id for s in user.streams]
-        streams = db.query(CCTVStreamModel).filter(
-            CCTVStreamModel.record_enabled == True,
-            CCTVStreamModel.id.in_(accessible_ids)
-        ).all()
+        # Disaring lewat boleh_playback agar izin rekaman yang diberikan
+        # terpisah dari izin tonton benar-benar dihormati di daftar ini.
+        semua = db.query(CCTVStreamModel).filter(
+            CCTVStreamModel.record_enabled == True).all()
+        streams = [s for s in semua if boleh_playback(user, s.id, db)]
 
     cameras = []
     for s in streams:
@@ -2827,6 +4574,15 @@ def get_ad_config(
     user = Depends(get_playback_principal),
     db: Session = Depends(get_db)
 ):
+    # API key (bukan user login) tak punya show_ads -> anggap boleh tampil.
+    if isinstance(user, UserModel) and not user.show_ads:
+        return AdConfigSchema(
+            image_url="", marquee_text="", bg_color="#1e293b", text_color="#ffffff",
+            scroll_speed=5, font_size=10, font_family="monospace",
+            image_opacity=1.0, bg_opacity=1.0, text_opacity=1.0, is_active=False,
+            box_width=100, text_align="left", image_height=20,
+            embed_timeout_seconds=300, click_to_play=True
+        )
     config = db.query(AdConfigModel).filter(AdConfigModel.id == 1).first()
     if not config:
         config = AdConfigModel(
@@ -3337,11 +5093,26 @@ def clear_api_access_logs(
     db.commit()
     return {"detail": f"{deleted} entri log berhasil dihapus"}
 
+def tolak_bukan_super(pengguna):
+    """Hentikan siapa pun selain Super Admin.
+
+    Dipakai seluruh endpoint kunci API. Satu tempat supaya tidak ada
+    endpoint yang tertinggal saat aturannya berubah.
+    """
+    if not kuasa_penuh(pengguna):
+        raise HTTPException(
+            status_code=403,
+            detail="Integrasi API hanya untuk Super Admin")
+
+
 @app.get("/api/admin/api-keys", response_model=List[ApiKeyAdminResponse])
 def get_all_api_keys(
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
+    # Kunci API menerbitkan tautan sematan publik yang melewati login,
+    # jadi wewenangnya melampaui peran Admin. Hanya Super Admin.
+    tolak_bukan_super(admin)
     keys = db.query(ApiKeyModel).all()
     results = []
     for k in keys:
@@ -3372,19 +5143,29 @@ def get_all_api_keys(
 @app.post("/api/admin/api-keys", response_model=ApiKeySchema)
 def create_api_key(
     payload: ApiKeySchema,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
+    tolak_bukan_super(admin)
     # Verify camera exists
     stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == payload.camera_id).first()
     if not stream:
         raise HTTPException(status_code=404, detail="Kamera tidak ditemukan")
+
+    # Kunci API menembus login, jadi hanya boleh dibuat untuk kamera yang
+    # memang berhak ia bagikan.
+    if not boleh_bagi(admin, payload.camera_id, db):
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang membuat kunci untuk kamera ini")
         
     import secrets
     secure_key = f"cctv_key_{secrets.token_hex(16)}"
     
     key_record = ApiKeyModel(
         key_value=secure_key,
+        # Tanpa pemilik, penyaringan kunci tidak punya dasar.
+        owner_id=admin.id,
         camera_id=payload.camera_id,
         client_name=payload.client_name,
         custom_camera_name=payload.custom_camera_name.strip() if payload.custom_camera_name else None,
@@ -3428,12 +5209,18 @@ def create_api_key(
 def update_api_key(
     key_id: int,
     payload: ApiKeySchema,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
+    tolak_bukan_super(admin)
     key_record = db.query(ApiKeyModel).filter(ApiKeyModel.id == key_id).first()
     if not key_record:
         raise HTTPException(status_code=404, detail="Kunci API tidak ditemukan")
+
+    if not kuasa_penuh(admin) and key_record.owner_id != admin.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang mengubah kunci ini")
         
     if key_record.camera_id != payload.camera_id:
         stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == payload.camera_id).first()
@@ -3460,12 +5247,20 @@ def update_api_key(
 @app.delete("/api/admin/api-keys/{key_id}")
 def delete_api_key(
     key_id: int,
-    admin: UserModel = Depends(verify_admin_role),
+    admin: UserModel = Depends(verify_pengelola_kamera),
     db: Session = Depends(get_db)
 ):
+    tolak_bukan_super(admin)
     key_record = db.query(ApiKeyModel).filter(ApiKeyModel.id == key_id).first()
     if not key_record:
         raise HTTPException(status_code=404, detail="Kunci API tidak ditemukan")
+
+    # Menyembunyikan kunci dari daftar saja tidak cukup: id-nya berurutan.
+    if not kuasa_penuh(admin) and key_record.owner_id != admin.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Anda tidak berwenang mencabut kunci ini")
+
     db.delete(key_record)
     db.commit()
     return {"detail": "Kunci API berhasil dicabut"}
