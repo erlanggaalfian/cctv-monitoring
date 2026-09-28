@@ -437,6 +437,8 @@ if(!defined('SECURE_ACCESS')) {
     }
 
     async function seekToEpoch(epoch) {
+        $("pb-no-rec").classList.add("hidden");
+        $("pb-no-rec").classList.remove("flex");
         if (!activeCamera || !ranges.length) return;
         const video = $('playback-video');
         const loading = $('playback-loading');
@@ -481,6 +483,8 @@ if(!defined('SECURE_ACCESS')) {
             }
             lompatBeruntun = 0;
             loading.classList.add('hidden');
+            $("pb-no-rec").classList.add("hidden");
+            $("pb-no-rec").classList.remove("flex");
             video.play().catch(() => {});
         };
         video.onerror = () => {
