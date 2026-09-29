@@ -2236,13 +2236,10 @@
                 const el = document.getElementById(id);
                 if (!el) return;
                 const aktif = (arahAkses === nilai);
-                el.className = "px-3 py-2 text-[10px] font-bold uppercase "
+                el.className = "ms-btn-toggle px-3 py-2 text-[10px] font-bold uppercase "
                     + "tracking-wider font-mono rounded-lg border "
-                    + "transition-colors cursor-pointer "
-                    + (aktif
-                        ? "bg-brand-blue text-white border-brand-blue"
-                        : "bg-transparent text-slate-500 dark:text-cyber-dim "
-                          + "border-slate-200 dark:border-cyber-outline/40");
+                    + "transition-colors cursor-pointer"
+                    + (aktif ? " ms-btn-toggle--active" : "");
             });
     }
 

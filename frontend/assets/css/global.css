@@ -1080,6 +1080,25 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 /* app-input inside popup: force dark input */
 .ms-video-popup .app-input { background: rgba(30,41,59,0.80) !important; border-color: rgba(55,65,81,0.60) !important; color: #f1f5f9 !important; }
 .ms-video-popup .app-input:focus { border-color: var(--c-blue, #3081d1) !important; }
+/* --- Admin console primary action buttons (theme-safe, no Tailwind JIT dependency) --- */
+.ms-btn-add {
+  background: var(--c-blue, #3081d1);
+  color: #ffffff;
+  border: 1px solid transparent;
+}
+.ms-btn-add:hover { background: var(--c-blue-hover, #1e68be); }
+/* --- Per Grup / Per Kamera toggle --- */
+.ms-btn-toggle {
+  background: transparent;
+  color: var(--c-text-muted);
+  border-color: var(--c-border);
+}
+.ms-btn-toggle:hover { background: var(--c-surface2); }
+.ms-btn-toggle--active {
+  background: var(--c-blue, #3081d1) !important;
+  color: #ffffff !important;
+  border-color: var(--c-blue, #3081d1) !important;
+}
 /* ==============================================================
    DARK MODE -- Override Tailwind classes ke token CSS
    ============================================================== */

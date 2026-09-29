@@ -190,7 +190,7 @@ if(!defined('SECURE_ACCESS')) {
 
                     <!-- Add Camera Button -->
                     <button onclick="openCreateStreamModal()"
-                        class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm whitespace-nowrap flex items-center space-x-1.5 cursor-pointer">
+                        class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm whitespace-nowrap flex items-center space-x-1.5 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
                         <span>Add Camera</span>
                     </button>
@@ -267,7 +267,7 @@ if(!defined('SECURE_ACCESS')) {
                     <p class="panel-card-desc">Kelola akun pengguna, peran, dan grupnya</p>
                 </div>
                 <button onclick="openCreateUserModal()"
-                    class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
+                    class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                     <span>Add User</span>
                 </button>
@@ -308,17 +308,17 @@ if(!defined('SECURE_ACCESS')) {
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.bukaAksesKamera()"
-                        class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
+                        class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm flex items-center space-x-1.5 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         <span>Add Access</span>
                     </button>
                     <span class="w-px h-6 bg-slate-200 dark:bg-cyber-outline/40 mx-1"></span>
                     <button type="button" id="akses-arah-akun" onclick="window.gantiArahAkses('grup')"
-                        class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
+                        class="ms-btn-toggle ms-btn-toggle--active px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
                         Per Grup
                     </button>
                     <button type="button" id="akses-arah-kamera" onclick="window.gantiArahAkses('kamera')"
-                        class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
+                        class="ms-btn-toggle px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono rounded-lg border transition-colors cursor-pointer">
                         Per Kamera
                     </button>
                 </div>
