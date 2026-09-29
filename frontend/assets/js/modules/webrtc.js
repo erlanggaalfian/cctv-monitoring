@@ -1554,11 +1554,11 @@
                     <div class="popup-controls-bar absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-8 pb-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between gap-3 text-white select-none">
                         <!-- Left: play + volume + live badge -->
                         <div class="flex items-center gap-3">
-                            <button id="popup-play-btn" class="hover:text-sky-400 transition-colors active:scale-90" title="Play/Pause (Spasi)">
+                            <button id="popup-play-btn" class="hover:text-sky-400 transition-colors active:scale-90" style="color:#cbd5e1;" title="Play/Pause (Spasi)">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
                             </button>
-                            <button id="popup-volume-btn" class="hover:text-sky-400 transition-colors active:scale-90" title="Mute/Unmute (M)">
-                                <svg class="w-5 h-5 text-rose-500 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 12c0 2.76-.84 5.38-2.3 7.54l1.44 1.44C20.48 18.02 22 15.19 22 12s-1.52-6.02-3.86-9.02l-1.44 1.44C18.16 6.62 19 9.24 19 12zM3 9v6h4l5 5V4L7 9H3z"/></svg>
+                            <button id="popup-volume-btn" class="hover:text-sky-400 transition-colors active:scale-90" style="color:#cbd5e1;" title="Mute/Unmute (M)">
+                                <svg class="w-5 h-5" style="color:#f43f5e;" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 12c0 2.76-.84 5.38-2.3 7.54l1.44 1.44C20.48 18.02 22 15.19 22 12s-1.52-6.02-3.86-9.02l-1.44 1.44C18.16 6.62 19 9.24 19 12zM3 9v6h4l5 5V4L7 9H3z"/></svg>
                             </button>
                             <span class="hidden sm:inline-block text-[9px] font-bold tracking-widest text-slate-400 uppercase border border-slate-600 rounded px-1.5 py-0.5">● LIVE</span>
                         </div>
@@ -1566,13 +1566,13 @@
                         <div class="flex items-center gap-2.5">
                             <button id="popup-quality-btn" class="px-2 py-0.5 hover:bg-slate-700 text-sky-400 hover:text-white rounded text-[10px] font-bold uppercase tracking-wide transition-all duration-150 active:scale-90 min-w-[2.4rem] text-center" style="background:rgba(30,41,59,0.90);border:1px solid rgba(255,255,255,0.10);" title="Ganti Kualitas (LQ/HQ)">LQ</button>
                             <div class="w-px h-4 bg-white/15 hidden sm:block"></div>
-                            <button id="popup-orientation-btn" class="hover:text-sky-400 transition-colors active:scale-90" title="Putar Orientasi Layar (R)">
+                            <button id="popup-orientation-btn" class="hover:text-sky-400 transition-colors active:scale-90" style="color:#cbd5e1;" title="Putar Orientasi Layar (R)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
                             </button>
-                            <button id="popup-theater-btn" class="hidden md:block hover:text-sky-400 transition-colors active:scale-90" title="Mode Teater (T)">
+                            <button id="popup-theater-btn" class="hidden md:block hover:text-sky-400 transition-colors active:scale-90" style="color:#cbd5e1;" title="Mode Teater (T)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 15h20"/></svg>
                             </button>
-                            <button id="popup-fullscreen-btn" class="hover:text-sky-400 transition-colors active:scale-90" title="Layar Penuh (F)">
+                            <button id="popup-fullscreen-btn" class="hover:text-sky-400 transition-colors active:scale-90" style="color:#cbd5e1;" title="Layar Penuh (F)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                             </button>
                         </div>
