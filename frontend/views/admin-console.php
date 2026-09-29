@@ -410,7 +410,7 @@ if(!defined('SECURE_ACCESS')) {
                     </div>
 
                     <button type="submit" id="start-scan-btn"
-                        class="col-span-full w-full py-3 bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer mt-2">
+                        class="ms-btn-add col-span-full w-full py-3 text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer mt-2">
                         <svg id="scan-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         <span>Scan Network</span>
                     </button>
@@ -683,7 +683,7 @@ if(!defined('SECURE_ACCESS')) {
 
                 <!-- Action Button -->
                 <button type="submit"
-                    class="w-full py-3 bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer">
+                    class="ms-btn-add w-full py-3 text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 flex items-center justify-center space-x-2 active:scale-[0.98] shadow-sm cursor-pointer">
                     <span>Simpan Konfigurasi Iklan</span>
                 </button>
             </form>
@@ -873,7 +873,7 @@ if(!defined('SECURE_ACCESS')) {
                 
                 <div class="flex justify-end pt-2">
                     <button type="submit"
-                        class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
+                        class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
                         Simpan Pengaturan Embed
                     </button>
                 </div>
@@ -887,7 +887,7 @@ if(!defined('SECURE_ACCESS')) {
                     <h3 class="panel-card-title">API Keys & Active Integrations</h3>
                     <p class="panel-card-desc">Kunci akses eksternal yang aktif di sistem</p>
                 </div>
-                <button onclick="window.openApiKeyGenerateModal()" class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
+                <button onclick="window.openApiKeyGenerateModal()" class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
                     + Generate API Key Baru
                 </button>
             </div>

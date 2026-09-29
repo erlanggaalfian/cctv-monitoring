@@ -347,7 +347,7 @@
                 Batal
             </button>
             <button onclick="window.simpanBerbagiKamera()" id="berbagi-simpan"
-                class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-lg transition-colors">
+                class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-lg transition-colors">
                 Simpan
             </button>
         </div>
