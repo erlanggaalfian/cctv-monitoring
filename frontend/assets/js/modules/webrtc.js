@@ -1564,7 +1564,7 @@
                         </div>
                         <!-- Right: quality + orientation + theater + fullscreen -->
                         <div class="flex items-center gap-2.5">
-                            <button id="popup-quality-btn" class="px-2 py-0.5 bg-slate-800/90 hover:bg-slate-700 text-sky-400 hover:text-white rounded text-[10px] font-bold uppercase tracking-wide transition-all duration-150 active:scale-90 border border-white/10 min-w-[2.4rem] text-center" title="Ganti Kualitas (LQ/HQ)">LQ</button>
+                            <button id="popup-quality-btn" class="px-2 py-0.5 hover:bg-slate-700 text-sky-400 hover:text-white rounded text-[10px] font-bold uppercase tracking-wide transition-all duration-150 active:scale-90 min-w-[2.4rem] text-center" style="background:rgba(30,41,59,0.90);border:1px solid rgba(255,255,255,0.10);" title="Ganti Kualitas (LQ/HQ)">LQ</button>
                             <div class="w-px h-4 bg-white/15 hidden sm:block"></div>
                             <button id="popup-orientation-btn" class="hover:text-sky-400 transition-colors active:scale-90" title="Putar Orientasi Layar (R)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
@@ -1580,7 +1580,7 @@
                 </div>
 
                 <!-- Camera Metadata Bar -->
-                <div class="px-4 py-2 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between gap-2 text-[10px] text-slate-400 font-mono select-none shrink-0">
+                <div class="px-4 py-2 flex items-center justify-between gap-2 text-[10px] text-slate-400 font-mono select-none shrink-0" style="background:#0f172a;border-bottom:1px solid rgba(255,255,255,0.06);">
                     <div class="flex items-center gap-2 min-w-0">
                         <span id="popup-rec-dot" class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
                         <span id="popup-rec-label" class="font-bold text-rose-500 tracking-wider shrink-0">REC</span>
@@ -1590,13 +1590,13 @@
                         <span class="text-slate-700 shrink-0">|</span>
                         <span id="popup-cam-name" class="font-bold text-slate-100 uppercase truncate font-sans">LOADING...</span>
                     </div>
-                    <div id="popup-cam-status-container" class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 flex items-center shrink-0">
+                    <div id="popup-cam-status-container" class="px-2 py-0.5 rounded text-emerald-400 flex items-center shrink-0" style="background:rgba(6,78,59,0.40);border:1px solid rgba(16,185,129,0.20);">
                         <span id="popup-cam-status" class="font-bold text-[9px] font-sans tracking-wide">RTSP ONLINE</span>
                     </div>
                 </div>
 
                 <!-- Footer: Ad + Actions -->
-                <div class="px-4 py-2.5 bg-slate-950/40 border-t border-slate-800/60 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 text-xs text-slate-400">
+                <div class="px-4 py-2.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 text-xs text-slate-400" style="background:rgba(15,23,42,0.70);border-top:1px solid rgba(255,255,255,0.06);">
                     <!-- Ad / placeholder -->
                     <div class="flex-1 flex items-center gap-2 min-w-0">
                         <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 hidden" style="height:20px!important;">
@@ -1612,7 +1612,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             <span>Peta</span>
                         </button>
-                        <button onclick="window.closeCameraPopup()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all border border-slate-700">
+                        <button onclick="window.closeCameraPopup()" class="px-3 py-1.5 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all" style="background:rgba(30,41,59,0.90);border:1px solid rgba(55,65,81,0.70);">
                             Tutup
                         </button>
                     </div>
