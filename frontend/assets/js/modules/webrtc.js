@@ -2393,12 +2393,14 @@
                 currentQuality = quality;
                 qualityBtn.textContent = quality;
                 if (quality === "HQ") {
-                    qualityBtn.classList.remove("text-sky-400", "bg-slate-800");
-                    qualityBtn.classList.add("text-emerald-400", "bg-emerald-950/40");
+                    qualityBtn.style.background = "rgba(6, 78, 59, 0.55)";
+                    qualityBtn.style.color = "#34d399";
+                    qualityBtn.style.borderColor = "rgba(52, 211, 153, 0.35)";
                     qualityBtn.title = "Kualitas HD Aktif - Klik untuk ganti ke LQ";
                 } else {
-                    qualityBtn.classList.remove("text-emerald-400", "bg-emerald-950/40");
-                    qualityBtn.classList.add("text-sky-400", "bg-slate-800");
+                    qualityBtn.style.background = "rgba(30, 41, 59, 0.90)";
+                    qualityBtn.style.color = "#38bdf8";
+                    qualityBtn.style.borderColor = "rgba(255, 255, 255, 0.10)";
                     qualityBtn.title = "Kualitas LQ Aktif - Klik untuk ganti ke HD";
                 }
             };
