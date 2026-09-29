@@ -923,11 +923,11 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
    VIDEO POPUP SHARED — Camera popup & Playback modal IDENTIK
    ============================================================== */
 .ms-video-popup {
-  background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: var(--c-surface) !important;
+  border: 1px solid var(--c-border) !important;
   border-radius: var(--radius-lg, 12px) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55) !important;
-  color: #e2e8f0 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35) !important;
+  color: var(--c-text) !important;
   max-width: 64rem !important;
   width: 100% !important;
 }
@@ -937,8 +937,8 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
-  background: #0c1322;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--c-surface2);
+  border-bottom: 1px solid var(--c-border);
   flex-shrink: 0;
 }
 .ms-video-popup .ms-popup-head-title {
@@ -946,28 +946,28 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #38bdf8;
+  color: var(--c-blue, #3081d1);
 }
 .ms-video-popup .ms-popup-head-subtitle {
   font-size: 0.6875rem;
-  color: #94a3b8;
+  color: var(--c-text-muted);
 }
 .ms-video-popup .ms-popup-head-close {
-  color: #94a3b8;
+  color: var(--c-text-muted);
   transition: color 0.15s;
   cursor: pointer;
 }
-.ms-video-popup .ms-popup-head-close:hover { color: #f1f5f9; }
+.ms-video-popup .ms-popup-head-close:hover { color: var(--c-text); }
 .ms-video-popup .ms-popup-controls {
   padding: 0.75rem 1rem;
-  background: #0c1322;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--c-surface2);
+  border-top: 1px solid var(--c-border);
   flex-shrink: 0;
 }
 .ms-video-popup .ms-popup-controls select {
-  background: rgba(30, 41, 59, 0.80);
-  border: 1px solid rgba(55, 65, 81, 0.60);
-  color: #f1f5f9;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
   font-size: 0.75rem;
   padding: 0.375rem 0.625rem;
   border-radius: 6px;
@@ -978,9 +978,9 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   border-color: var(--c-blue, #3081d1);
 }
 .ms-video-popup .ms-popup-btn {
-  background: rgba(30, 41, 59, 0.80);
-  border: 1px solid rgba(55, 65, 81, 0.60);
-  color: #e2e8f0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
   font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -990,7 +990,7 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
 }
-.ms-video-popup .ms-popup-btn:hover { background: rgba(51, 65, 85, 0.90); }
+.ms-video-popup .ms-popup-btn:hover { background: var(--c-surface2); }
 .ms-video-popup .ms-popup-btn:active { transform: scale(0.95); }
 .ms-video-popup .ms-popup-btn--primary {
   background: var(--c-blue, #3081d1);
@@ -1010,38 +1010,39 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #64748b;
+  color: var(--c-text-dim);
 }
 .ms-video-popup .ms-popup-text {
-  color: #e2e8f0;
+  color: var(--c-text);
   font-size: 0.75rem;
 }
 .ms-video-popup .ms-popup-text-muted {
-  color: #94a3b8;
+  color: var(--c-text-muted);
   font-size: 0.6875rem;
 }
 .ms-video-popup .ms-popup-timeline {
-  background: rgba(15, 23, 42, 0.60);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
   border-radius: 6px;
   min-height: 42px;
 }
 .ms-video-popup .ms-popup-ad-bar {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--c-surface2);
+  border: 1px solid var(--c-border);
   min-height: 36px;
 }
 .ms-video-popup .ms-popup-status {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #34d399;
+  color: #059669;
   font-size: 0.625rem;
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
 }
-.ms-video-popup .ms-popup-separator { color: rgba(255, 255, 255, 0.12); }
+.dark .ms-video-popup .ms-popup-status { color: #34d399; }
+.ms-video-popup .ms-popup-separator { color: var(--c-border); }
 .ms-video-popup .ms-popup-clock {
-  color: #f1f5f9;
+  color: var(--c-text);
   font-family: ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
@@ -1051,34 +1052,31 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   outline: none !important;
   box-shadow: none !important;
 }
-/* --- Text readability: force light colors on dark popup bg --- */
+/* --- Text readability: follow theme tokens, override risky Tailwind slate remap --- */
 .ms-video-popup,
 .ms-video-popup .ms-popup-head,
-.ms-video-popup .ms-popup-controls { color: #e2e8f0; }
-/* Gray shades: remapped slate 300-600 unreadable on dark bg */
+.ms-video-popup .ms-popup-controls { color: var(--c-text); }
 .ms-video-popup .text-slate-300,
 .ms-video-popup .text-slate-400,
 .ms-video-popup .text-slate-500,
 .ms-video-popup .text-slate-600,
-.ms-video-popup [class*="text-slate-"] { color: #94a3b8 !important; }
-/* Custom utility classes that might not exist */
+.ms-video-popup [class*="text-slate-"] { color: var(--c-text-muted) !important; }
 .ms-video-popup .text-cyber-dim,
-.ms-video-popup .text-muted { color: #94a3b8 !important; }
-/* Semantic colors: keep accent visibility */
+.ms-video-popup .text-muted { color: var(--c-text-muted) !important; }
+/* Semantic colors: keep accent visibility, same in both themes */
 .ms-video-popup .text-rose-400 { color: #fb7185 !important; }
 .ms-video-popup .text-rose-500 { color: #f43f5e !important; }
 .ms-video-popup .text-emerald-400 { color: #34d399 !important; }
 .ms-video-popup .text-emerald-500 { color: #10b981 !important; }
-.ms-video-popup .text-sky-400 { color: #38bdf8 !important; }
-.ms-video-popup .text-sky-500 { color: #0ea5e9 !important; }
-.ms-video-popup .text-white { color: #f1f5f9 !important; }
-/* Ensure parent cascade for any inline Tailwind classes */
+.ms-video-popup .text-sky-400 { color: var(--c-blue, #3081d1) !important; }
+.ms-video-popup .text-sky-500 { color: var(--c-blue, #3081d1) !important; }
+.ms-video-popup .text-white { color: var(--c-text) !important; }
 .ms-video-popup * { --tw-text-opacity: 1; }
-/* btn-elegant inside popup: force light */
-.ms-video-popup .btn-elegant { color: #e2e8f0 !important; background: rgba(30,41,59,0.80) !important; border-color: rgba(55,65,81,0.60) !important; }
-.ms-video-popup .btn-elegant:hover { background: rgba(51,65,85,0.90) !important; }
-/* app-input inside popup: force dark input */
-.ms-video-popup .app-input { background: rgba(30,41,59,0.80) !important; border-color: rgba(55,65,81,0.60) !important; color: #f1f5f9 !important; }
+/* btn-elegant inside popup: follow theme */
+.ms-video-popup .btn-elegant { color: var(--c-text) !important; background: var(--c-surface) !important; border-color: var(--c-border) !important; }
+.ms-video-popup .btn-elegant:hover { background: var(--c-surface2) !important; }
+/* app-input inside popup: follow theme */
+.ms-video-popup .app-input { background: var(--c-surface) !important; border-color: var(--c-border) !important; color: var(--c-text) !important; }
 .ms-video-popup .app-input:focus { border-color: var(--c-blue, #3081d1) !important; }
 /* --- Admin console primary action buttons (theme-safe, no Tailwind JIT dependency) --- */
 .ms-btn-add {
