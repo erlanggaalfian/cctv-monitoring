@@ -1051,6 +1051,35 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   outline: none !important;
   box-shadow: none !important;
 }
+/* --- Text readability: force light colors on dark popup bg --- */
+.ms-video-popup,
+.ms-video-popup .ms-popup-head,
+.ms-video-popup .ms-popup-controls { color: #e2e8f0; }
+/* Gray shades: remapped slate 300-600 unreadable on dark bg */
+.ms-video-popup .text-slate-300,
+.ms-video-popup .text-slate-400,
+.ms-video-popup .text-slate-500,
+.ms-video-popup .text-slate-600,
+.ms-video-popup [class*="text-slate-"] { color: #94a3b8 !important; }
+/* Custom utility classes that might not exist */
+.ms-video-popup .text-cyber-dim,
+.ms-video-popup .text-muted { color: #94a3b8 !important; }
+/* Semantic colors: keep accent visibility */
+.ms-video-popup .text-rose-400 { color: #fb7185 !important; }
+.ms-video-popup .text-rose-500 { color: #f43f5e !important; }
+.ms-video-popup .text-emerald-400 { color: #34d399 !important; }
+.ms-video-popup .text-emerald-500 { color: #10b981 !important; }
+.ms-video-popup .text-sky-400 { color: #38bdf8 !important; }
+.ms-video-popup .text-sky-500 { color: #0ea5e9 !important; }
+.ms-video-popup .text-white { color: #f1f5f9 !important; }
+/* Ensure parent cascade for any inline Tailwind classes */
+.ms-video-popup * { --tw-text-opacity: 1; }
+/* btn-elegant inside popup: force light */
+.ms-video-popup .btn-elegant { color: #e2e8f0 !important; background: rgba(30,41,59,0.80) !important; border-color: rgba(55,65,81,0.60) !important; }
+.ms-video-popup .btn-elegant:hover { background: rgba(51,65,85,0.90) !important; }
+/* app-input inside popup: force dark input */
+.ms-video-popup .app-input { background: rgba(30,41,59,0.80) !important; border-color: rgba(55,65,81,0.60) !important; color: #f1f5f9 !important; }
+.ms-video-popup .app-input:focus { border-color: var(--c-blue, #3081d1) !important; }
 /* ==============================================================
    DARK MODE -- Override Tailwind classes ke token CSS
    ============================================================== */
