@@ -1542,14 +1542,6 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
 
-                    <!-- Ad overlay: hover-only, same behavior/sizing as tile card ad -->
-                    <div id="popup-ad-overlay" class="absolute bottom-2.5 z-10 flex items-center px-2 py-1 rounded-md border border-white/5 opacity-0 group-hover:opacity-100 transition-all duration-300 overflow-hidden hidden" style="min-height:24px;">
-                        <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 mr-2 hidden">
-                        <div class="flex-grow overflow-hidden relative flex items-center">
-                            <div id="popup-ad-marquee-track" class="marquee-track flex whitespace-nowrap"></div>
-                        </div>
-                    </div>
-
                     <!-- Navigation Buttons (Prev & Next) -->
                     <button id="popup-prev-btn" class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/60 hover:bg-black/85 text-white border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 active:scale-90 shadow-lg hidden" title="Kamera Sebelumnya (←)">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -1584,6 +1576,14 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Ad bar: below video, always visible, theme-aware, follows Ad Manager settings -->
+                <div id="popup-ad-overlay" class="ms-popup-ad-bar flex items-center px-3 overflow-hidden hidden">
+                    <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 mr-2 hidden">
+                    <div class="flex-grow overflow-hidden relative flex items-center">
+                        <div id="popup-ad-marquee-track" class="marquee-track flex whitespace-nowrap"></div>
                     </div>
                 </div>
 
@@ -2603,8 +2603,7 @@
                         }
 
                         if (adOverlay && adMarqueeTrack) {
-                            // Mirror buildTileOverlayBottom(): hover-only overlay on video,
-                            // same box sizing/positioning/colors as tile card ad.
+                            // Ad bar below video — always visible (not hover-only), follows Ad Manager settings
                             const bgOpacity = data.bg_opacity !== undefined ? data.bg_opacity : 1.0;
                             adOverlay.style.backgroundColor = hexToRgba(data.bg_color || "#1e293b", bgOpacity);
 
@@ -2630,32 +2629,13 @@
                                 <span class="marquee-item">${trackText}</span>
                             `;
 
-                            // Same positioning logic as tile card overlay
+                            // Width/alignment from Ad Manager (bar layout, not absolute overlay)
                             const boxWidth = data.box_width !== undefined ? data.box_width : 100;
                             const textAlign = data.text_align || "left";
-                            adOverlay.style.left = "";
-                            adOverlay.style.right = "";
-                            adOverlay.style.width = "";
-                            adOverlay.style.transform = "";
-                            adOverlay.style.justifyContent = "flex-start";
-
-                            if (boxWidth >= 100) {
-                                adOverlay.style.left = "10px";
-                                adOverlay.style.right = "10px";
-                                adOverlay.style.width = "calc(100% - 20px)";
-                            } else if (textAlign === "left") {
-                                adOverlay.style.left = "10px";
-                                adOverlay.style.width = `${boxWidth}%`;
-                            } else if (textAlign === "right") {
-                                adOverlay.style.right = "10px";
-                                adOverlay.style.width = `${boxWidth}%`;
-                            } else {
-                                adOverlay.style.left = "50%";
-                                adOverlay.style.transform = "translateX(-50%)";
-                                adOverlay.style.width = `${boxWidth}%`;
-                            }
-                            if (textAlign === "center") adOverlay.style.justifyContent = "center";
-                            else if (textAlign === "right") adOverlay.style.justifyContent = "flex-end";
+                            adOverlay.style.width = boxWidth >= 100 ? "100%" : `${boxWidth}%`;
+                            adOverlay.style.marginLeft = textAlign === "right" ? "auto" : (textAlign === "center" ? "auto" : "0");
+                            adOverlay.style.marginRight = textAlign === "left" ? "auto" : (textAlign === "center" ? "auto" : "0");
+                            adOverlay.style.justifyContent = textAlign === "center" ? "center" : (textAlign === "right" ? "flex-end" : "flex-start");
 
                             adOverlay.classList.remove("hidden");
                         }

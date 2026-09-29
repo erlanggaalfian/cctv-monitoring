@@ -1028,8 +1028,9 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 }
 .ms-video-popup .ms-popup-ad-bar {
   background: var(--c-surface2);
-  border: 1px solid var(--c-border);
-  min-height: 36px;
+  border-top: 1px solid var(--c-border);
+  min-height: 32px;
+  padding: 0.375rem 0.75rem;
 }
 .ms-video-popup .ms-popup-status {
   background: rgba(16, 185, 129, 0.12);
