@@ -1542,6 +1542,14 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
 
+                    <!-- Ad overlay: hover-only, same behavior/sizing as tile card ad -->
+                    <div id="popup-ad-overlay" class="absolute bottom-2.5 z-10 flex items-center px-2 py-1 rounded-md border border-white/5 opacity-0 group-hover:opacity-100 transition-all duration-300 overflow-hidden hidden" style="min-height:24px;">
+                        <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 mr-2 hidden">
+                        <div class="flex-grow overflow-hidden relative flex items-center">
+                            <div id="popup-ad-marquee-track" class="marquee-track flex whitespace-nowrap"></div>
+                        </div>
+                    </div>
+
                     <!-- Navigation Buttons (Prev & Next) -->
                     <button id="popup-prev-btn" class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/60 hover:bg-black/85 text-white border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 active:scale-90 shadow-lg hidden" title="Kamera Sebelumnya (←)">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -1595,17 +1603,8 @@
                     </div>
                 </div>
 
-                <!-- Footer: Ad + Actions -->
-                <div class="ms-popup-controls flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 text-xs">
-                    <!-- Ad / placeholder -->
-                    <div class="flex-1 flex items-center gap-2 min-w-0">
-                        <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 hidden" style="height:20px!important;">
-                        <div id="popup-ad-text-container" class="ms-popup-ad-bar flex-grow overflow-hidden rounded py-1.5 px-3 hidden" style="min-height:36px;display:flex;align-items:center;">
-                            <div class="marquee-wrapper">
-                                <div id="popup-ad-marquee-track" class="marquee-track"></div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Footer: Actions -->
+                <div class="ms-popup-controls flex items-center justify-end gap-2.5 text-xs">
                     <!-- Action buttons -->
                     <div class="flex items-center gap-2 shrink-0">
                         <button id="popup-map-btn" class="ms-popup-btn ms-popup-btn--accent flex items-center gap-1.5 font-mono">
@@ -2578,8 +2577,8 @@
 
             // Load Ad Config: berlaku utk siapapun sesuai show_ads backend,
             // tidak lagi cuma role guest.
+            const adOverlay = document.getElementById("popup-ad-overlay");
             const adImg = document.getElementById("popup-ad-img");
-            const adTextContainer = document.getElementById("popup-ad-text-container");
             const adMarqueeTrack = document.getElementById("popup-ad-marquee-track");
 
             {
@@ -2597,82 +2596,78 @@
                             const imgOpacity = data.image_opacity !== undefined ? data.image_opacity : 1.0;
                             adImg.style.opacity = imgOpacity;
                             const imgHeight = data.image_height !== undefined ? data.image_height : 20;
-                            adImg.style.setProperty('height', `${imgHeight}px`, 'important');
+                            adImg.style.height = `${imgHeight}px`;
                             adImg.classList.remove("hidden");
                         } else if (adImg) {
                             adImg.classList.add("hidden");
                         }
 
-                        if (adTextContainer && adMarqueeTrack) {
+                        if (adOverlay && adMarqueeTrack) {
+                            // Mirror buildTileOverlayBottom(): hover-only overlay on video,
+                            // same box sizing/positioning/colors as tile card ad.
                             const bgOpacity = data.bg_opacity !== undefined ? data.bg_opacity : 1.0;
-                            adTextContainer.style.backgroundColor = hexToRgba(data.bg_color || "#1e293b", bgOpacity);
-                            
-                            // Set dynamic text color and opacity
+                            adOverlay.style.backgroundColor = hexToRgba(data.bg_color || "#1e293b", bgOpacity);
+
                             adMarqueeTrack.style.color = data.text_color || "#ffffff";
                             const textOpacity = data.text_opacity !== undefined ? data.text_opacity : 1.0;
                             adMarqueeTrack.style.opacity = textOpacity;
-                            
-                            // Set dynamic font size
-                            const fontSize = data.font_size !== undefined ? data.font_size : 10;
+
+                            const fontSize = data.font_size !== undefined ? Math.min(10, data.font_size) : 9;
                             adMarqueeTrack.style.fontSize = `${fontSize}px`;
-                            
-                            // Set dynamic font family
                             adMarqueeTrack.style.fontFamily = data.font_family || "monospace";
-                            
-                            // Set dynamic scroll speed (duration in seconds - much slower formula)
+
                             const speed = data.scroll_speed !== undefined ? data.scroll_speed : 5;
                             const duration = Math.max(10, (11 - speed) * 18);
                             adMarqueeTrack.style.animationDuration = `${duration}s`;
-                            
+                            adMarqueeTrack.style.animation = `marquee-scroll ${duration}s linear infinite`;
+
                             const text = (data.marquee_text || "").trim();
                             const itemContent = `${text} &nbsp;&nbsp;|&nbsp;&nbsp; `;
-                            const trackText = itemContent.repeat(6);
-                            
+                            const trackText = itemContent.repeat(4);
+
                             adMarqueeTrack.innerHTML = `
                                 <span class="marquee-item">${trackText}</span>
                                 <span class="marquee-item">${trackText}</span>
                             `;
-                            
-                            // Apply custom box width and text alignment for modal text container
+
+                            // Same positioning logic as tile card overlay
                             const boxWidth = data.box_width !== undefined ? data.box_width : 100;
                             const textAlign = data.text_align || "left";
+                            adOverlay.style.left = "";
+                            adOverlay.style.right = "";
+                            adOverlay.style.width = "";
+                            adOverlay.style.transform = "";
+                            adOverlay.style.justifyContent = "flex-start";
 
-                            adTextContainer.style.width = `${boxWidth}%`;
-                            adTextContainer.style.flexGrow = boxWidth >= 100 ? "1" : "0";
-
-                            // Align inside the flex container parent using margins
-                            if (textAlign === "left") {
-                                adTextContainer.style.marginLeft = "0";
-                                adTextContainer.style.marginRight = "auto";
-                                adTextContainer.style.justifyContent = "flex-start";
+                            if (boxWidth >= 100) {
+                                adOverlay.style.left = "10px";
+                                adOverlay.style.right = "10px";
+                                adOverlay.style.width = "calc(100% - 20px)";
+                            } else if (textAlign === "left") {
+                                adOverlay.style.left = "10px";
+                                adOverlay.style.width = `${boxWidth}%`;
                             } else if (textAlign === "right") {
-                                adTextContainer.style.marginLeft = "auto";
-                                adTextContainer.style.marginRight = "0";
-                                adTextContainer.style.justifyContent = "flex-end";
-                            } else { // center
-                                adTextContainer.style.marginLeft = "auto";
-                                adTextContainer.style.marginRight = "auto";
-                                adTextContainer.style.justifyContent = "center";
+                                adOverlay.style.right = "10px";
+                                adOverlay.style.width = `${boxWidth}%`;
+                            } else {
+                                adOverlay.style.left = "50%";
+                                adOverlay.style.transform = "translateX(-50%)";
+                                adOverlay.style.width = `${boxWidth}%`;
                             }
+                            if (textAlign === "center") adOverlay.style.justifyContent = "center";
+                            else if (textAlign === "right") adOverlay.style.justifyContent = "flex-end";
 
-                            adTextContainer.style.display = "flex";
-                            adTextContainer.classList.remove("hidden");
+                            adOverlay.classList.remove("hidden");
                         }
                     } else {
                         if (adImg) adImg.classList.add("hidden");
-                        if (adTextContainer) {
-                            adTextContainer.classList.add("hidden");
-                            adTextContainer.style.display = "none";
-                        }
+                        if (adOverlay) adOverlay.classList.add("hidden");
                     }
                 })
                 .catch(err => {
                     console.error("Gagal memuat iklan:", err);
                     if (adImg) adImg.classList.add("hidden");
-                    if (adTextContainer) {
-                        adTextContainer.classList.add("hidden");
-                        adTextContainer.style.display = "none";
-                    }
+                    if (adOverlay) adOverlay.classList.add("hidden");
                 });
             }
         }
