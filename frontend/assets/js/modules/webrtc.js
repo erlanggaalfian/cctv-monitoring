@@ -1526,7 +1526,7 @@
         modalDiv.id = "camera-popup-modal";
         modalDiv.className = "hidden ms-modal";
         modalDiv.innerHTML = `
-            <div id="camera-popup-modal-panel" class="ms-modal__panel ms-modal__panel--pad relative flex flex-col font-mono transition-all duration-300">
+            <div id="camera-popup-modal-panel" class="ms-modal__panel ms-modal__panel--pad ms-video-popup relative flex flex-col font-mono transition-all duration-300">
                 <!-- Hidden Audio Only element for isolated audio track play -->
                 <audio id="popup-audio-only-element" class="hidden" autoplay muted></audio>
 
@@ -1580,27 +1580,27 @@
                 </div>
 
                 <!-- Camera Metadata Bar -->
-                <div class="px-4 py-2 flex items-center justify-between gap-2 text-[10px] font-mono select-none shrink-0" style="background:var(--c-surface2);border-bottom:1px solid var(--c-border);color:var(--c-text-muted);">
+                <div class="ms-popup-head">
                     <div class="flex items-center gap-2 min-w-0">
                         <span id="popup-rec-dot" class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
                         <span id="popup-rec-label" class="font-bold text-rose-500 tracking-wider shrink-0">REC</span>
-                        <span class="shrink-0" style="color:var(--c-border)">|</span>
+                        <span class="ms-popup-separator shrink-0">|</span>
                         <span id="popup-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-                        <span id="popup-cam-id" class="font-bold shrink-0" style="color:var(--c-blue);">CAM_000</span>
-                        <span class="shrink-0" style="color:var(--c-border)">|</span>
-                        <span id="popup-cam-name" class="font-bold uppercase truncate font-sans" style="color:var(--c-text);">LOADING...</span>
+                        <span id="popup-cam-id" class="ms-popup-head-title font-bold shrink-0">CAM_000</span>
+                        <span class="ms-popup-separator shrink-0">|</span>
+                        <span id="popup-cam-name" class="ms-popup-text font-bold uppercase truncate font-sans">LOADING...</span>
                     </div>
-                    <div id="popup-cam-status-container" class="px-2 py-0.5 rounded text-emerald-400 flex items-center shrink-0" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+                    <div id="popup-cam-status-container" class="ms-popup-status flex items-center shrink-0">
                         <span id="popup-cam-status" class="font-bold text-[9px] font-sans tracking-wide">RTSP ONLINE</span>
                     </div>
                 </div>
 
                 <!-- Footer: Ad + Actions -->
-                <div class="px-4 py-2.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 text-xs" style="background:var(--c-surface);border-top:1px solid var(--c-border);color:var(--c-text-muted);">
+                <div class="ms-popup-controls flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 text-xs">
                     <!-- Ad / placeholder -->
                     <div class="flex-1 flex items-center gap-2 min-w-0">
                         <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 hidden" style="height:20px!important;">
-                        <div id="popup-ad-text-container" class="flex-grow overflow-hidden rounded border border-white/5 py-1.5 px-3 hidden" style="background:var(--c-surface2);min-height:36px;display:flex;align-items:center;border:1px solid var(--c-border);">
+                        <div id="popup-ad-text-container" class="flex-grow overflow-hidden rounded border border-white/5 py-1.5 px-3 hidden" class="ms-popup-ad-bar flex-grow overflow-hidden rounded py-1.5 px-3 hidden" style="min-height:36px;display:flex;align-items:center;">
                             <div class="marquee-wrapper">
                                 <div id="popup-ad-marquee-track" class="marquee-track"></div>
                             </div>
@@ -1608,11 +1608,11 @@
                     </div>
                     <!-- Action buttons -->
                     <div class="flex items-center gap-2 shrink-0">
-                        <button id="popup-map-btn" class="flex items-center gap-1.5 px-3 py-1.5 active:scale-95 text-white rounded-md text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm" style="background:#059669;">
+                        <button id="popup-map-btn" class="ms-popup-btn ms-popup-btn--accent flex items-center gap-1.5 font-mono">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             <span>Peta</span>
                         </button>
-                        <button onclick="window.closeCameraPopup()" class="px-3 py-1.5 active:scale-95 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all btn-elegant">
+                        <button onclick="window.closeCameraPopup()" class="ms-popup-btn font-mono">
                             Tutup
                         </button>
                     </div>

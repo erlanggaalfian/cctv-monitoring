@@ -919,11 +919,137 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .scanline { animation: scanline 6s linear infinite; }
 #camera-popup-modal:not(.hidden) { animation: popupFadeIn 0.22s cubic-bezier(0.34,1.12,0.64,1) forwards; }
 #camera-popup-modal.closing { animation: popupFadeOut 0.18s ease-in forwards; }
-/* Border konsisten untuk popup gelap (camera popup & playback modal) */
-#camera-popup-modal-panel,
-#pb-modal .ms-modal__panel {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+/* ================================================================
+   VIDEO POPUP SHARED — Camera popup & Playback modal IDENTIK
+   ============================================================== */
+.ms-video-popup {
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: var(--radius-lg, 12px) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55) !important;
+  color: #e2e8f0 !important;
+  max-width: 64rem !important;
+  width: 100% !important;
+}
+.ms-video-popup .ms-popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #0c1322;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+.ms-video-popup .ms-popup-head-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+}
+.ms-video-popup .ms-popup-head-subtitle {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+}
+.ms-video-popup .ms-popup-head-close {
+  color: #94a3b8;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.ms-video-popup .ms-popup-head-close:hover { color: #f1f5f9; }
+.ms-video-popup .ms-popup-controls {
+  padding: 0.75rem 1rem;
+  background: #0c1322;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+.ms-video-popup .ms-popup-controls select {
+  background: rgba(30, 41, 59, 0.80);
+  border: 1px solid rgba(55, 65, 81, 0.60);
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+.ms-video-popup .ms-popup-controls select:focus {
+  border-color: var(--c-blue, #3081d1);
+}
+.ms-video-popup .ms-popup-btn {
+  background: rgba(30, 41, 59, 0.80);
+  border: 1px solid rgba(55, 65, 81, 0.60);
+  color: #e2e8f0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.375rem 0.625rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.ms-video-popup .ms-popup-btn:hover { background: rgba(51, 65, 85, 0.90); }
+.ms-video-popup .ms-popup-btn:active { transform: scale(0.95); }
+.ms-video-popup .ms-popup-btn--primary {
+  background: var(--c-blue, #3081d1);
+  border-color: transparent;
+  color: white;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.ms-video-popup .ms-popup-btn--accent {
+  background: #059669;
+  border-color: transparent;
+  color: white;
+}
+.ms-video-popup .ms-popup-btn--accent:hover { background: #047857; }
+.ms-video-popup .ms-popup-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+.ms-video-popup .ms-popup-text {
+  color: #e2e8f0;
+  font-size: 0.75rem;
+}
+.ms-video-popup .ms-popup-text-muted {
+  color: #94a3b8;
+  font-size: 0.6875rem;
+}
+.ms-video-popup .ms-popup-timeline {
+  background: rgba(15, 23, 42, 0.60);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  min-height: 42px;
+}
+.ms-video-popup .ms-popup-ad-bar {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 36px;
+}
+.ms-video-popup .ms-popup-status {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+}
+.ms-video-popup .ms-popup-separator { color: rgba(255, 255, 255, 0.12); }
+.ms-video-popup .ms-popup-clock {
+  color: #f1f5f9;
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+/* Video area — no border, no outline */
+.ms-video-popup video {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 /* ==============================================================
    DARK MODE -- Override Tailwind classes ke token CSS

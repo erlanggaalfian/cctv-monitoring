@@ -64,18 +64,18 @@ if(!defined('SECURE_ACCESS')) {
 
 <!-- Playback Modal -->
 <div id="pb-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel ms-modal__panel--pad relative flex flex-col" style="max-width: 64rem;">
+    <div class="ms-modal__panel ms-modal__panel--pad ms-video-popup relative flex flex-col">
 
         <!-- Metadata bar (atas) — samakan dengan camera popup -->
-        <div class="px-4 py-2 border-b flex items-center justify-between gap-2 text-[10px] font-mono select-none shrink-0" style="border-color: var(--c-border); color: var(--c-text-muted);">
+        <div class="ms-popup-head">
             <div class="flex items-center gap-2 min-w-0">
-                <span id="pb-modal-title" class="font-bold truncate" style="color: var(--c-blue);">Playback</span>
-                <span class="text-slate-700">|</span>
-                <span id="pb-modal-sub" class="truncate" style="color: var(--c-text);">&nbsp;</span>
+                <span id="pb-modal-title" class="ms-popup-head-title truncate">Playback</span>
+                <span class="ms-popup-separator">|</span>
+                <span id="pb-modal-sub" class="ms-popup-text truncate">&nbsp;</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                <span id="playback-info" class="text-[9px]" style="color: var(--c-text-muted);"></span>
-                <button type="button" id="pb-modal-close" class="p-1 hover:text-rose-400 transition-colors active:scale-90" style="color: var(--c-text-muted);" title="Tutup (Esc)">
+                <span id="playback-info" class="text-[9px] ms-popup-text-muted"></span>
+                <button type="button" id="pb-modal-close" class="ms-popup-head-close p-1 hover:text-rose-400 transition-colors active:scale-90" title="Tutup (Esc)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -95,29 +95,29 @@ if(!defined('SECURE_ACCESS')) {
             </div>
         </div>
 
-        <!-- Controls Area — dark themed -->
-        <div class="px-4 py-3 space-y-3">
+        <!-- Controls Area — shared popup style -->
+        <div class="ms-popup-controls space-y-3">
             <!-- Date + Info row -->
             <div class="flex items-center gap-3">
-                <label class="text-[10px] font-bold uppercase tracking-wider font-mono" style="color: var(--c-text-muted);">Tanggal</label>
-                <select id="playback-date-select" class="text-xs flex-1 max-w-xs px-2.5 py-1.5 rounded-md font-mono focus:outline-none focus:ring-1 appearance-none cursor-pointer app-input" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 0.75rem; padding-right: 1.75rem;"></select>
+                <label class="ms-popup-label font-mono">Tanggal</label>
+                <select id="playback-date-select" class="ms-popup-controls select text-xs flex-1 max-w-xs font-mono appearance-none cursor-pointer" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 0.75rem; padding-right: 1.75rem;"></select>
             </div>
 
             <!-- Transport controls + clock -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="window.pbSeekRelative(-30)" class="px-2.5 py-1.5 rounded-md text-[10px] font-mono font-bold transition-all active:scale-95 btn-elegant" title="Mundur 30 detik">← 30s</button>
-                    <button type="button" onclick="window.pbTogglePlay()" id="pb-play-btn" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 border border-sky-500/30 rounded-md text-[10px] font-mono font-bold text-white transition-all active:scale-95 shadow-lg shadow-sky-500/20">Play / Pause</button>
-                    <button type="button" onclick="window.pbSeekRelative(30)" class="px-2.5 py-1.5 rounded-md text-[10px] font-mono font-bold transition-all active:scale-95 btn-elegant" title="Maju 30 detik">30s →</button>
+                    <button type="button" onclick="window.pbSeekRelative(-30)" class="ms-popup-btn font-mono" title="Mundur 30 detik">← 30s</button>
+                    <button type="button" onclick="window.pbTogglePlay()" id="pb-play-btn" class="ms-popup-btn ms-popup-btn--primary font-mono">Play / Pause</button>
+                    <button type="button" onclick="window.pbSeekRelative(30)" class="ms-popup-btn font-mono" title="Maju 30 detik">30s →</button>
                 </div>
                 <div class="text-right">
-                    <div id="pb-clock" class="text-sm font-mono font-bold tabular-nums" style="color: var(--c-text);">--:--:--</div>
-                    <div id="pb-range-label" class="text-[9px] font-mono" style="color: var(--c-text-muted);">&nbsp;</div>
+                    <div id="pb-clock" class="ms-popup-clock text-sm font-bold">--:--:--</div>
+                    <div id="pb-range-label" class="ms-popup-text-muted text-[9px] font-mono">&nbsp;</div>
                 </div>
             </div>
 
             <!-- Timeline -->
-            <div id="pb-timeline" class="relative h-12 rounded-lg cursor-pointer select-none overflow-hidden" style="background: var(--c-surface2); border: 1px solid var(--c-border);">
+            <div id="pb-timeline" class="ms-popup-timeline relative h-12 cursor-pointer select-none overflow-hidden">
                 <div id="pb-timeline-ranges" class="absolute inset-0"></div>
                 <div id="pb-timeline-ticks" class="absolute inset-x-0 bottom-0 h-4"></div>
                 <div id="pb-playhead" class="absolute top-0 bottom-0 w-0.5 bg-rose-500 pointer-events-none hidden">
@@ -125,7 +125,7 @@ if(!defined('SECURE_ACCESS')) {
                 </div>
             </div>
 
-            <div class="flex items-center justify-between text-[9px] font-mono" style="color: var(--c-text-muted);">
+            <div class="flex items-center justify-between ms-popup-text-muted text-[9px] font-mono">
                 <span id="pb-tl-start">00:00</span>
                 <span>Klik timeline untuk melompat ke jam tertentu</span>
                 <span id="pb-tl-end">23:59</span>
