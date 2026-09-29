@@ -1032,7 +1032,7 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   min-height: 32px;
   padding: 0.375rem 0.75rem;
 }
-/* Fullscreen: ad bar becomes an overlay pinned to bottom of the fullscreen element */
+/* Fullscreen: ad bar becomes an overlay pinned to bottom of the fullscreen element, hover-only like controls bar */
 .ms-popup-ad-bar--fs {
   position: absolute;
   left: 0;
@@ -1041,6 +1041,14 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   z-index: 20;
   background: rgba(15, 23, 42, 0.85) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+#popup-player-wrapper:hover .ms-popup-ad-bar--fs,
+#popup-player-wrapper.touch-controls-visible .ms-popup-ad-bar--fs {
+  opacity: 1;
+  pointer-events: auto;
 }
 .ms-video-popup .ms-popup-status {
   background: rgba(16, 185, 129, 0.12);
