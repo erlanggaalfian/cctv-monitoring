@@ -910,6 +910,12 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .scanline { animation: scanline 6s linear infinite; }
 #camera-popup-modal:not(.hidden) { animation: popupFadeIn 0.22s cubic-bezier(0.34,1.12,0.64,1) forwards; }
 #camera-popup-modal.closing { animation: popupFadeOut 0.18s ease-in forwards; }
+/* Border konsisten untuk popup gelap (camera popup & playback modal) */
+#camera-popup-modal-panel,
+#pb-modal .ms-modal__panel {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
 /* ==============================================================
    DARK MODE -- Override Tailwind classes ke token CSS
    ============================================================== */
