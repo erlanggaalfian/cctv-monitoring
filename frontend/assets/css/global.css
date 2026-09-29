@@ -1033,14 +1033,13 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
   padding: 0.375rem 0.75rem;
 }
 /* Fullscreen: ad bar becomes an overlay pinned to bottom of the fullscreen element, hover-only like controls bar */
+/* Layout/background come from Ad Space Config via JS inline styles — this rule only handles positioning */
 .ms-popup-ad-bar--fs {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 20;
-  background: rgba(15, 23, 42, 0.85) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
