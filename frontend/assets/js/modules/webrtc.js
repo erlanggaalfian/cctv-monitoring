@@ -1756,8 +1756,18 @@
         let touchControlsTimer = null;
         document.addEventListener("fullscreenchange", () => {
             const wrapper = document.getElementById("popup-player-wrapper");
+            const adOverlay = document.getElementById("popup-ad-overlay");
             if (document.fullscreenElement && document.fullscreenElement === wrapper) {
                 fullscreenBtn.innerHTML = `<svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"/></svg>`;
+
+                // Move ad bar INSIDE the fullscreen element so it stays visible
+                // (Fullscreen API only renders the requested element + its descendants)
+                if (adOverlay && wrapper && !wrapper.contains(adOverlay)) {
+                    adOverlay._fsPlaceholder = document.createComment("popup-ad-overlay-slot");
+                    adOverlay.parentElement.insertBefore(adOverlay._fsPlaceholder, adOverlay);
+                    wrapper.appendChild(adOverlay);
+                    adOverlay.classList.add("ms-popup-ad-bar--fs");
+                }
 
                 // On touch devices: tap on wrapper to toggle controls visibility
                 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -1778,6 +1788,14 @@
                 }
             } else {
                 fullscreenBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+
+                // Move ad bar back to its original position below the video
+                if (adOverlay && adOverlay._fsPlaceholder) {
+                    adOverlay._fsPlaceholder.parentElement.insertBefore(adOverlay, adOverlay._fsPlaceholder);
+                    adOverlay._fsPlaceholder.remove();
+                    adOverlay._fsPlaceholder = null;
+                    adOverlay.classList.remove("ms-popup-ad-bar--fs");
+                }
                 
                 // Cleanup: remove touch handler & controls visibility
                 if (wrapper) {
