@@ -2705,10 +2705,10 @@
             document.exitFullscreen().catch(() => {});
         }
 
-        // Reset panel sizing back to default max-w-5xl
+        // Reset panel sizing back to default (theme-safe tokens, must match createPopupModalElement())
         const panel = document.getElementById("camera-popup-modal-panel");
         if (panel) {
-            panel.className = "relative w-full max-w-5xl bg-cyber-container/95 border border-cyber-outline/60 rounded-lg shadow-2xl overflow-hidden flex flex-col font-mono transition-all duration-300";
+            panel.className = "ms-modal__panel ms-modal__panel--pad ms-video-popup relative flex flex-col font-mono transition-all duration-300";
         }
         
         // Reset Play button icon
