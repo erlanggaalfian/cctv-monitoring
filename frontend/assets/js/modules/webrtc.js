@@ -1600,7 +1600,7 @@
                     <!-- Ad / placeholder -->
                     <div class="flex-1 flex items-center gap-2 min-w-0">
                         <img id="popup-ad-img" src="" alt="Ad" class="w-auto rounded object-contain shrink-0 hidden" style="height:20px!important;">
-                        <div id="popup-ad-text-container" class="flex-grow overflow-hidden rounded border border-white/5 py-1.5 px-3 hidden" class="ms-popup-ad-bar flex-grow overflow-hidden rounded py-1.5 px-3 hidden" style="min-height:36px;display:flex;align-items:center;">
+                        <div id="popup-ad-text-container" class="ms-popup-ad-bar flex-grow overflow-hidden rounded py-1.5 px-3 hidden" style="min-height:36px;display:flex;align-items:center;">
                             <div class="marquee-wrapper">
                                 <div id="popup-ad-marquee-track" class="marquee-track"></div>
                             </div>
