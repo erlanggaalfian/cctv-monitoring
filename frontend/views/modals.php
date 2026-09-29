@@ -3,7 +3,7 @@
 <!-- ============================================================ -->
 <div id="stream-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 32rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div><h3 id="modal-title" class="ms-modal__title">Add CCTV Stream URL</h3>
                 <p class="ms-modal__desc">Alamat RTSP, grup, dan koordinat kamera</p></div>
             <button onclick="closeStreamModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -121,7 +121,7 @@
 <!-- ============================================================ -->
 <div id="user-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 28rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div><h3 id="user-modal-title" class="ms-modal__title">Add User Account</h3>
                 <p class="ms-modal__desc">Akun, peran, dan grup pengelolanya</p></div>
             <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -220,7 +220,7 @@
 <!-- ============================================================ -->
 <div id="grup-nama-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 26rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div><h3 class="ms-modal__title">Rename Group</h3>
                 <p class="ms-modal__desc">Seluruh anggota grup ikut berpindah sekaligus</p></div>
             <button onclick="tutupGantiNamaGrup()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -266,7 +266,7 @@
 <!-- ============================================================ -->
 <div id="permissions-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 28rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-4">
+        <div class="ms-modal__head">
             <div>
                 <h3 id="permissions-modal-title" class="ms-modal__title">CCTV Access Mapping</h3>
                 <p id="permissions-modal-subtitle" class="ms-modal__desc">Kamera yang boleh dilihat akun ini</p>
@@ -356,7 +356,7 @@
 
 <div id="akses-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--scroll ms-modal__panel--pad" style="max-width: 34rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-4">
+        <div class="ms-modal__head">
             <div>
                 <h3 id="akses-modal-title" class="ms-modal__title">Camera Access</h3>
                 <p id="akses-modal-subtitle" class="ms-modal__desc"></p>
@@ -449,7 +449,7 @@
 <div id="map-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 42rem;">
         <!-- Header -->
-        <div class="flex justify-between items-start border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div class="flex-1 min-w-0 mr-4">
                 <div class="flex items-center space-x-2 mb-1">
                     <span class="inline-flex items-center justify-center p-1.5 bg-emerald-500/10 rounded-md border border-emerald-500/20 shrink-0">
@@ -492,7 +492,7 @@
 <!-- ============================================================ -->
 <div id="bulk-add-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 28rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div><h3 class="ms-modal__title">Bulk Add CCTV Config</h3>
                 <p class="ms-modal__desc">Tambah banyak kamera sekaligus dari daftar</p></div>
             <button type="button" onclick="closeBulkAddModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -561,7 +561,7 @@
 <!-- ============================================================ -->
 <div id="bulk-coords-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 28rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-5">
+        <div class="ms-modal__head">
             <div><h3 class="ms-modal__title">Bulk Edit Coordinates</h3>
                 <p class="ms-modal__desc">Ubah koordinat banyak kamera sekaligus</p></div>
             <button type="button" onclick="window.closeBulkCoordsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -597,7 +597,7 @@
 <!-- ============================================================ -->
 <div id="api-setup-modal" class="hidden ms-modal">
     <div class="ms-modal__panel ms-modal__panel--scroll ms-modal__panel--pad" style="max-width: 40rem;">
-        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-cyber-outline/40 pb-4 mb-4">
+        <div class="ms-modal__head">
             <div>
                 <h3 class="ms-modal__title">API Integration Guide</h3>
                 <p id="api-setup-client-title" class="ms-modal__desc">Cara memasang stream di server lain</p>
@@ -703,8 +703,8 @@
 
 <!-- MODAL: Edit API Key Modal -->
 <div id="api-key-edit-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel" style="max-width: 42rem;">
-        <div class="px-5 py-4 bg-slate-50 dark:bg-cyber-bg/40 border-b border-slate-200/60 dark:border-cyber-outline/40 flex items-center justify-between">
+    <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 42rem;">
+        <div class="ms-modal__head">
             <div><h3 class="ms-modal__title">Edit API Key Integration</h3>
                 <p class="ms-modal__desc">Nama klien, kamera, dan batasan domainnya</p></div>
             <button onclick="window.closeApiKeyEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -800,8 +800,8 @@
 
 <!-- MODAL: Generate API Key Modal -->
 <div id="api-key-generate-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel" style="max-width: 42rem;">
-        <div class="px-5 py-4 bg-slate-50 dark:bg-cyber-bg/40 border-b border-slate-200/60 dark:border-cyber-outline/40 flex items-center justify-between">
+    <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 42rem;">
+        <div class="ms-modal__head">
             <div><h3 class="ms-modal__title">Generate New API Key</h3>
                 <p class="ms-modal__desc">Buat kunci baru untuk pemutar di server lain</p></div>
             <button onclick="window.closeApiKeyGenerateModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">

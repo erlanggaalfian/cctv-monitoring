@@ -64,8 +64,8 @@ if(!defined('SECURE_ACCESS')) {
 
 <!-- Playback Modal -->
 <div id="pb-modal" class="hidden ms-modal">
-    <div class="ms-modal__panel" style="max-width: 64rem;">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+    <div class="ms-modal__panel ms-modal__panel--pad" style="max-width: 64rem;">
+        <div class="ms-modal__head">
             <div class="min-w-0">
                 <h3 id="pb-modal-title" class="ms-modal__title truncate">Playback</h3>
                 <p id="pb-modal-sub" class="ms-modal__desc truncate">&nbsp;</p>

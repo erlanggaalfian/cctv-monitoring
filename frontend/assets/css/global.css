@@ -1886,6 +1886,8 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
    sendiri (dulu dibawa oleh .p-6 pada markup lama).              */
 .ms-modal__panel--pad { padding: var(--space-6); }
 @media (max-width: 639px) { .ms-modal__panel--pad { padding: var(--space-4); } }
+.ms-modal__panel--pad .ms-modal__head { padding-top: 0; border-top: none; }
+.ms-modal__panel--pad .ms-modal__head + * { margin-top: 0; }
 
 /* Panel yang markup lamanya mengandalkan scroll di panel itu
    sendiri, bukan di .ms-modal__body.                             */
