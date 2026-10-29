@@ -324,6 +324,8 @@ echo "$APP_VERSION" > "$SCRIPT_DIR/VERSION" 2>/dev/null || true
 echo "$APP_VERSION" > "$TARGET_DIR/VERSION"
 
 cp -r "$SCRIPT_DIR/frontend"/* "$TARGET_DIR/frontend/"
+# .htaccess ikut ter-deploy (glob /* di atas melewatkan berkas titik)
+cp -v "$SCRIPT_DIR/frontend/.htaccess" "$TARGET_DIR/frontend/.htaccess" 2>/dev/null || true
 cp -r "$SCRIPT_DIR/database"/* "$TARGET_DIR/database/"
 cp -v "$SCRIPT_DIR/backend"/*.py "$TARGET_DIR/backend/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/backend/requirements.txt" "$TARGET_DIR/backend/" 2>/dev/null || true

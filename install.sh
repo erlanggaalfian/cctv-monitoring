@@ -755,6 +755,8 @@ mkdir -p "$TARGET_DIR/backend"
 
 # Copy dari SCRIPT_DIR
 cp -r "$SCRIPT_DIR/frontend"/* "$TARGET_DIR/frontend/"
+# .htaccess ikut ter-deploy (glob /* di atas melewatkan berkas titik)
+cp -v "$SCRIPT_DIR/frontend/.htaccess" "$TARGET_DIR/frontend/.htaccess" 2>/dev/null || true
 cp -r "$SCRIPT_DIR/database"/* "$TARGET_DIR/database/"
 cp -r "$SCRIPT_DIR/backend"/* "$TARGET_DIR/backend/" 2>/dev/null || true
 cp -v "$SCRIPT_DIR/install.sh" "$TARGET_DIR/" 2>/dev/null || true
