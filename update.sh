@@ -152,11 +152,15 @@ if [ -z "$TARGET_DIR" ] || [ ! -d "$TARGET_DIR" ]; then
     exit 1
 fi
 
-# Parsing DB Credentials dari Systemd Service
+# Parsing DB Credentials dari Systemd Service; fallback ke env file
+# (/etc/cctv-backend.env — tempat rahasia DB_PASS/JWT_SECRET)
 db_env_get() {
     local key="$1"
     if [ -f "$SERVICE_FILE" ]; then
         grep "Environment=\"${key}=" "$SERVICE_FILE" | sed -n "s/.*Environment=\"${key}=\([^\"]*\)\".*/\1/p"
+    fi
+    if [ ! -f "$SERVICE_FILE" ] || ! grep -q "Environment=\"${key}=" "$SERVICE_FILE" 2>/dev/null; then
+        [ -f /etc/cctv-backend.env ] && sed -n "s/^${key}=//p" /etc/cctv-backend.env | head -1
     fi
 }
 

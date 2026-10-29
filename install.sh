@@ -816,6 +816,15 @@ if ! grep -q -E "\s$SERVER_DOMAIN(\s|$)" /etc/hosts; then
 fi
 
 JWT_SECRET_GEN=$(openssl rand -hex 32)
+# Rahasia (DB_PASS, JWT_SECRET) disimpan di EnvironmentFile — JANGAN pernah
+# ditaruh di unit service/repo agar tidak bocor ke version control.
+umask 027
+cat <<EOT > /etc/cctv-backend.env
+DB_PASS=$DB_PASS
+JWT_SECRET=$JWT_SECRET_GEN
+EOT
+chown root:www-data /etc/cctv-backend.env
+chmod 640 /etc/cctv-backend.env
 cat <<EOT > /etc/systemd/system/cctv-backend.service
 [Unit]
 Description=Mamura Stream CCTV Backend Service
@@ -824,12 +833,11 @@ After=network.target mysql.service mariadb.service
 [Service]
 User=www-data
 WorkingDirectory=$TARGET_DIR/backend
+EnvironmentFile=/etc/cctv-backend.env
 Environment="DB_HOST=$DB_HOST"
 Environment="DB_PORT=$DB_PORT"
 Environment="DB_USER=$DB_USER"
-Environment="DB_PASS=$DB_PASS"
 Environment="DB_NAME=$DB_NAME"
-Environment="JWT_SECRET=$JWT_SECRET_GEN"
 Environment="PUBLIC_BASE_URL=$PUBLIC_BASE_URL"
 ExecStart=$TARGET_DIR/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
