@@ -4588,7 +4588,7 @@ def get_playback_url(
         playback_url += f"&end={end}"
 
     # Public URL via Apache proxy
-    public_base = os.getenv("PUBLIC_BASE_URL", "https://cctv.netbackup.web.id")
+    public_base = os.getenv("PUBLIC_BASE_URL", "https://netra.mamura.net.id")
     public_url = f"{public_base}/media-hls/{path_name}/playback/index.m3u8?start={start}"
     if end:
         public_url += f"&end={end}"
