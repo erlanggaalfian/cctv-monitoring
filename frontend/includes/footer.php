@@ -21,6 +21,7 @@ if(!defined('SECURE_ACCESS')) {
         $js_versi = max($js_versi, (int) @filemtime($modul));
     }
     ?>
+    <script>window.__JSV = <?= $js_versi ?>;</script>
     <script type="module" src="assets/js/app.js?v=<?= $js_versi ?>"></script>
     <!-- Label kolom tabel untuk tampilan kartu di mobile -->
     <script src="assets/js/modules/table-labels.js?v=<?= $js_versi ?>"></script>

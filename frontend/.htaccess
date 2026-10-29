@@ -3,6 +3,12 @@ RewriteEngine On
 # Route /logout ke logout.php
 RewriteRule ^logout$ logout.php [L,NC]
 
+# Aset JS/CSS wajib validasi ulang ke server — cache browser jangan
+# menahan versi lama modul (penyebab bug escHtml hilang).
+<FilesMatch "\.(js|css)$">
+    Header set Cache-Control "no-cache"
+</FilesMatch>
+
 # Jangan tampilkan daftar direktori & jangan sajikan berkas titik (.git, dst)
 Options -Indexes
 <FilesMatch "^\.">
