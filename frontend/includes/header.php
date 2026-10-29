@@ -11,6 +11,18 @@ if(!defined('SECURE_ACCESS')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mamura Stream - CCTV Streaming Portal</title>
+    <!-- Shim escape global: view inline script dieksekusi saat parsing,
+         SEBELUM modul app.js/core.js selesai dimuat (balapan muat).
+         Definisi asli ada di modules/core.js — shim ini hanya fallback. -->
+    <script>
+    window.escHtml = window.escHtml || function (v) {
+        return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    };
+    window.escJs = window.escJs || function (v) {
+        return String(v ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    };
+    </script>
     <!-- Inline SVG Favicon to match brand logo -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233081d1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'/%3E%3C/svg%3E">
     <!-- Tailwind CSS (Locally hosted, production warning disabled).
