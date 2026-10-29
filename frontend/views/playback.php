@@ -152,6 +152,9 @@ if(!defined('SECURE_ACCESS')) {
     let chunkStartEpoch = 0;
     let activeCamera = null;
     let camerasLoaded = false;
+    // Generasi sesi modal: respons fetch telat saat ganti kamera cepat harus
+    // gugur, jangan sampai mengisi state milik kamera lain.
+    let pbGen = 0;
 
     const $ = (id) => document.getElementById(id);
     const token = () => localStorage.getItem('cctv_auth_token');
@@ -220,7 +223,7 @@ if(!defined('SECURE_ACCESS')) {
             card.className = 'relative cam-placeholder-bg overflow-hidden group aspect-video cursor-pointer rounded-md border border-slate-200/70 dark:border-slate-700/60';
             card.innerHTML = `
                 <img src="${API_URL}/posters/stream_${cam.id}.jpg?t=${Date.now()}"
-                     alt="${cam.name}"
+                     alt="${escHtml(cam.name)}"
                      class="absolute inset-0 w-full h-full object-cover"
                      onerror="this.style.display='none'">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
@@ -239,8 +242,8 @@ if(!defined('SECURE_ACCESS')) {
                 </div>
 
                 <div class="absolute bottom-0 inset-x-0 px-3 py-2">
-                    <p class="text-[11px] font-bold text-white font-mono truncate">${cam.name}</p>
-                    <p class="text-[9px] text-slate-300 font-mono truncate">${cam.group_name || ''}</p>
+                    <p class="text-[11px] font-bold text-white font-mono truncate">${escHtml(cam.name)}</p>
+                    <p class="text-[9px] text-slate-300 font-mono truncate">${escHtml(cam.group_name || '')}</p>
                 </div>
             `;
             card.addEventListener('click', () => window.openPlaybackModal(cam.id));
@@ -268,6 +271,7 @@ if(!defined('SECURE_ACCESS')) {
     window.openPlaybackModal = async function(streamId) {
         activeCamera = cameras.find(c => c.id === parseInt(streamId, 10));
         if (!activeCamera) return;
+        pbGen++;
         $('pb-modal-title').textContent = activeCamera.name;
         $('pb-modal-sub').textContent = activeCamera.group_name || '';
         $('pb-modal').classList.remove('hidden');
@@ -284,6 +288,7 @@ if(!defined('SECURE_ACCESS')) {
         $('pb-modal').classList.add('hidden');
         document.body.style.overflow = '';
         activeCamera = null;
+        pbGen++;
     };
 
     function resetPlayer() {
@@ -305,12 +310,14 @@ if(!defined('SECURE_ACCESS')) {
 
     async function loadPlaybackDates() {
         if (!activeCamera) return;
+        const gen = pbGen;
         const dateSel = $('playback-date-select');
         const info = $('playback-info');
         try {
             const res = await fetch(`${API_URL}/recordings/${activeCamera.id}/dates`, { headers: authHeaders() });
             if (!res.ok) throw new Error('dates failed');
             const dates = await res.json();
+            if (gen !== pbGen) return;   // kamera sudah diganti / modal ditutup
             dateSel.innerHTML = '';
             dates.forEach(d => {
                 const o = document.createElement('option');
@@ -329,6 +336,7 @@ if(!defined('SECURE_ACCESS')) {
             dateSel.value = dates[0].date;
             await loadPlaybackTimeline();
         } catch (e) {
+            if (gen !== pbGen) return;
             info.textContent = '';
             showNoRecording('Gagal memuat tanggal rekaman');
         }
@@ -337,12 +345,14 @@ if(!defined('SECURE_ACCESS')) {
 
     async function loadPlaybackTimeline() {
         if (!activeCamera) return;
+        const gen = pbGen;
         const date = $('playback-date-select').value;
         if (!date) return;
         try {
             const res = await fetch(`${API_URL}/recordings/${activeCamera.id}/timeline?date=${date}`, { headers: authHeaders() });
             if (!res.ok) throw new Error('timeline failed');
             const data = await res.json();
+            if (gen !== pbGen) return;
             ranges = data.ranges || [];
             if (!ranges.length) { showNoRecording('Belum ada rekaman pada tanggal ini'); return; }
 
@@ -361,6 +371,7 @@ if(!defined('SECURE_ACCESS')) {
             renderTimeline();
             await seekToEpoch(dayStart);
         } catch (e) {
+            if (gen !== pbGen) return;
             console.warn('timeline:', e);
             showNoRecording('Gagal memuat timeline');
         }
@@ -446,6 +457,7 @@ if(!defined('SECURE_ACCESS')) {
         $("pb-no-rec").classList.add("hidden");
         $("pb-no-rec").classList.remove("flex");
         if (!activeCamera || !ranges.length) return;
+        const gen = pbGen;
         const video = $('playback-video');
         const loading = $('playback-loading');
         const target = nearestRangeEpoch(epoch);
@@ -459,6 +471,7 @@ if(!defined('SECURE_ACCESS')) {
         video.src = url;
         video.load();
         video.onloadeddata = () => {
+            if (gen !== pbGen) return;
             const d = video.duration;
             // Potongan kosong: lanjut ke rekaman berikutnya tanpa berhenti.
             if (isFinite(d) && d < MIN_POTONGAN) {
@@ -473,6 +486,7 @@ if(!defined('SECURE_ACCESS')) {
                     // Dua kali berturut kosong: minta server memindai lebih
                     // jauh sekaligus daripada merayap satu per satu.
                     cariTerisi(chunkStartEpoch).then(titik => {
+                        if (gen !== pbGen) return;
                         if (titik !== null && titik < dayEnd) { seekToEpoch(titik); return; }
                         const lanjut = rangeBerikutnya(chunkStartEpoch);
                         if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
@@ -494,6 +508,7 @@ if(!defined('SECURE_ACCESS')) {
             video.play().catch(() => {});
         };
         video.onerror = () => {
+            if (gen !== pbGen) return;
             // Potongan gagal dimuat: jangan berhenti, lompat ke rekaman
             // berikutnya (dibatasi MAKS_LOMPAT seperti potongan kosong).
             if (lompatBeruntun < MAKS_LOMPAT) {
@@ -503,6 +518,7 @@ if(!defined('SECURE_ACCESS')) {
                     if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }
                 }
                 cariTerisi(chunkStartEpoch).then(titik => {
+                    if (gen !== pbGen) return;
                     if (titik !== null && titik < dayEnd) { seekToEpoch(titik); return; }
                     const lanjut = rangeBerikutnya(chunkStartEpoch);
                     if (lanjut !== null && lanjut < dayEnd) { seekToEpoch(lanjut); return; }

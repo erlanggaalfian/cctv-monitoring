@@ -54,6 +54,8 @@ UPDATE cctv_streams
 CREATE TABLE IF NOT EXISTS stream_admin_grants (
   stream_id   INT NOT NULL,
   admin_id    INT NOT NULL,
+  can_view    TINYINT(1) NOT NULL DEFAULT 1,
+  can_playback TINYINT(1) NOT NULL DEFAULT 1,
   can_manage  TINYINT(1) NOT NULL DEFAULT 0,
   can_reshare TINYINT(1) NOT NULL DEFAULT 1,
   granted_by  INT NULL,

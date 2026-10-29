@@ -48,7 +48,7 @@ if ($page === 'viewer') $page = 'monitor';
                     <span class="nav-btn-indicator"></span>
                 </a>
 
-                                <!-- 3b. Playback -->
+                <!-- 3b. Playback -->
                 <a href="index.php?page=playback" id="nav-playback"
                    class="sidebar-nav-link sidebar-btn-card <?php echo ($page==='playback') ? 'active' : ''; ?>">
                     <div class="nav-btn-icon-wrap">

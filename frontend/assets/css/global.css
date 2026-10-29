@@ -99,10 +99,12 @@
 
   /* ---------------------------------------------------------
      BORDER RADIUS & TRANSISI
+     Satu skala radius, disamakan dengan --radius-* di bawah dan
+     borderRadius di tailwind-config.js (8/12/16).
      --------------------------------------------------------- */
-  --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 12px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
   --t:    0.2s ease;
 
   /* ---------------------------------------------------------
@@ -137,11 +139,15 @@
 
 
 /* ==============================================================
-   LIGHT MODE -- Token turunan (jangan diedit)
+   LIGHT MODE -- Token turunan
+   --c-blue sengaja sedikit lebih gelap dari --brand-blue agar teks
+   biru di atas putih dan teks putih di atas biru sama-sama lolos
+   kontras 4.5:1 (diukur: 5.42:1). --c-blue-h = varian kuat untuk
+   latar berteks putih (7.69:1).
    ============================================================== */
 :root {
-  --c-blue:     var(--brand-blue);
-  --c-blue-h:   color-mix(in srgb, var(--brand-blue)   80%, black);
+  --c-blue:     color-mix(in srgb, var(--brand-blue) 84%, black);
+  --c-blue-h:   color-mix(in srgb, var(--brand-blue) 66%, black);
   --c-orange:   var(--brand-orange);
   --c-orange-h: color-mix(in srgb, var(--brand-orange) 80%, black);
   --c-navy:     var(--brand-navy);
@@ -154,10 +160,9 @@
 
   --c-text:          var(--color-text-base);
   --c-text-muted:    color-mix(in srgb, var(--brand-navy) 65%, var(--color-gray-500));
-  --c-text-dim:      color-mix(in srgb, var(--brand-navy) 35%, var(--color-gray-400));
+  --c-text-dim:      color-mix(in srgb, var(--brand-navy) 50%, var(--color-gray-400));
 
-  --c-header-bg:     var(--brand-blue);
-  --c-nav-bg:        var(--brand-blue);
+  --c-header-bg:     color-mix(in srgb, var(--brand-blue) 78%, var(--brand-navy));
   --c-nav-border:    rgba(255, 255, 255, 0.16);
   --c-primary-muted: rgba(var(--rgb-blue), 0.08);
   --c-map-tile:      var(--color-map-tile-light);
@@ -169,7 +174,10 @@
 
 
 /* ==============================================================
-   DARK MODE -- Token turunan (jangan diedit)
+   DARK MODE -- Token turunan
+   --c-blue di mode gelap justru dibuat LEBIH TERANG dari brand:
+   teks biru di atas latar gelap perlu 4.5:1 (diukur: 5.60:1).
+   Latar berteks putih memakai --c-blue-h (5.85:1).
    ============================================================== */
 .dark {
   --c-map-tile:      var(--color-map-tile-dark);
@@ -178,12 +186,14 @@
   --c-surface2: color-mix(in srgb, var(--brand-blue)  5%,  #1c1e21);
   --c-border:   rgba(255, 255, 255, 0.07);
 
+  --c-blue:     color-mix(in srgb, var(--brand-blue) 85%, white);
+  --c-blue-h:   color-mix(in srgb, var(--brand-blue) 80%, black);
+
   --c-text:          var(--color-text-dark-base);
   --c-text-muted:    var(--color-text-dark-muted);
-  --c-text-dim:      color-mix(in srgb, #fff 30%, var(--color-gray-700));
+  --c-text-dim:      color-mix(in srgb, #fff 38%, var(--color-gray-700));
 
   --c-header-bg:     var(--brand-navy);
-  --c-nav-bg:        var(--brand-navy);
   --c-nav-border:    rgba(255, 255, 255, 0.08);
   --c-primary-muted: rgba(var(--rgb-blue), 0.10);
 
@@ -274,16 +284,17 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 .hdr-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .hdr-logo-box { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: var(--c-chrome-glass-mid); border-radius: var(--r-md); border: 1px solid var(--c-chrome-line); box-shadow: inset 0 1px 0 var(--c-chrome-glass); flex-shrink: 0; }
 .hdr-title { font-size: 0.9375rem; font-weight: 700; color: var(--c-white); letter-spacing: -0.02em; }
-.hdr-sub { font-size: 0.5625rem; color: var(--c-chrome-fg-dim); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
-.hdr-clock { font-size: 0.6875rem; font-weight: 600; color: var(--c-chrome-fg); font-variant-numeric: tabular-nums; margin-right: 0.25rem; padding: 0.375rem 0.625rem; border-radius: var(--r-sm); background: var(--c-chrome-inset); border: 1px solid var(--c-chrome-glass); }
+.hdr-sub { font-size: 0.5625rem; color: var(--c-white); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
+.hdr-clock { font-size: 0.6875rem; font-weight: 600; color: var(--c-white); font-variant-numeric: tabular-nums; margin-right: 0.25rem; padding: 0.375rem 0.625rem; border-radius: var(--r-sm); background: var(--c-chrome-inset); border: 1px solid var(--c-chrome-glass); }
 .hdr-icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-sm); background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.35); color: var(--c-white); transition: all var(--t); }
 .hdr-icon-btn:hover { background: rgba(255, 255, 255, 0.35); border-color: rgba(255, 255, 255, 0.5); transform: translateY(-1px); }
 .hdr-icon-btn:active { transform: translateY(0) scale(0.96); }
 .dark .hdr-icon-btn { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.16); }
 .dark .hdr-icon-btn:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.28); }
-/* Tombol logout -- warna oranye brand */
-.hdr-logout-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0 0.875rem; height: 34px; border-radius: var(--r-sm); background: linear-gradient(135deg, rgba(var(--rgb-orange), 0.92), rgba(var(--rgb-orange), 0.78)); border: 1px solid var(--c-chrome-glass-mid); color: var(--c-white); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; box-shadow: 0 2px 8px rgba(var(--rgb-orange), 0.28); transition: background var(--t), transform var(--t), box-shadow var(--t); }
-.hdr-logout-btn:hover { background: var(--c-orange); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--rgb-orange), 0.36); }
+/* Tombol logout -- oranye brand, tanpa gradient. Teks putih di atas
+   --c-orange-h diukur 4.58:1 (di atas brand-orange mentah hanya 3.07:1). */
+.hdr-logout-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0 0.875rem; height: 34px; border-radius: var(--r-sm); background: var(--c-orange-h); border: 1px solid var(--c-chrome-glass-mid); color: var(--c-white); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; box-shadow: 0 2px 8px rgba(var(--rgb-orange), 0.28); transition: background var(--t), transform var(--t), box-shadow var(--t); }
+.hdr-logout-btn:hover { background: color-mix(in srgb, var(--c-orange-h) 82%, black); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--rgb-orange), 0.36); }
 .hdr-logout-btn:active { transform: translateY(0) scale(0.97); }
 /* Hamburger removed — mobile uses bottom nav only */
 .hdr-menu-btn { display: none !important; }
@@ -294,7 +305,7 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 .sidebar-profile-card { display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; background: rgba(48, 129, 209, 0.05) !important; border: 1px solid rgba(48, 129, 209, 0.12) !important; border-radius: var(--r-md); margin-bottom: 0px !important; margin-top: auto !important; box-shadow: none !important; }
 .sidebar-profile-meta { min-width: 0; flex: 1 1 auto; }
 .sidebar-profile-name { font-size: 0.875rem; font-weight: 600; color: var(--c-text) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sidebar-avatar { width: 42px; height: 42px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--c-blue), var(--brand-navy)); display: flex; align-items: center; justify-content: center; color: var(--c-white); font-size: 1.125rem; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 10px rgba(var(--rgb-blue), 0.28); }
+.sidebar-avatar { width: 42px; height: 42px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--c-blue-h), var(--brand-navy)); display: flex; align-items: center; justify-content: center; color: var(--c-white); font-size: 1.125rem; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 10px rgba(var(--rgb-blue), 0.28); }
 .sidebar-role-badge { font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--c-blue) !important; background: rgba(var(--rgb-blue), 0.10) !important; border: 1px solid rgba(var(--rgb-blue), 0.20) !important; padding: 2px 7px; border-radius: 999px; display: inline-block; margin-top: 3px; }
 .sidebar-section-lbl { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-text-muted) !important; padding: 0 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--c-border) !important; padding-bottom: 0.375rem; }
 
@@ -341,16 +352,16 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
   box-shadow: none;
 }
 .sidebar-btn-card.active, .sidebar-nav-link.active {
-  background: var(--c-blue) !important;
+  background: var(--c-blue-h) !important;
   color: #ffffff !important;
-  border-color: var(--c-blue) !important;
+  border-color: var(--c-blue-h) !important;
   box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
   transform: none !important;
 }
 .dark .sidebar-btn-card.active, .dark .sidebar-nav-link.active {
-  background: var(--c-blue) !important;
+  background: var(--c-blue-h) !important;
   color: #ffffff !important;
-  border-color: var(--c-blue) !important;
+  border-color: var(--c-blue-h) !important;
   box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
   transform: none !important;
 }
@@ -442,7 +453,7 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 .mob-nav-icon { width: 1.35rem; height: 1.35rem; transition: transform 0.2s ease; }
 .mob-nav-item.active, .mob-nav-btn.active {
   color: #ffffff !important;
-  background: var(--c-blue) !important;
+  background: var(--c-blue-h) !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.35) !important;
 }
@@ -453,54 +464,10 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 .mob-nav-item.active .mob-nav-dot, .mob-nav-btn.active .mob-nav-dot { opacity: 1; box-shadow: 0 0 6px var(--c-orange); }
 
 /* ==============================================================
-   LOGIN PAGE DARK & LIGHT MODE SUPPORTS
+   LOGIN — .login-body / .login-card ada di bagian "MIGRATED CUSTOM
+   STYLES" (token --login-*). .app-input ikut rule .field-input
+   bertoken di bagian form.
    ============================================================== */
-.login-body {
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle at 50% 30%, rgba(48, 129, 209, 0.08) 0%, transparent 70%);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-.dark .login-body {
-  background-color: #080d1a;
-  background-image: radial-gradient(circle at 50% 30%, rgba(48, 129, 209, 0.14) 0%, transparent 70%);
-}
-.login-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-.dark .login-card {
-  background-color: rgba(17, 25, 46, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(16px);
-}
-.app-input {
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-  border-radius: var(--r-md);
-  padding: 0.625rem 0.875rem;
-  font-size: 0.8125rem;
-  transition: all 0.2s ease;
-}
-.app-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
-}
-.dark .app-input {
-  background-color: rgba(8, 13, 26, 0.75);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #f8fafc;
-}
-.dark .app-input:focus {
-  border-color: #38bdf8;
-  background-color: rgba(8, 13, 26, 0.95);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-}
 
 /* ==============================================================
    CARDS
@@ -615,8 +582,8 @@ select.app-select option, select.app-input option, select.field-input option { b
 .btn-elegant:active { transform: translateY(0) scale(0.97); }
 .dark .btn-elegant { background: var(--c-surface2); border-color: var(--c-border); color: var(--c-text-muted); }
 .dark .btn-elegant:hover { background: rgba(var(--rgb-blue), 0.12); }
-.btn-elegant-primary { background: var(--c-blue) !important; color: var(--c-white) !important; border-color: var(--c-blue) !important; box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.28); }
-.btn-elegant-primary:hover { background: var(--c-blue-h) !important; border-color: var(--c-blue-h) !important; box-shadow: 0 4px 16px rgba(var(--rgb-blue), 0.36) !important; }
+.btn-elegant-primary { background: var(--c-blue-h) !important; color: var(--c-white) !important; border-color: var(--c-blue-h) !important; box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.28); }
+.btn-elegant-primary:hover { background: color-mix(in srgb, var(--c-blue-h) 82%, black) !important; border-color: color-mix(in srgb, var(--c-blue-h) 82%, black) !important; box-shadow: 0 4px 16px rgba(var(--rgb-blue), 0.36) !important; }
 /* ==============================================================
    MISC COMPONENTS
    ============================================================== */
@@ -762,8 +729,8 @@ select.app-select option, select.app-input option, select.field-input option { b
   color: #a8bcdb;
 }
 .admin-tab-box.is-active .admin-tab-box-icon {
-  background: var(--c-blue);
-  border-color: var(--c-blue);
+  background: var(--c-blue-h);
+  border-color: var(--c-blue-h);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.3);
 }
@@ -993,18 +960,20 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .ms-video-popup .ms-popup-btn:hover { background: var(--c-surface2); }
 .ms-video-popup .ms-popup-btn:active { transform: scale(0.95); }
 .ms-video-popup .ms-popup-btn--primary {
-  background: var(--c-blue, #3081d1);
+  background: var(--c-blue-h);
   border-color: transparent;
   color: white;
   padding-left: 1rem;
   padding-right: 1rem;
 }
+/* Hijau = varian gelap --color-online: teks putih di atasnya 4.5:1+
+   (hijau terang hanya ~3.7:1). */
 .ms-video-popup .ms-popup-btn--accent {
-  background: #059669;
+  background: color-mix(in srgb, var(--color-online) 72%, black);
   border-color: transparent;
   color: white;
 }
-.ms-video-popup .ms-popup-btn--accent:hover { background: #047857; }
+.ms-video-popup .ms-popup-btn--accent:hover { background: color-mix(in srgb, var(--color-online) 58%, black); }
 .ms-video-popup .ms-popup-label {
   font-size: 0.625rem;
   font-weight: 600;
@@ -1052,7 +1021,7 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .ms-video-popup .ms-popup-status {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #059669;
+  color: color-mix(in srgb, var(--color-online) 72%, black);
   font-size: 0.625rem;
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
@@ -1081,11 +1050,16 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .ms-video-popup [class*="text-slate-"] { color: var(--c-text-muted) !important; }
 .ms-video-popup .text-cyber-dim,
 .ms-video-popup .text-muted { color: var(--c-text-muted) !important; }
-/* Semantic colors: keep accent visibility, same in both themes */
-.ms-video-popup .text-rose-400 { color: #fb7185 !important; }
-.ms-video-popup .text-rose-500 { color: #f43f5e !important; }
-.ms-video-popup .text-emerald-400 { color: #34d399 !important; }
-.ms-video-popup .text-emerald-500 { color: #10b981 !important; }
+/* Semantic colors: mode terang memakai varian gelap (lolos 4.5:1 di atas
+   permukaan terang), mode gelap tetap terang. */
+.ms-video-popup .text-rose-400,
+.ms-video-popup .text-rose-500 { color: color-mix(in srgb, var(--color-offline) 72%, black) !important; }
+.ms-video-popup .text-emerald-400,
+.ms-video-popup .text-emerald-500 { color: color-mix(in srgb, var(--color-online) 72%, black) !important; }
+.dark .ms-video-popup .text-rose-400 { color: #fb7185 !important; }
+.dark .ms-video-popup .text-rose-500 { color: #f43f5e !important; }
+.dark .ms-video-popup .text-emerald-400 { color: #34d399 !important; }
+.dark .ms-video-popup .text-emerald-500 { color: #10b981 !important; }
 .ms-video-popup .text-sky-400 { color: var(--c-blue, #3081d1) !important; }
 .ms-video-popup .text-sky-500 { color: var(--c-blue, #3081d1) !important; }
 .ms-video-popup .text-white { color: var(--c-text) !important; }
@@ -1098,11 +1072,11 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 .ms-video-popup .app-input:focus { border-color: var(--c-blue, #3081d1) !important; }
 /* --- Admin console primary action buttons (theme-safe, no Tailwind JIT dependency) --- */
 .ms-btn-add {
-  background: var(--c-blue, #3081d1);
+  background: var(--c-blue-h);
   color: #ffffff;
   border: 1px solid transparent;
 }
-.ms-btn-add:hover { background: var(--c-blue-hover, #1e68be); }
+.ms-btn-add:hover { background: color-mix(in srgb, var(--c-blue-h) 82%, black); }
 /* --- Per Grup / Per Kamera toggle --- */
 .ms-btn-toggle {
   background: transparent;
@@ -1111,9 +1085,9 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 }
 .ms-btn-toggle:hover { background: var(--c-surface2); }
 .ms-btn-toggle--active {
-  background: var(--c-blue, #3081d1) !important;
+  background: var(--c-blue-h) !important;
   color: #ffffff !important;
-  border-color: var(--c-blue, #3081d1) !important;
+  border-color: var(--c-blue-h) !important;
 }
 /* ==============================================================
    DARK MODE -- Override Tailwind classes ke token CSS
@@ -1154,7 +1128,7 @@ body.web-fullscreen #custom-cctv-grid > div > .absolute.top-2\.5, body.web-fulls
 @media (min-width: 768px) { .layout-body-maps { flex-direction: row; align-items: stretch; flex: 1 1 auto; min-height: 0; } .layout-body-maps .maps-sidebar { order: 1; flex: 0 0 var(--layout-sidebar-w); width: var(--layout-sidebar-w); max-width: var(--layout-sidebar-w); align-self: stretch; } .layout-body-maps .maps-canvas { order: 2; flex: 1 1 0; min-width: 0; width: auto; align-self: stretch; } .layout-body-maps .maps-leaflet-host { min-height: 100%; } }
 @media (max-width: 767px) { .layout-body-maps { flex-direction: column; gap: 0.5rem; } .layout-body-maps .maps-canvas { order: 1; flex: 1 1 55%; width: 100%; height: 55%; min-height: 240px; } .layout-body-maps .maps-leaflet-host, .layout-body-maps #main-cctv-map { width: 100% !important; height: 100% !important; min-height: 100% !important; } .layout-body-maps .maps-sidebar { order: 2; flex: 1 1 45%; min-height: 0; width: 100%; padding: 0.75rem; } .layout-body-maps .maps-sidebar-header { padding-bottom: 0.5rem; margin-bottom: 0.5rem; } }
 /* ==============================================================
-   SAN FRANCISCO — enforce di seluruh app (Tailwind CDN, Leaflet, modal)
+   FONT ENFORCEMENT — Montserrat di seluruh app (Tailwind CDN, Leaflet, modal)
    ============================================================== */
 html, body, #app-main, .font-sans, [class*="font-sans"], button, table, thead, tbody, tr, th, td, h1, h2, h3, h4, h5, h6, p, span, a, label, li, div, nav, header, footer, .leaflet-container, .leaflet-popup, .leaflet-popup-content, .leaflet-popup-content-wrapper { font-family: var(--font-sans) !important; font-feature-settings: "kern" 1, "liga" 1, "calt" 1; }
 .font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono) !important; letter-spacing: normal !important; }
@@ -1256,9 +1230,9 @@ input::placeholder, textarea::placeholder { opacity: 1; text-shadow: none !impor
 }
 .dark .sidebar-nav-link.active,
 .dark .sidebar-btn-card.active {
-  background: var(--c-blue) !important;
+  background: var(--c-blue-h) !important;
   color: #ffffff !important;
-  border-color: var(--c-blue) !important;
+  border-color: var(--c-blue-h) !important;
   box-shadow: 0 4px 12px rgba(var(--rgb-blue), 0.24) !important;
 }
 .dark .nav-btn-icon-wrap {
@@ -1362,9 +1336,6 @@ h1, h2, h3, h4 {
 /* --- 2. PERMUKAAN: bayangan berlapis + radius lebih lembut ----- */
 
 :root {
-  --r-sm: 8px;
-  --r-md: 11px;
-  --r-lg: 15px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --shadow-soft: 0 1px 2px rgba(var(--rgb-text-base), 0.05), 0 4px 12px -2px rgba(var(--rgb-text-base), 0.07);
   --shadow-lift: 0 2px 4px rgba(var(--rgb-text-base), 0.05), 0 12px 28px -6px rgba(var(--rgb-text-base), 0.12);
@@ -1395,8 +1366,8 @@ h1, h2, h3, h4 {
 .btn-elegant:hover { transform: translateY(-1px); box-shadow: var(--shadow-soft); }
 .btn-elegant:active { transform: translateY(0) scale(0.98); }
 .btn-elegant-primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--c-blue) 92%, white) 0%, var(--c-blue) 100%);
-  border-color: color-mix(in srgb, var(--c-blue) 78%, black);
+  background: var(--c-blue-h);
+  border-color: color-mix(in srgb, var(--c-blue-h) 82%, black);
   color: #fff;
 }
 .btn-elegant-primary:hover { box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.34); }

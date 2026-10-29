@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS users (
     -- Admin yang menaungi akun ini. NULL = langsung di bawah
     -- Super Admin.
     parent_admin_id INT NULL,
+    -- Kolom yang dibaca model UserModel; wajib ada sejak awal supaya kueri
+    -- tidak gagal hanya karena tabel dibuat dari skrip lama.
+    admin_group VARCHAR(60) NULL,
+    show_ads TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

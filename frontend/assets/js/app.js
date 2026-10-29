@@ -5,5 +5,3 @@ import './modules/router.js';
 import './modules/webrtc.js';
 import './modules/maps.js';
 import './modules/admin.js';
-
-console.log("Mamura Stream CCTV Client modules loaded successfully.");

@@ -1,4 +1,4 @@
-    // --- 1. Clock Sync ---
+    // --- Jam digital ---
     setInterval(() => {
         const clockEl = document.getElementById("digital-clock");
         if (clockEl) {
@@ -18,7 +18,7 @@
         }
     }, 1000);
 
-    // --- 3. Shared Functions ---
+    // --- Theme & shared functions ---
     function syncThemeIcons() {
         const isDark = document.documentElement.classList.contains("dark");
         const sunIcon = document.getElementById("theme-sun");

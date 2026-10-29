@@ -32,7 +32,7 @@
                     }
                     if (text) {
                         const statusText = stream.status === "online" ? "Live" : "Offline";
-                        const statusTextColor = stream.status === "online" ? "text-sky-600 dark:text-cyber-primary" : "text-rose-500 dark:text-cyber-error";
+                        const statusTextColor = stream.status === "online" ? "text-sky-600 dark:text-cyber-primary" : "text-rose-600 dark:text-cyber-error";
                         text.textContent = statusText;
                         text.className = `sidebar-status-text text-[9px] ${statusTextColor} uppercase font-mono`;
                     }
@@ -240,12 +240,12 @@
                     const isOnline = stream.status === "online";
                     const dotClass = isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400";
                     const statusText = isOnline ? "Live" : "Offline";
-                    const statusClass = isOnline ? "text-sky-600 dark:text-cyber-primary" : "text-slate-400";
+                    const statusClass = isOnline ? "text-sky-600 dark:text-cyber-primary" : "text-slate-500";
 
                     li.innerHTML = `
                         <div class="flex items-center space-x-2 truncate">
                             <span id="sidebar-status-dot-${stream.id}" class="sidebar-status-dot w-1.5 h-1.5 rounded-full ${dotClass}"></span>
-                            <span class="truncate text-slate-700 dark:text-cyber-text">${stream.name}</span>
+                            <span class="truncate text-slate-700 dark:text-cyber-text">${escHtml(stream.name)}</span>
                         </div>
                         <span id="sidebar-status-text-${stream.id}" class="sidebar-status-text text-[9px] ${statusClass} uppercase font-mono">${statusText}</span>
                     `;
@@ -367,7 +367,7 @@
 
                     const statusDotColor = stream.status === "online" ? "bg-emerald-500 animate-pulse" : "bg-rose-500";
                     const statusText = stream.status === "online" ? "Live" : "Offline";
-                    const statusTextColor = stream.status === "online" ? "text-sky-600 dark:text-cyber-primary" : "text-rose-500 dark:text-cyber-error";
+                    const statusTextColor = stream.status === "online" ? "text-sky-600 dark:text-cyber-primary" : "text-rose-600 dark:text-cyber-error";
 
                     if (dot) {
                         dot.className = `sidebar-status-dot w-1.5 h-1.5 rounded-full ${statusDotColor}`;
@@ -561,6 +561,9 @@
     }
 
     const posterRetryTimers = {};
+    // Token generasi popup: callback HD-upgrade/quality yang basi (kamera sudah
+    // diganti) wajib batal supaya tidak menutup koneksi milik kamera baru.
+    let popupSwapGen = 0;
     const posterMemoryCache = {};
     window.posterMemoryCache = posterMemoryCache;
     let posterPrefetchQueue = [];
@@ -859,6 +862,10 @@
             clearInterval(videoElement._posterCaptureInterval);
         }
         videoElement._posterCaptureInterval = setInterval(() => {
+            if (!document.contains(videoElement)) {
+                clearInterval(videoElement._posterCaptureInterval);
+                return;
+            }
             if (videoElement.videoWidth > 0) capture();
         }, 30000);
     }
@@ -1089,6 +1096,9 @@
                 showStreamErrorOverlay(tile, streamId, "RTSP / WebRTC gagal");
             } else if (videoElement && document.contains(videoElement)) {
                 restorePosterForVideo(streamId, videoElement);
+                // Popup: tampilkan overlay gagal juga, jangan diam di poster saja
+                const popupBox = videoElement.closest("#popup-stream-container");
+                if (popupBox) showStreamErrorOverlay(popupBox, streamId, "WHEP WebRTC gagal");
             }
         }
     }
@@ -1181,7 +1191,7 @@
             const bgOpacity = ad.bg_opacity !== undefined ? ad.bg_opacity : 1.0;
             const bgRgba = hexToRgba(ad.bg_color || "#1e293b", bgOpacity);
             const textColor = ad.text_color || "#ffffff";
-            const text = (ad.marquee_text || "").trim();
+            const text = escHtml((ad.marquee_text || "").trim());
             const itemContent = `${text} &nbsp;&nbsp;|&nbsp;&nbsp; `;
             const trackText = itemContent.repeat(4);
             const fontSize = ad.font_size !== undefined ? Math.min(10, ad.font_size) : 9;
@@ -1339,7 +1349,7 @@
                     </span>
                     <!-- Camera Name -->
                     <span class="ms-badge__name">
-                        ${stream.name.toUpperCase()}
+                        ${escHtml(stream.name.toUpperCase())}
                     </span>
                 </div>
             ` : "";
@@ -1971,6 +1981,8 @@
         
         // Assign to streams variable so the rest of the function remains compatible
         streams = targetStreams;
+        // Semua callback swap yang lama gugur begitu pemanggilan ini berjalan.
+        const swapGen = ++popupSwapGen;
         
         // Update labels
         const camIdEl = document.getElementById("popup-cam-id");
@@ -2060,7 +2072,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-xs font-bold text-red-400 uppercase tracking-widest bg-slate-950/80 px-2 py-1 rounded">Gagal Konek ke RTSP: ${stream.name}</span>
+                                <span class="text-xs font-bold text-red-400 uppercase tracking-widest bg-slate-950/80 px-2 py-1 rounded">Gagal Konek ke RTSP: ${escHtml(stream.name)}</span>
                                 <span class="text-[10px] text-slate-300 mt-1 select-all truncate max-w-full mb-4 bg-slate-950/80 px-2 py-0.5 rounded font-bold font-mono">WHEP WebRTC connection failed</span>
                                 <button onclick="window.forceLoadStream('${stream.id}'); window.closeCameraPopup();" class="px-4 py-2 bg-red-500/25 hover:bg-red-500/40 text-red-200 border border-red-500/30 rounded-md text-[10px] uppercase font-bold transition-all duration-150 active:scale-95 shadow-lg backdrop-blur-sm">Coba Hubungkan Paksa</button>
                             </div>
@@ -2130,7 +2142,7 @@
                             if (loadingBar) loadingBar.classList.add("hidden");
 
                             // Background HD upgrade after 1s
-                            popupSwapTimeout = setTimeout(() => {
+                            popupSwapTimeout = setTimeout(() => { if (swapGen !== popupSwapGen) return;
                                 console.log("[WebRTC] Initiating background HD upgrade...");
                                 const tempVideo = document.createElement("video");
                                 tempVideo.id = "video-feed-popup-temp-bg";
@@ -2140,7 +2152,7 @@
                                 tempVideo.className = "absolute w-px h-px opacity-0 pointer-events-none";
                                 streamContainer.appendChild(tempVideo);
 
-                                tempVideo.addEventListener("playing", () => {
+                                tempVideo.addEventListener("playing", () => { if (swapGen !== popupSwapGen) return;
                                     if (popupVideo) {
                                         popupVideo.srcObject = tempVideo.srcObject;
                                         popupVideo.muted = true;
@@ -2176,7 +2188,7 @@
                             
                             // Background HD upgrade after 1s
                             if (window.innerWidth >= 768) {
-                                popupSwapTimeout = setTimeout(() => {
+                                popupSwapTimeout = setTimeout(() => { if (swapGen !== popupSwapGen) return;
                                     console.log("[WebRTC] Initiating background HD upgrade...");
                                     const tempVideo = document.createElement("video");
                                     tempVideo.id = "video-feed-popup-temp-bg";
@@ -2186,7 +2198,7 @@
                                     tempVideo.className = "absolute w-px h-px opacity-0 pointer-events-none";
                                     streamContainer.appendChild(tempVideo);
 
-                                    tempVideo.addEventListener("playing", () => {
+                                    tempVideo.addEventListener("playing", () => { if (swapGen !== popupSwapGen) return;
                                         if (popupVideo) {
                                             popupVideo.srcObject = tempVideo.srcObject;
                                             popupVideo.muted = true;
@@ -2235,7 +2247,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-xs font-bold text-red-400 uppercase tracking-widest bg-slate-950/80 px-2 py-1 rounded">Gagal Konek ke RTSP: ${stream.name}</span>
+                                <span class="text-xs font-bold text-red-400 uppercase tracking-widest bg-slate-950/80 px-2 py-1 rounded">Gagal Konek ke RTSP: ${escHtml(stream.name)}</span>
                                 <span class="text-[10px] text-slate-300 mt-1 select-all truncate max-w-full mb-4 bg-slate-950/80 px-2 py-0.5 rounded font-bold font-mono">WHEP WebRTC connection failed</span>
                                 <button onclick="window.forceLoadStream('${stream.id}'); window.closeCameraPopup();" class="px-4 py-2 bg-red-500/25 hover:bg-red-500/40 text-red-200 border border-red-500/30 rounded-md text-[10px] uppercase font-bold transition-all duration-150 active:scale-95 shadow-lg backdrop-blur-sm">Coba Hubungkan Paksa</button>
                             </div>
@@ -2302,7 +2314,7 @@
 
                             // Background HD upgrade (video-only) after 1.5 seconds
                             if (window.innerWidth >= 768) {
-                                popupSwapTimeout = setTimeout(() => {
+                                popupSwapTimeout = setTimeout(() => { if (swapGen !== popupSwapGen) return;
                                     console.log("[WebRTC] Initiating background HD upgrade (video-only)...");
                                     const tempVideo = document.createElement("video");
                                     tempVideo.id = "video-feed-popup-temp-bg";
@@ -2312,7 +2324,7 @@
                                     tempVideo.className = "absolute w-px h-px opacity-0 pointer-events-none";
                                     streamContainer.appendChild(tempVideo);
 
-                                    tempVideo.addEventListener("playing", () => {
+                                    tempVideo.addEventListener("playing", () => { if (swapGen !== popupSwapGen) return;
                                         console.log("[WebRTC] Seamlessly upgraded popup to HD (video-only).");
                                         if (popupVideo) {
                                             popupVideo.srcObject = tempVideo.srcObject;
@@ -2347,7 +2359,7 @@
                             
                             // Background HD upgrade (video-only) after 1.5 seconds
                             if (window.innerWidth >= 768) {
-                                popupSwapTimeout = setTimeout(() => {
+                                popupSwapTimeout = setTimeout(() => { if (swapGen !== popupSwapGen) return;
                                     console.log("[WebRTC] Initiating background HD upgrade (video-only)...");
                                     const tempVideo = document.createElement("video");
                                     tempVideo.id = "video-feed-popup-temp-bg";
@@ -2357,7 +2369,7 @@
                                     tempVideo.className = "absolute w-px h-px opacity-0 pointer-events-none";
                                     streamContainer.appendChild(tempVideo);
 
-                                    tempVideo.addEventListener("playing", () => {
+                                    tempVideo.addEventListener("playing", () => { if (swapGen !== popupSwapGen) return;
                                         console.log("[WebRTC] Seamlessly upgraded popup fallback to HD.");
                                         if (popupVideo) {
                                             popupVideo.srcObject = tempVideo.srcObject;
@@ -2432,7 +2444,7 @@
                     tempVideo.className = "absolute w-px h-px opacity-0 pointer-events-none";
                     streamContainer.appendChild(tempVideo);
                     
-                    const timeoutId = setTimeout(() => {
+                    const timeoutId = setTimeout(() => { if (swapGen !== popupSwapGen) return;
                         if (qualityBtn.textContent === "...") {
                             console.warn("[WebRTC] Seamless quality change timed out.");
                             updateQualityButtonLabel(currentQuality);
@@ -2445,7 +2457,7 @@
                         }
                     }, 10000);
 
-                    tempVideo.addEventListener("playing", () => {
+                    tempVideo.addEventListener("playing", () => { if (swapGen !== popupSwapGen) return;
                         clearTimeout(timeoutId);
                         console.log(`[WebRTC] Successfully changed quality to ${nextQ} seamlessly`);
                         if (popupVideo) {
@@ -2543,7 +2555,7 @@
                                 <span class="ms-badge__dot"></span>
                                 <span class="font-data">CAM_${String(stream.id).padStart(3, '0')}</span>
                             </span>
-                            <span class="ms-badge__name">${stream.name.toUpperCase()}</span>
+                            <span class="ms-badge__name">${escHtml(stream.name.toUpperCase())}</span>
                         </div>
                     `;
                     
@@ -2640,7 +2652,7 @@
                             adMarqueeTrack.style.animationDuration = `${duration}s`;
                             adMarqueeTrack.style.animation = `marquee-scroll ${duration}s linear infinite`;
 
-                            const text = (data.marquee_text || "").trim();
+                            const text = escHtml((data.marquee_text || "").trim());
                             const itemContent = `${text} &nbsp;&nbsp;|&nbsp;&nbsp; `;
                             const trackText = itemContent.repeat(4);
 
@@ -2674,6 +2686,7 @@
     };
 
     function stopPopupStreams() {
+        popupSwapGen++;
         if (popupSwapTimeout) {
             clearTimeout(popupSwapTimeout);
             popupSwapTimeout = null;
@@ -2931,18 +2944,18 @@
                         tr.innerHTML = `
                             <td class="py-3.5 px-4 text-center">
                                 <input type="checkbox" class="scanned-cam-checkbox chk-native chk-native--md" 
-                                    data-name="${cam.name}" data-rtsp="${cam.rtsp_url}" onchange="window.updateSelectedScannedCamsCount()">
+                                    data-name="${escHtml(cam.name)}" data-rtsp="${escHtml(cam.rtsp_url)}" onchange="window.updateSelectedScannedCamsCount()">
                             </td>
-                            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-300">${cam.ip}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${cam.port}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${username} / ${password}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim select-all truncate max-w-[280px]" title="${cam.rtsp_url}">${maskUrl}</td>
+                            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-300">${escHtml(cam.ip)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${escHtml(cam.port)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${escHtml(username)} / ${escHtml(password)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim select-all truncate max-w-[280px]" title="${escHtml(cam.rtsp_url)}">${escHtml(maskUrl)}</td>
                             <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
-                                <button onclick="window.previewScannedCamera('${cam.name}', '${cam.rtsp_url}', this)"
+                                <button onclick="window.previewScannedCamera('${escHtml(escJs(cam.name))}', '${escHtml(escJs(cam.rtsp_url))}', this)"
                                     class="px-2.5 py-1 bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold uppercase tracking-wider rounded transition-all duration-150 active:scale-95">
                                     👁️ Preview
                                 </button>
-                                <button onclick="window.addScannedCamera('${cam.name}', '${cam.rtsp_url}')"
+                                <button onclick="window.addScannedCamera('${escHtml(escJs(cam.name))}', '${escHtml(escJs(cam.rtsp_url))}')"
                                     class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded transition-all duration-150 active:scale-95">
                                     + Add
                                 </button>

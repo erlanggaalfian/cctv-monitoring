@@ -170,13 +170,13 @@ if(!defined('SECURE_ACCESS')) {
                 <div class="admin-filter-actions flex items-center space-x-2">
                     <!-- Clear Filter -->
                     <button id="stream-filter-clear" onclick="clearStreamFilter()"
-                        class="hidden px-3 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-rose-300 dark:hover:border-rose-500/40 text-slate-500 dark:text-cyber-dim hover:text-rose-500 text-xs font-mono rounded-xl transition-all duration-150 cursor-pointer">
+                        class="hidden px-3 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-rose-300 dark:hover:border-rose-500/40 text-slate-500 dark:text-cyber-dim hover:text-rose-600 text-xs font-mono rounded-xl transition-all duration-150 cursor-pointer">
                         ✕ Clear
                     </button>
 
                     <!-- Bulk Set Coordinates Button -->
                     <button id="set-selected-streams-coords-btn" onclick="window.setSelectedAdminStreamsCoords()"
-                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm whitespace-nowrap flex items-center space-x-1.5 hidden cursor-pointer">
+                        class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm whitespace-nowrap flex items-center space-x-1.5 hidden cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         <span>Set Coords (<span id="selected-streams-coords-count">0</span>)</span>
                     </button>
@@ -211,7 +211,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table id="admin-streams-table" class="w-full text-left text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold w-12 text-center">
                                 <input type="checkbox" id="admin-streams-select-all" onclick="window.toggleSelectAllAdminStreams(this.checked)" 
                                     class="w-4 h-4 text-sky-500 bg-slate-100 border-slate-300 rounded focus:ring-sky-500 dark:bg-cyber-bg dark:border-cyber-outline cursor-pointer">
@@ -277,7 +277,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold pgn-kol-no">No</th>
                             <th class="py-3.5 px-4 font-semibold pgn-kol-nama">Username</th>
                             <th class="py-3.5 px-4 font-semibold pgn-kol-peran">Role</th>
@@ -286,7 +286,7 @@ if(!defined('SECURE_ACCESS')) {
                         </tr>
                     </thead>
                     <tbody id="admin-users-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                             <div class="flex items-center justify-center space-x-2">
                                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <span>Loading user accounts...</span>
@@ -333,7 +333,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold w-10">No</th>
                             <th id="akses-kol-1" class="py-3.5 px-4 font-semibold">Account</th>
                             <th id="akses-kol-2" class="py-3.5 px-4 font-semibold akses-kol-anggota">Role</th>
@@ -342,7 +342,7 @@ if(!defined('SECURE_ACCESS')) {
                         </tr>
                     </thead>
                     <tbody id="akses-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <tr><td colspan="5" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                             <div class="flex items-center justify-center space-x-2">
                                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <span>Memuat…</span>
@@ -370,7 +370,7 @@ if(!defined('SECURE_ACCESS')) {
                         <label for="scan-ip-range" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">IP Subnet Range (CIDR)</label>
                         <input type="text" id="scan-ip-range" required value="192.168.1.0/24"
                             class="app-input w-full h-10">
-                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim/60 mt-1 min-h-[16px] font-mono">Contoh: 192.168.1.0/24, 10.0.0.0/24</p>
+                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim mt-1 min-h-[16px] font-mono">Contoh: 192.168.1.0/24, 10.0.0.0/24</p>
                     </div>
 
                     <div class="flex flex-col justify-start h-full w-full">
@@ -398,7 +398,7 @@ if(!defined('SECURE_ACCESS')) {
                         <label for="scan-codec" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Codec / Stream Path</label>
                         <input type="text" id="scan-codec" required value="H.264"
                             class="app-input w-full h-10">
-                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim/60 mt-1 min-h-[16px] font-mono">Suffix URL RTSP (e.g. H.264, stream1)</p>
+                        <p class="text-[11px] text-gray-500 dark:text-cyber-dim mt-1 min-h-[16px] font-mono">Suffix URL RTSP (e.g. H.264, stream1)</p>
                     </div>
 
                     <div class="flex flex-col justify-start h-full w-full">
@@ -437,7 +437,7 @@ if(!defined('SECURE_ACCESS')) {
                     <p class="panel-card-desc">Kamera yang terdeteksi dari hasil scan jaringan</p>
                 </div>
                 <button id="add-selected-cams-btn" onclick="window.addSelectedScannedCameras()" 
-                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm hidden cursor-pointer">
+                    class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm hidden cursor-pointer">
                     + Add Selected (<span id="selected-cams-count">0</span>)
                 </button>
             </div>
@@ -445,7 +445,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono font-medium">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold w-12 text-center">
                                 <input type="checkbox" id="scan-select-all" onclick="window.toggleSelectAllScanned(this.checked)" 
                                     class="w-4 h-4 text-sky-500 bg-slate-100 border-slate-300 rounded focus:ring-sky-500 dark:bg-cyber-bg dark:border-cyber-outline cursor-pointer">
@@ -476,11 +476,11 @@ if(!defined('SECURE_ACCESS')) {
             <!-- Live Preview Area -->
             <div class="mb-6 p-4 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-lg">
                 <div class="flex items-center justify-between mb-3">
-                    <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">Live Preview (Pratinjau Langsung)</span>
+                    <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim font-mono">Live Preview (Pratinjau Langsung)</span>
                     <span class="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-md border border-sky-500/20">Widescreen Monitor (16:9)</span>
                 </div>
-                <div class="relative w-full h-44 bg-slate-950 rounded-xl border border-slate-700/60 ring-1 ring-black/40 flex items-center justify-center overflow-hidden shadow-[0_8px_24px_-4px_rgba(0,0,0,0.6)]" style="background-image: radial-gradient(circle, #0f172a 10%, #020617 100%);">
-                    <div class="absolute inset-0 opacity-[0.08] pointer-events-none select-none" style="background-size: 20px 20px; background-image: linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px);"></div>
+                <div class="relative w-full h-44 bg-slate-950 rounded-xl border border-slate-700/60 ring-1 ring-black/40 flex items-center justify-center overflow-hidden shadow-[0_8px_24px_-4px_rgba(0,0,0,0.6)]" style="background-image: radial-gradient(circle, #0f1520 10%, #080c12 100%);">
+                    <div class="absolute inset-0 opacity-[0.08] pointer-events-none select-none" style="background-size: 20px 20px; background-image: linear-gradient(to right, #3081d1 1px, transparent 1px), linear-gradient(to bottom, #3081d1 1px, transparent 1px);"></div>
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 opacity-20 border border-sky-400 rounded-full flex items-center justify-center pointer-events-none select-none">
                         <div class="w-1.5 h-1.5 bg-sky-400 rounded-full"></div>
                     </div>
@@ -520,7 +520,7 @@ if(!defined('SECURE_ACCESS')) {
                 <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200 dark:border-cyber-outline/30 rounded-xl shadow-sm">
                     <div>
                         <span class="block text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-white font-mono">Status Penayangan Iklan</span>
-                        <span class="text-[10px] text-slate-400 dark:text-cyber-dim font-mono">Tampilkan space iklan ini di video stream guest</span>
+                        <span class="text-[10px] text-slate-500 dark:text-cyber-dim font-mono">Tampilkan space iklan ini di video stream guest</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="ad-active" class="sr-only peer">
@@ -540,7 +540,7 @@ if(!defined('SECURE_ACCESS')) {
                             <label for="ad-box-width" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Lebar Wadah Iklan (10% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-box-width" min="10" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-box-width-val').textContent = this.value + '%'">
-                                <span id="ad-box-width-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
+                                <span id="ad-box-width-val" class="text-xs font-bold font-mono text-sky-600 dark:text-cyber-primary w-10 text-right">100%</span>
                             </div>
                         </div>
 
@@ -568,7 +568,7 @@ if(!defined('SECURE_ACCESS')) {
                             <label for="ad-bg-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Latar (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-bg-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-bg-opacity-val').textContent = this.value + '%'">
-                                <span id="ad-bg-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
+                                <span id="ad-bg-opacity-val" class="text-xs font-bold font-mono text-sky-600 dark:text-cyber-primary w-10 text-right">100%</span>
                             </div>
                         </div>
                     </div>
@@ -602,7 +602,7 @@ if(!defined('SECURE_ACCESS')) {
                             <label for="ad-image-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Logo (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-image-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-image-opacity-val').textContent = this.value + '%'">
-                                <span id="ad-image-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
+                                <span id="ad-image-opacity-val" class="text-xs font-bold font-mono text-sky-600 dark:text-cyber-primary w-10 text-right">100%</span>
                             </div>
                         </div>
 
@@ -611,7 +611,7 @@ if(!defined('SECURE_ACCESS')) {
                             <label for="ad-image-size" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Tinggi Ukuran Logo (10px - 60px)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-image-size" min="10" max="60" value="20" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-image-size-val').textContent = this.value + 'px'">
-                                <span id="ad-image-size-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">20px</span>
+                                <span id="ad-image-size-val" class="text-xs font-bold font-mono text-sky-600 dark:text-cyber-primary w-10 text-right">20px</span>
                             </div>
                         </div>
                     </div>
@@ -657,7 +657,7 @@ if(!defined('SECURE_ACCESS')) {
                                 <label for="ad-font-size" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Ukuran Font</label>
                                 <div class="flex items-center space-x-2">
                                     <input type="range" id="ad-font-size" min="8" max="24" value="10" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-font-size-val').textContent = this.value + 'px'">
-                                    <span id="ad-font-size-val" class="text-[10px] font-bold font-mono text-sky-500 w-8 text-right">10px</span>
+                                    <span id="ad-font-size-val" class="text-[10px] font-bold font-mono text-sky-600 dark:text-cyber-primary w-8 text-right">10px</span>
                                 </div>
                             </div>
                             <!-- Scroll Speed -->
@@ -665,7 +665,7 @@ if(!defined('SECURE_ACCESS')) {
                                 <label for="ad-scroll-speed" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Kecepatan</label>
                                 <div class="flex items-center space-x-2">
                                     <input type="range" id="ad-scroll-speed" min="1" max="10" value="5" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-scroll-speed-val').textContent = this.value">
-                                    <span id="ad-scroll-speed-val" class="text-[10px] font-bold font-mono text-sky-500 w-4 text-right">5</span>
+                                    <span id="ad-scroll-speed-val" class="text-[10px] font-bold font-mono text-sky-600 dark:text-cyber-primary w-4 text-right">5</span>
                                 </div>
                             </div>
                         </div>
@@ -675,7 +675,7 @@ if(!defined('SECURE_ACCESS')) {
                             <label for="ad-text-opacity" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">Transparansi Teks (0% - 100%)</label>
                             <div class="flex items-center space-x-3">
                                 <input type="range" id="ad-text-opacity" min="0" max="100" value="100" class="flex-grow h-1.5 bg-slate-300 dark:bg-cyber-outline rounded-lg appearance-none cursor-pointer accent-sky-500" oninput="document.getElementById('ad-text-opacity-val').textContent = this.value + '%'">
-                                <span id="ad-text-opacity-val" class="text-xs font-bold font-mono text-sky-500 w-10 text-right">100%</span>
+                                <span id="ad-text-opacity-val" class="text-xs font-bold font-mono text-sky-600 dark:text-cyber-primary w-10 text-right">100%</span>
                             </div>
                         </div>
                     </div>
@@ -843,7 +843,7 @@ if(!defined('SECURE_ACCESS')) {
                     <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200 dark:border-cyber-outline/30 rounded-xl shadow-sm">
                         <div>
                             <span class="block text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-white font-mono">Click to Play</span>
-                            <span class="text-[10px] text-slate-400 dark:text-cyber-dim font-mono">Wajib klik tombol Play untuk mulai memutar video</span>
+                            <span class="text-[10px] text-slate-500 dark:text-cyber-dim font-mono">Wajib klik tombol Play untuk mulai memutar video</span>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="embed-click-to-play" class="sr-only peer" checked>
@@ -855,7 +855,7 @@ if(!defined('SECURE_ACCESS')) {
                     <div class="flex flex-col justify-center p-4 bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200 dark:border-cyber-outline/30 rounded-xl shadow-sm space-y-2">
                         <div class="flex justify-between items-center">
                             <label for="embed-timeout-seconds" class="block text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-white font-mono">Batas Waktu Pemutaran (Detik)</label>
-                            <span id="embed-timeout-val-desc" class="text-[10px] font-mono text-sky-500 font-bold">5.0 Menit</span>
+                            <span id="embed-timeout-val-desc" class="text-[10px] font-mono text-sky-600 dark:text-cyber-primary font-bold">5.0 Menit</span>
                         </div>
                         <input type="number" id="embed-timeout-seconds" min="10" max="86400" value="300" 
                             class="app-input w-full font-mono text-xs" 
@@ -895,7 +895,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold">Client / Camera</th>
                             <th class="py-3.5 px-4 font-semibold w-40">Security</th>
                             <th class="py-3.5 px-4 font-semibold">API Key &amp; Embed URL</th>
@@ -903,7 +903,7 @@ if(!defined('SECURE_ACCESS')) {
                         </tr>
                     </thead>
                     <tbody id="api-keys-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="4" class="py-8 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <tr><td colspan="4" class="py-8 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                             <div class="flex items-center justify-center space-x-2">
                                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <span>Memuat daftar API key...</span>
@@ -947,16 +947,16 @@ if(!defined('SECURE_ACCESS')) {
             <!-- Summary Stats Cards -->
             <div id="api-log-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/80 dark:border-cyber-outline/20 flex flex-col gap-1">
-                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-cyber-dim font-mono">Total Akses</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-cyber-dim font-mono">Total Akses</span>
                     <span id="log-stat-total" class="text-xl font-bold font-mono text-slate-800 dark:text-white">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-1">
-                    <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-mono">HIT</span>
-                    <span id="log-stat-hits" class="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">—</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-mono">HIT</span>
+                    <span id="log-stat-hits" class="text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/20 flex flex-col gap-1">
-                    <span class="text-[10px] font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400 font-mono">DENIED</span>
-                    <span id="log-stat-denied" class="text-xl font-bold font-mono text-rose-500 dark:text-rose-400">—</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">DENIED</span>
+                    <span id="log-stat-denied" class="text-xl font-bold font-mono text-rose-600 dark:text-rose-400">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-sky-500/5 border border-sky-500/20 flex flex-col gap-1">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-sky-600 dark:text-cyber-primary font-mono">IP Unik</span>
@@ -968,7 +968,7 @@ if(!defined('SECURE_ACCESS')) {
             <div class="admin-table-wrap overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-400 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
+                        <tr class="border-b border-slate-200 dark:border-cyber-outline text-slate-600 dark:text-cyber-dim uppercase tracking-wider bg-slate-50 dark:bg-cyber-bg/60">
                             <th class="py-3.5 px-4 font-semibold w-36">Time</th>
                             <th class="py-3.5 px-4 font-semibold">Client / Camera</th>
                             <th class="py-3.5 px-4 font-semibold">Source IP</th>
@@ -978,7 +978,7 @@ if(!defined('SECURE_ACCESS')) {
                         </tr>
                     </thead>
                     <tbody id="api-log-table-body" class="divide-y divide-slate-100 dark:divide-cyber-outline/20">
-                        <tr><td colspan="6" class="py-8 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <tr><td colspan="6" class="py-8 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                             <div class="flex items-center justify-center space-x-2">
                                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <span>Memuat log akses...</span>
@@ -990,14 +990,14 @@ if(!defined('SECURE_ACCESS')) {
 
             <!-- Load More -->
             <div class="flex items-center justify-between mt-3">
-                <span id="api-log-count-label" class="text-[11px] text-slate-400 dark:text-cyber-dim font-mono"></span>
+                <span id="api-log-count-label" class="text-[11px] text-slate-500 dark:text-cyber-dim font-mono"></span>
                 <button id="api-log-load-more" onclick="window.loadMoreApiAccessLogs()" class="hidden px-3.5 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-400 text-slate-700 dark:text-cyber-text text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
                     Muat 100 Log Lebih
                 </button>
             </div>
 
             <!-- Auto-refresh notice -->
-            <p class="text-[10px] text-slate-400 dark:text-cyber-dim/60 font-mono mt-2">Log diperbarui otomatis setiap 30 detik saat tab ini aktif.</p>
+            <p class="text-[10px] text-slate-500 dark:text-cyber-dim font-mono mt-2">Log diperbarui otomatis setiap 30 detik saat tab ini aktif.</p>
         </div>
 
     </div>

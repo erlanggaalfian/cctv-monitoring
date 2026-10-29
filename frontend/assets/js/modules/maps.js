@@ -57,10 +57,10 @@
             // Remove old marker
             if (leafletMarker) leafletMap.removeLayer(leafletMarker);
 
-            // Custom camera icon
+            // Custom camera icon (warna status: online hijau, offline merah)
             const cameraIcon = L.divIcon({
                 className: "",
-                html: `<div style="background:#0ea5e9;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,0.35);">
+                html: `<div style="background:${stream.status === 'online' ? '#10b981' : '#ef4444'};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,0.35);">
                     <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 </div>`,
                 iconSize: [34, 34],
@@ -70,7 +70,7 @@
 
             leafletMarker = L.marker([lat, lon], { icon: cameraIcon })
                 .addTo(leafletMap)
-                .bindPopup(`<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;font-size:12px;"><strong>${stream.name}</strong><br><span style="color:#0ea5e9;font-size:10px;">${stream.group_name || ""}</span><br><span style="color:#94a3b8;font-size:10px;">${stream.coordinates}</span></div>`)
+                .bindPopup(`<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;font-size:12px;"><strong>${escHtml(stream.name)}</strong><br><span style="color:#2569b0;font-size:10px;">${escHtml(stream.group_name || "")}</span><br><span style="color:#4a5f80;font-size:10px;">${escHtml(stream.coordinates)}</span></div>`)
                 .openPopup();
 
             leafletMap.invalidateSize();
@@ -147,10 +147,10 @@
                     leafletMap = null;
                     leafletMarker = null;
                 }
-                mapEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#0f1729;color:#475569;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;gap:10px;">
-                    <svg width="40" height="40" fill="none" stroke="#334155" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span style="font-size:12px;">No coordinates configured for this camera</span>
-                    <span style="font-size:10px;color:#334155;">Edit the camera and add GPS coordinates to enable map view</span>
+                mapEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#0f1520;color:#878d98;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;gap:10px;">
+                    <svg width="40" height="40" fill="none" stroke="#878d98" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span style="font-size:12px;color:#d4d8e0;">No coordinates configured for this camera</span>
+                    <span style="font-size:10px;">Edit the camera and add GPS coordinates to enable map view</span>
                 </div>`;
             }
         }, 150);

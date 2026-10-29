@@ -12,6 +12,7 @@ import urllib.error
 import json
 import time
 import shutil
+import secrets
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional
@@ -771,17 +772,29 @@ async def get_stream_poster(stream_id: int):
 def health_check():
     return {"status": "ok", "service": "cctv-backend"}
 
-# Enable CORS for development
+# CORS: wildcard origin dipertahankan karena halaman sematan klien memang
+# memanggil API dari domain lain. Kredensial (cookie) TIDAK diizinkan —
+# autentikasi memakai header Bearer, jadi wildcard + credentials hanya
+# membuka pintu bagi domain mana pun membaca respons atas nama pengguna.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # --- Password Hashing & JWT Auth Configuration ---
-SECRET_KEY = os.getenv("JWT_SECRET", "mamura-stream-vanguard-key-1337-security")
+_env_secret = os.getenv("JWT_SECRET")
+if _env_secret:
+    SECRET_KEY = _env_secret
+else:
+    # Rahasia bawaan yang tertulis di kode bisa ditebak siapa pun, dan
+    # dengan itu token JWT apa pun dapat dipalsukan. Lebih baik rahasia acak
+    # per-proses (sesi hilang saat restart) daripada pintu masuk palsu.
+    SECRET_KEY = secrets.token_urlsafe(32)
+    print("[Auth] PERINGATAN: JWT_SECRET tidak disetel — memakai rahasia acak; "
+          "sesi login hilang setiap restart. Setel JWT_SECRET di cctv-backend.service.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 600  # 10 hours session
 
@@ -1304,6 +1317,23 @@ def seed_database():
                       f"{len(admins)} grup dibuat dari admin yang ada.")
             except Exception as e:
                 print(f"Database Migration Error (admin_group): {e}")
+                db.rollback()
+
+        # Automated Schema Migration: show_ads pada users. Tabel yang dibuat
+        # dari schema.sql lama tidak punya kolom ini; tanpa migrasi ini setiap
+        # kueri UserModel (SELECT semua kolom) gagal 500 karena kolom tak ada.
+        try:
+            db.execute(text("SELECT show_ads FROM users LIMIT 1"))
+        except Exception:
+            print("Database Migration: Adding show_ads column to users...")
+            db.rollback()
+            try:
+                db.execute(text(
+                    "ALTER TABLE users ADD COLUMN show_ads TINYINT(1) NOT NULL DEFAULT 1"))
+                db.commit()
+                print("Database Migration: show_ads column added successfully.")
+            except Exception as e:
+                print(f"Database Migration Error (show_ads): {e}")
                 db.rollback()
 
         # Automated Schema Migration: pisahkan live/rekaman pada grant Admin
@@ -1853,13 +1883,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 # --- Authentication Dependency ---
-def get_current_user(token: str = Depends(lambda: None), db: Session = Depends(get_db)):
-    # Fallback to extract from Auth Header
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
-    # We will support token from query parameter or authorization header
-    # First check authorization header using raw implementation
-    return _get_user_from_token(token, db)
-
 def _get_user_from_token(token: str, db: Session):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1881,17 +1904,6 @@ def _get_user_from_token(token: str, db: Session):
         raise credentials_exception
     return user
 
-# Helper dependency wrapper for request headers
-async def get_user_from_header(authorization: Optional[str] = Depends(lambda: None), db: Session = Depends(get_db)):
-    security = HTTPBearer(auto_error=False)
-    
-    # Custom parsing to accommodate different frontend setups
-    token = None
-    if authorization:
-        # If passed as direct parameter
-        token = authorization
-    return token
-
 async def get_authenticated_user(token_creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)), db: Session = Depends(get_db)):
     if not token_creds:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authorization header")
@@ -1901,15 +1913,48 @@ async def get_authenticated_user(token_creds: Optional[HTTPAuthorizationCredenti
 
 # --- API Endpoints ---
 
+# Pembatas percobaan login (anti brute-force). In-memory, per proses:
+# cukup untuk satu instance uvicorn seperti yang dijalankan service.
+_LOGIN_GAGAL: dict = {}          # kunci -> [jumlah_gagal, waktu_pertama]
+_LOGIN_BATAS = 10                # percobaan
+_LOGIN_JENDELA = 300             # detik
+
+def _cek_login_gagal(kunci: str):
+    catatan = _LOGIN_GAGAL.get(kunci)
+    if not catatan:
+        return
+    jumlah, mulai = catatan
+    if time.time() - mulai > _LOGIN_JENDELA:
+        _LOGIN_GAGAL.pop(kunci, None)
+        return
+    if jumlah >= _LOGIN_BATAS:
+        raise HTTPException(
+            status_code=429,
+            detail="Terlalu banyak percobaan login gagal. Coba lagi beberapa menit.")
+
+def _catat_login_gagal(kunci: str):
+    sekarang = time.time()
+    catatan = _LOGIN_GAGAL.get(kunci)
+    if not catatan or sekarang - catatan[1] > _LOGIN_JENDELA:
+        _LOGIN_GAGAL[kunci] = [1, sekarang]
+    else:
+        catatan[0] += 1
+    if len(_LOGIN_GAGAL) > 10000:   # cegah tumbuh tanpa batas
+        _LOGIN_GAGAL.clear()
+
 # 1. Login Endpoint
 @app.post("/api/auth/login", response_model=Token)
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
+def login(credentials: UserLogin, request: Request, db: Session = Depends(get_db)):
+    kunci = f"{request.client.host if request.client else '?'}|{credentials.username}"
+    _cek_login_gagal(kunci)
     user = db.query(UserModel).filter(UserModel.username == credentials.username).first()
     if not user or not verify_password(credentials.password, user.password_hash):
+        _catat_login_gagal(kunci)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+    _LOGIN_GAGAL.pop(kunci, None)
     
     access_token = create_access_token(data={"sub": user.username})
     return {
@@ -1979,7 +2024,7 @@ def kamera_dapat_ditonton(pengguna, db):
 @app.get("/api/streams", response_model=StreamPaginatedResponse)
 async def get_streams(
     page: int = 1,
-    limit: int = 9,
+    limit: int = Query(9, ge=1, le=100),
     group: Optional[str] = None,
     no_check: bool = False,
     user: UserModel = Depends(get_authenticated_user),
@@ -3876,40 +3921,9 @@ def admin_scan_network(
         results = list(scan_executor.map(scan_single_host, hosts))
         discovered = [r for r in results if r is not None]
 
-    # For safety/convenience in development and testing:
-    # If no real cameras are found, inject demo/simulated cameras matching the scanned subnet prefix
-    if not discovered:
-        # Extract subnet prefix (first 3 octets)
-        parts = req.ip_range.split("/")[0].split(".")
-        if len(parts) >= 3:
-            subnet_prefix = ".".join(parts[:3])
-        else:
-            subnet_prefix = "192.168.1"
-            
-        discovered = [
-            {
-                "ip": f"{subnet_prefix}.12",
-                "port": req.port,
-                "rtsp_url": f"rtsp://{req.username}:{req.password}@{subnet_prefix}.12:{req.port}/{req.codec}",
-                "status": "online",
-                "name": f"Kamera Lobi Depan ({subnet_prefix}.12)"
-            },
-            {
-                "ip": f"{subnet_prefix}.35",
-                "port": req.port,
-                "rtsp_url": f"rtsp://{req.username}:{req.password}@{subnet_prefix}.35:{req.port}/{req.codec}",
-                "status": "online",
-                "name": f"Kamera Parkir Timur ({subnet_prefix}.35)"
-            },
-            {
-                "ip": f"{subnet_prefix}.108",
-                "port": req.port,
-                "rtsp_url": f"rtsp://{req.username}:{req.password}@{subnet_prefix}.108:{req.port}/{req.codec}",
-                "status": "online",
-                "name": f"Kamera Ruang Server ({subnet_prefix}.108)"
-            }
-        ]
-
+    # Kamera palsu hasil karangan sengaja TIDAK dikembalikan lagi: admin yang
+    # memindai jaringan produksi berhak mendapat hasil nyata, bukan entri
+    # "online" rekaan yang bisa ikut tersimpan seolah kamera sungguhan.
     return [ScanResult(**d) for d in discovered]
 
 class PreviewRequest(BaseModel):
@@ -3977,6 +3991,26 @@ def get_available_disks(admin: UserModel = Depends(verify_admin_role)):
 # --- Recording & Playback Endpoints ---
 import re as _re
 
+def _sandi_kunci_cocok(pass_masukan, key_record) -> bool:
+    """Bandingkan secret_pass kunci API tanpa bocor lewat waktu eksekusi."""
+    if not pass_masukan:
+        return False
+    return secrets.compare_digest(
+        pass_masukan.strip().encode("utf-8"),
+        (key_record.secret_pass or "").strip().encode("utf-8"))
+
+
+def _domain_cocok(target: str, host: str) -> bool:
+    """Host sama persis dengan target, atau subdomainnya.
+
+    Pencocokan substring lama (`target in host`) menerima domain jahat:
+    aturan "example.com" meloloskan "notexample.com" milik penyerang.
+    """
+    if not target or not host:
+        return False
+    return host == target or host.endswith("." + target)
+
+
 def _enforce_key_domain(key_record, request):
     """Tolak bila allowed_domain diisi dan Referer/Origin tidak cocok."""
     if not (key_record.allowed_domain and key_record.allowed_domain.strip()):
@@ -3992,7 +4026,7 @@ def _enforce_key_domain(key_record, request):
     ref = _dom(request.headers.get("referer", ""))
     org = _dom(request.headers.get("origin", ""))
     target = key_record.allowed_domain.strip().lower()
-    if target not in ref and target not in org:
+    if not (_domain_cocok(target, ref) or _domain_cocok(target, org)):
         raise HTTPException(status_code=403, detail="Akses ditolak: Domain asal tidak diizinkan")
 
 
@@ -4468,7 +4502,7 @@ def stream_recording(
         if not key_record:
             raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
         if key_record.secret_pass and key_record.secret_pass.strip():
-            if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+            if not _sandi_kunci_cocok(pass_, key_record):
                 raise HTTPException(status_code=403, detail="Password salah atau tidak disertakan")
         if not key_record.include_playback:
             raise HTTPException(status_code=403, detail="Kunci API ini tidak diizinkan mengakses rekaman")
@@ -4648,14 +4682,31 @@ def admin_upload_ad_image(
     # Ensure subdirectory exists inside static
     ads_dir = os.path.join(BACKEND_DIR, "static", "ads")
     os.makedirs(ads_dir, exist_ok=True)
-    
+
+    # Nama berkas dari klien TIDAK boleh dipercaya apa adanya: nilai seperti
+    # "../../main.py" menulis ke luar direktori iklan dan dapat menimpa
+    # berkas backend (eksekusi kode). Direduksi ke nama dasar + karakter aman,
+    # ekstensi diperiksa daftar putih (tanpa html/svg: keduanya bisa membawa
+    # skrip yang dieksekusi di domain ini), dan ukuran dibatasi.
+    nama = os.path.basename(file.filename or "")
+    nama = _re.sub(r"[^A-Za-z0-9._-]", "_", nama).lstrip(".")
+    ekstensi = nama.rsplit(".", 1)[-1].lower() if "." in nama else ""
+    if ekstensi not in ("jpg", "jpeg", "png", "gif", "webp"):
+        raise HTTPException(
+            status_code=400,
+            detail="Format berkas tidak didukung (jpg/jpeg/png/gif/webp)")
+    data = file.file.read(5 * 1024 * 1024 + 1)
+    if not data or len(data) > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=400, detail="Berkas kosong atau terlalu besar (maks 5MB)")
+
     # Save file with timestamp prefix to prevent name collisions
     import time
-    safe_filename = f"{int(time.time())}_{file.filename}"
+    safe_filename = f"{int(time.time())}_{nama}"
     file_path = os.path.join(ads_dir, safe_filename)
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
+        buffer.write(data)
+
     return {"image_url": f"/api/static/ads/{safe_filename}"}
 
 # --- API Keys Management Endpoints ---
@@ -4742,7 +4793,7 @@ def get_external_cameras(
         raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
 
     if key_record.secret_pass and key_record.secret_pass.strip():
-        if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+        if not _sandi_kunci_cocok(pass_, key_record):
             raise HTTPException(status_code=403, detail="Kata sandi akses salah atau tidak disertakan")
 
     _enforce_key_domain(key_record, request)
@@ -4806,7 +4857,7 @@ def external_playback(
         raise HTTPException(status_code=403, detail="Kunci API tidak valid atau tidak aktif")
 
     if key_record.secret_pass and key_record.secret_pass.strip():
-        if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+        if not _sandi_kunci_cocok(pass_, key_record):
             raise HTTPException(status_code=403, detail="Password salah atau tidak disertakan")
 
     if not key_record.include_playback:
@@ -4926,7 +4977,7 @@ def get_external_stream(
     
     # Verify Password if set
     if key_record.secret_pass and key_record.secret_pass.strip():
-        if not pass_ or pass_.strip() != key_record.secret_pass.strip():
+        if not _sandi_kunci_cocok(pass_, key_record):
             executor.submit(_write_access_log,
                 key_record.id, key, key_record.client_name, key_record.camera_id, "",
                 req_ip, req_referer, req_ua, "denied", "Password salah atau tidak disertakan"
@@ -4952,7 +5003,8 @@ def get_external_stream(
         target_domain = key_record.allowed_domain.strip().lower()
         
         # Check if domains match (allowing subdomains or exact matches)
-        if target_domain not in ref_domain and target_domain not in orig_domain:
+        if not (_domain_cocok(target_domain, ref_domain)
+                or _domain_cocok(target_domain, orig_domain)):
             executor.submit(_write_access_log,
                 key_record.id, key, key_record.client_name, key_record.camera_id, "",
                 req_ip, req_referer, req_ua, "denied", f"Domain tidak diizinkan: {ref_domain or orig_domain or 'tidak diketahui'}"

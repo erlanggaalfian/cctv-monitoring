@@ -2,7 +2,8 @@
 // MUST be loaded AFTER assets/js/tailwind.js (that script creates the
 // global `tailwind` object; this file only assigns its .config).
 // Single source of truth: shared by includes/header.php and login.php.
-// Colors kept in sync with assets/css/global.css (brand.navy = --brand-navy).
+// Sinkron dengan assets/css/global.css: brand.* = --brand-* utama,
+// borderRadius = skala --r-sm/--r-md/--r-lg (8/12/16).
 tailwind.config = {
     darkMode: 'class',
     theme: {

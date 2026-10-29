@@ -2,3 +2,9 @@ RewriteEngine On
 
 # Route /logout ke logout.php
 RewriteRule ^logout$ logout.php [L,NC]
+
+# Jangan tampilkan daftar direktori & jangan sajikan berkas titik (.git, dst)
+Options -Indexes
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

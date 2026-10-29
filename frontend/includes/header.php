@@ -13,14 +13,16 @@ if(!defined('SECURE_ACCESS')) {
     <title>Mamura Stream - CCTV Streaming Portal</title>
     <!-- Inline SVG Favicon to match brand logo -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233081d1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'/%3E%3C/svg%3E">
-    <!-- Tailwind CSS (Locally hosted, production warning disabled) -->
-    <script src="/assets/js/tailwind-config.js?v=<?= @filemtime(__DIR__ . '/../assets/js/tailwind-config.js') ?: time() ?>"></script>
+    <!-- Tailwind CSS (Locally hosted, production warning disabled).
+         Urutan PENTING: tailwind.js dulu (membuat objek `tailwind`),
+         baru tailwind-config.js yang menugaskan .config-nya. -->
     <script src="/assets/js/tailwind.js?v=<?= @filemtime(__DIR__ . '/../assets/js/tailwind.js') ?: time() ?>"></script>
+    <script src="/assets/js/tailwind-config.js?v=<?= @filemtime(__DIR__ . '/../assets/js/tailwind-config.js') ?: time() ?>"></script>
 
     <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Google Fonts (Plus Jakarta Sans & JetBrains Mono) -->
+    <!-- Google Fonts (Poppins & Montserrat) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -48,6 +50,16 @@ if(!defined('SECURE_ACCESS')) {
             }
         })();
     </script>
+
+    <?php if (!empty($authGuard)): ?>
+    <!-- Guard sesi klien (token di localStorage) — di <head> agar halaman
+         tidak berada di quirks mode dan konten tidak sempat tampil. -->
+    <script>
+        if (!localStorage.getItem("cctv_auth_token")) {
+            window.location.href = "login.php";
+        }
+    </script>
+    <?php endif; ?>
 </head>
 <body class="min-h-screen flex flex-col transition-colors duration-200 font-sans antialiased">
 

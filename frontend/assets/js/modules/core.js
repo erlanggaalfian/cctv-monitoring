@@ -58,6 +58,19 @@ for (const key of Object.keys(state)) {
     }
     window.hexToRgba = hexToRgba;
 
+    // Escape untuk konteks HTML/atribut — semua data API/user wajib lewat ini
+    // sebelum masuk innerHTML. escJs untuk string di dalam atribut onclick.
+    function escHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    window.escHtml = escHtml;
+    function escJs(value) {
+        return String(value ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+    window.escJs = escJs;
+
 
 
     function captureLastPopupFrame() {
@@ -194,8 +207,8 @@ for (const key of Object.keys(state)) {
         ].join(" ");
 
         toast.innerHTML = isError
-            ? `<svg class="w-4 h-4 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${message}</span>`
-            : `<svg class="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${message}</span>`;
+            ? `<svg class="w-4 h-4 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${escHtml(message)}</span>`
+            : `<svg class="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${escHtml(message)}</span>`;
 
         container.appendChild(toast);
         // Animate in
@@ -219,10 +232,10 @@ for (const key of Object.keys(state)) {
                 const original = btn.innerHTML;
                 btn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Tersalin!`;
                 btn.classList.remove("bg-sky-500/10", "text-sky-500", "border-sky-500/30");
-                btn.classList.add("bg-emerald-500/10", "text-emerald-500", "border-emerald-500/30");
+                btn.classList.add("bg-emerald-500/10", "text-emerald-600", "border-emerald-500/30");
                 setTimeout(() => {
                     btn.innerHTML = original;
-                    btn.classList.remove("bg-emerald-500/10", "text-emerald-500", "border-emerald-500/30");
+                    btn.classList.remove("bg-emerald-500/10", "text-emerald-600", "border-emerald-500/30");
                     btn.classList.add("bg-sky-500/10", "text-sky-500", "border-sky-500/30");
                 }, 2000);
             }
@@ -257,7 +270,7 @@ for (const key of Object.keys(state)) {
         const sel = new Set((selectedIds || []).map(Number));
 
         if (!cams.length) {
-            box.innerHTML = '<p class="text-[10px] font-mono text-slate-400 dark:text-cyber-dim/60 p-2">Tidak ada kamera.</p>';
+            box.innerHTML = '<p class="text-[10px] font-mono text-slate-500 dark:text-cyber-dim p-2">Tidak ada kamera.</p>';
             window.updateApiCamCount(prefix);
             return;
         }
@@ -266,10 +279,9 @@ for (const key of Object.keys(state)) {
             const rec = cam.record_enabled ? 1 : 0;
             const checked = sel.has(Number(cam.id)) ? " checked" : "";
             const badge = rec
-                ? '<span class="ml-auto shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">REC</span>'
+                ? '<span class="ml-auto shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">REC</span>'
                 : "";
-            const nama = String(cam.name || `Kamera ${cam.id}`)
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const nama = escHtml(String(cam.name || `Kamera ${cam.id}`));
             return `<label class="flex items-center gap-2 px-2 py-2.5 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-cyber-hover transition-colors api-cam-row" data-name="${nama.toLowerCase()}">
                 <input type="checkbox" class="${prefix}-cam-check shrink-0" value="${cam.id}" data-rec="${rec}"${checked}
                     onchange="window.updateApiCamCount('${prefix}')">
@@ -309,8 +321,7 @@ for (const key of Object.keys(state)) {
         const cams = window._apiCameraCache || [];
         const nama = (id) => {
             const c = cams.find(x => Number(x.id) === Number(id));
-            return String(c ? c.name : `Kamera ${id}`)
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return escHtml(String(c ? c.name : `Kamera ${id}`));
         };
 
         list.innerHTML = urut.map((id, i) => `
@@ -402,7 +413,7 @@ for (const key of Object.keys(state)) {
         if (!tbody) return;
 
         // Show loading state
-        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
             <div class="flex items-center justify-center space-x-2">
                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 <span>Memuat daftar API key...</span>
@@ -423,7 +434,7 @@ for (const key of Object.keys(state)) {
             if (keys.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                        <td colspan="4" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                             <div class="flex flex-col items-center space-y-2">
                                 <svg class="w-8 h-8 text-slate-300 dark:text-cyber-outline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m-2 4a2 2 0 012 2m-2-4a2 2 0 11-4 0m4 0a2 2 0 10-4 0m-5 5h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 <span>Belum ada Kunci API. Gunakan form di atas untuk membuat.</span>
@@ -440,7 +451,7 @@ for (const key of Object.keys(state)) {
 
                 const hasPassword = !!(key.secret_pass && String(key.secret_pass).trim() !== "");
                 const secretPassVal = key.secret_pass || "";
-                const secretPassEscaped = secretPassVal.replace(/'/g, "\\'");
+                const secretPassEscaped = escJs(secretPassVal);
                 const keyValue = key.key_value;
                 const keyId = `key-${key.id}`;
 
@@ -473,7 +484,7 @@ for (const key of Object.keys(state)) {
 
                 const camIdsKey = (key.camera_ids && key.camera_ids.length) ? key.camera_ids : [key.camera_id];
                 const camNamesKey = (key.camera_names && key.camera_names.length) ? key.camera_names : [key.camera_name];
-                const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const esc = escHtml;
                 const daftarKameraHtml = camNamesKey.map((n, idx) =>
                     `<span class="inline-block px-1.5 py-0.5 rounded-sm text-[9px] font-mono ${idx === 0
                         ? 'bg-sky-100 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 font-bold'
@@ -483,16 +494,16 @@ for (const key of Object.keys(state)) {
 
                 tr.innerHTML = `
                     <td class="py-4 px-4">
-                        <div class="font-bold text-slate-800 dark:text-white text-xs">${key.client_name}</div>
-                        <div class="text-[10px] text-slate-400 dark:text-cyber-dim font-mono mt-0.5">
-                            ${key.custom_camera_name ? `<span class="text-sky-500 dark:text-cyber-primary font-semibold">[Kustom] ${key.custom_camera_name}</span><br>` : ''}
+                        <div class="font-bold text-slate-800 dark:text-white text-xs">${esc(key.client_name)}</div>
+                        <div class="text-[10px] text-slate-500 dark:text-cyber-dim font-mono mt-0.5">
+                            ${key.custom_camera_name ? `<span class="text-sky-500 dark:text-cyber-primary font-semibold">[Kustom] ${esc(key.custom_camera_name)}</span><br>` : ''}
                             <div class="flex flex-wrap items-center gap-1 mt-1">${daftarKameraHtml}</div>
                         </div>
                     </td>
                     <td class="py-4 px-4 space-y-1.5">
                         <div>
                             <span class="badge-tag ${key.allowed_domain ? 'badge-tag--amber' : 'badge-tag--green'}">
-                                ${key.allowed_domain ? `🔑 ${key.allowed_domain.toUpperCase()}` : '🌐 PUBLIC'}
+                                ${key.allowed_domain ? `🔑 ${esc(key.allowed_domain.toUpperCase())}` : '🌐 PUBLIC'}
                             </span>
                         </div>
                         <div>
@@ -511,9 +522,9 @@ for (const key of Object.keys(state)) {
                     </td>
                     <td class="py-4 px-4 max-w-xs">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <code class="text-[10px] text-sky-600 dark:text-cyber-primary font-bold font-mono select-all bg-sky-500/5 dark:bg-cyber-primary/5 px-2 py-0.5 rounded border border-sky-500/10">${keyValue}</code>
+                            <code class="text-[10px] text-sky-600 dark:text-cyber-primary font-bold font-mono select-all bg-sky-500/5 dark:bg-cyber-primary/5 px-2 py-0.5 rounded border border-sky-500/10">${esc(keyValue)}</code>
                             <!-- Copy API Key Button -->
-                            <button id="${keyId}-copy-key-btn" onclick="window.copyToClipboard('${keyValue}${hasPassword ? `&pass=${secretPassEscaped}` : ''}', '${keyId}-copy-key-btn')"
+                            <button id="${keyId}-copy-key-btn" onclick="window.copyToClipboard('${esc(escJs(keyValue))}${hasPassword ? `&pass=${esc(secretPassEscaped)}` : ''}', '${keyId}-copy-key-btn')"
                                 class="p-1 hover:bg-slate-200 dark:hover:bg-cyber-hover border border-slate-200 dark:border-cyber-outline rounded text-slate-500 dark:text-cyber-dim hover:text-sky-500 transition-all flex items-center justify-center" title="Salin API Key">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                             </button>
@@ -524,11 +535,11 @@ for (const key of Object.keys(state)) {
                                 <span class="text-[9px] font-bold font-mono">Cara Set</span>
                             </button>
                         </div>
-                        <div class="text-[9px] text-slate-400 dark:text-cyber-dim mt-1.5 truncate font-mono max-w-xs" title="${embedUrl}">${embedUrl}</div>
+                        <div class="text-[9px] text-slate-500 dark:text-cyber-dim mt-1.5 truncate font-mono max-w-xs" title="${esc(embedUrl)}">${esc(embedUrl)}</div>
                     </td>
                     <td class="py-4 px-4 text-right space-x-2.5">
                         <a href="${origin}/frontend/embed.php?key=${encodeURIComponent(keyValue)}${hasPassword ? `&pass=${encodeURIComponent(secretPassVal)}` : ''}" target="_blank" rel="noopener noreferrer"
-                            class="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px] uppercase inline-block">
+                            class="text-emerald-700 dark:text-emerald-400 hover:underline font-bold text-[11px] uppercase inline-block">
                             Test Player
                         </a>
                         <button onclick="window.openApiKeyEditModal('${key.id}')"
@@ -626,10 +637,10 @@ for (const key of Object.keys(state)) {
                 const original = btn.innerHTML;
                 btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
                 btn.classList.remove("text-slate-500", "dark:text-cyber-dim", "hover:text-sky-500");
-                btn.classList.add("text-emerald-500", "border-emerald-500/30");
+                btn.classList.add("text-emerald-600", "border-emerald-500/30");
                 setTimeout(() => {
                     btn.innerHTML = original;
-                    btn.classList.remove("text-emerald-500", "border-emerald-500/30");
+                    btn.classList.remove("text-emerald-600", "border-emerald-500/30");
                     btn.classList.add("text-slate-500", "dark:text-cyber-dim", "hover:text-sky-500");
                 }, 2000);
             }
@@ -673,7 +684,7 @@ for (const key of Object.keys(state)) {
         elPb.textContent = key.include_playback ? "AKTIF" : "MATI";
         elPb.className = "text-sm font-bold mt-0.5 " + (key.include_playback
             ? "text-violet-600 dark:text-violet-400"
-            : "text-slate-400 dark:text-cyber-dim");
+            : "text-slate-500 dark:text-cyber-dim");
         const elDom = document.getElementById("api-setup-stat-domain");
         elDom.textContent = key.allowed_domain && key.allowed_domain.trim() !== "" ? key.allowed_domain : "Semua";
         elDom.title = elDom.textContent;
@@ -700,11 +711,11 @@ for (const key of Object.keys(state)) {
         const noticeTextEl = document.getElementById("api-setup-security-text");
         let securityTexts = [];
         if (key.allowed_domain && key.allowed_domain.trim() !== "") {
-            securityTexts.push(`Dibatasi hanya untuk domain <u>${key.allowed_domain}</u> (Whitelisted)`);
+            securityTexts.push(`Dibatasi hanya untuk domain <u>${escHtml(key.allowed_domain)}</u> (Whitelisted)`);
         } else {
             securityTexts.push("Terbuka untuk semua domain (Public)");
         }
-        if (hasPassword) securityTexts.push(`Dilindungi password: <code>${key.secret_pass}</code>`);
+        if (hasPassword) securityTexts.push(`Dilindungi password: <code>${escHtml(key.secret_pass)}</code>`);
         if (key.include_playback) securityTexts.push("Klien dapat mengakses rekaman kamera di atas");
         noticeTextEl.innerHTML = securityTexts.join(" &middot; ");
         noticeEl.classList.remove("hidden");
@@ -837,10 +848,10 @@ for (const key of Object.keys(state)) {
                 const originalText = btn.textContent;
                 btn.textContent = "Tersalin!";
                 btn.classList.remove("text-sky-500");
-                btn.classList.add("text-emerald-500", "font-bold");
+                btn.classList.add("text-emerald-600", "font-bold");
                 setTimeout(() => {
                     btn.textContent = originalText;
-                    btn.classList.remove("text-emerald-500", "font-bold");
+                    btn.classList.remove("text-emerald-600", "font-bold");
                     btn.classList.add("text-sky-500");
                 }, 2000);
             }
@@ -968,30 +979,31 @@ for (const key of Object.keys(state)) {
     }
 
     function _renderApiLogRow(log) {
+        const esc = escHtml;
         const isHit    = log.status === 'hit';
         const statusBadge = isHit
             ? `<span class="badge-tag badge-tag--green inline-flex items-center rounded tracking-wider">✓ HIT</span>`
             : `<span class="badge-tag badge-tag--red inline-flex items-center rounded tracking-wider">✕ DENIED</span>`;
 
         const cameraText = log.camera_name
-            ? `<span class="text-[9px] text-slate-400 dark:text-cyber-dim/80">${log.camera_name}</span>`
+            ? `<span class="text-[9px] text-slate-500 dark:text-cyber-dim">${esc(log.camera_name)}</span>`
             : `<span class="text-[9px] text-slate-300 dark:text-cyber-dim/40">—</span>`;
 
         const domain   = _extractDomain(log.referer);
         const domainEl = domain !== '—'
-            ? `<span class="text-sky-600 dark:text-cyber-primary">${domain}</span>`
+            ? `<span class="text-sky-600 dark:text-cyber-primary">${esc(domain)}</span>`
             : `<span class="text-slate-300 dark:text-cyber-dim/40">—</span>`;
 
         return `<tr class="border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100">
-            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim whitespace-nowrap" title="${log.accessed_at}">${_relativeTime(log.accessed_at)}</td>
+            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim whitespace-nowrap" title="${esc(log.accessed_at)}">${_relativeTime(log.accessed_at)}</td>
             <td class="py-3 px-4">
-                <div class="font-bold text-[11px] text-slate-800 dark:text-white">${log.client_name || '—'}</div>
+                <div class="font-bold text-[11px] text-slate-800 dark:text-white">${esc(log.client_name) || '—'}</div>
                 ${cameraText}
             </td>
-            <td class="py-3 px-4 font-mono text-[10px] text-slate-600 dark:text-cyber-text">${log.ip_address || '—'}</td>
+            <td class="py-3 px-4 font-mono text-[10px] text-slate-600 dark:text-cyber-text">${esc(log.ip_address) || '—'}</td>
             <td class="py-3 px-4 font-mono text-[10px]">${domainEl}</td>
             <td class="py-3 px-4 text-center">${statusBadge}</td>
-            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim">${log.deny_reason || ''}</td>
+            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim">${esc(log.deny_reason)}</td>
         </tr>`;
     }
 
@@ -1001,7 +1013,7 @@ for (const key of Object.keys(state)) {
 
         if (!append) {
             _apiLogOffset = 0;
-            tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+            tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                 <div class="flex items-center justify-center space-x-2">
                     <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                     <span>Memuat log akses...</span>
@@ -1042,7 +1054,7 @@ for (const key of Object.keys(state)) {
             if (!append) tbody.innerHTML = '';
 
             if (logs.length === 0 && !append) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                     Belum ada log akses yang tercatat.
                 </td></tr>`;
                 if (countLabel) countLabel.textContent = '';
@@ -1062,7 +1074,7 @@ for (const key of Object.keys(state)) {
             }
         } catch(e) {
             if (!append) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-red-400 font-mono">Gagal memuat log: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-red-400 font-mono">Gagal memuat log: ${escHtml(e.message)}</td></tr>`;
             }
         }
     };

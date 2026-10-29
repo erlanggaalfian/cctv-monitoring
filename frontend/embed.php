@@ -146,11 +146,11 @@
                     <path d="M8 5v14l11-7z"></path>
                 </svg>
             </button>
-            <p id="play-overlay-text" class="text-white text-[10px] uppercase font-bold tracking-wider font-mono px-4 py-1.5 rounded-full bg-slate-955/80 border border-slate-800/60 backdrop-blur-md hidden"></p>
+            <p id="play-overlay-text" class="text-white text-[10px] uppercase font-bold tracking-wider font-mono px-4 py-1.5 rounded-full bg-slate-950/80 border border-slate-800/60 backdrop-blur-md hidden"></p>
         </div>
         
         <!-- Camera Info Label Overlay -->
-        <div id="camera-info-overlay" class="absolute top-4 left-4 z-20 bg-slate-955/70 border border-slate-800/60 backdrop-blur-md px-3 py-1.5 rounded-md text-white text-xs font-semibold tracking-wide flex items-center gap-2 hidden">
+        <div id="camera-info-overlay" class="absolute top-4 left-4 z-20 bg-slate-950/70 border border-slate-800/60 backdrop-blur-md px-3 py-1.5 rounded-md text-white text-xs font-semibold tracking-wide flex items-center gap-2 hidden">
             <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
             <span id="camera-name">CCTV Camera</span>
         </div>
@@ -498,10 +498,16 @@
         async function startWhep(whepUrl) {
             activePlayUrl = whepUrl;
             const video = document.getElementById('video-element');
-            
+
             // Reset timer lama jika ada
             resetTimers();
-            
+
+            // Tutup koneksi lama (klik dobel / ganti stream cepat) — hindari leak PC
+            if (pc) {
+                try { pc.close(); } catch(e) {}
+                pc = null;
+            }
+
             // Jadwalkan auto-stop & keep-alive jika timeout diaktifkan (> 0)
             if (embedTimeoutSeconds > 0) {
                 const keepAliveStartDelay = Math.max(0, (embedTimeoutSeconds - 15) * 1000);
@@ -515,43 +521,47 @@
                 playTimeout = setTimeout(() => stopWhep(true), embedTimeoutSeconds * 1000);
             }
             
-            pc = new RTCPeerConnection({
+            // conn lokal: handler tidak boleh membaca global pc yang bisa null
+            const conn = new RTCPeerConnection({
                 iceServers: []
             });
+            pc = conn;
 
-            pc.ontrack = (e) => {
+            conn.ontrack = (e) => {
                 if (e.streams?.[0]) {
                     video.srcObject = e.streams[0];
                     video.play().catch(err => console.warn("Auto-play failed, waiting for user interaction:", err));
                 }
             };
 
-            pc.oniceconnectionstatechange = () => {
-                const s = pc.iceConnectionState;
-                if (s === 'failed') {
+            conn.oniceconnectionstatechange = () => {
+                const s = conn.iceConnectionState;
+                if (s === 'failed' && pc === conn) {
                     showError("Koneksi Gagal", "Koneksi WebRTC ke media server terputus.");
                 }
             };
 
-            pc.addTransceiver('video', { direction: 'recvonly' });
-            pc.addTransceiver('audio', { direction: 'recvonly' });
+            conn.addTransceiver('video', { direction: 'recvonly' });
+            conn.addTransceiver('audio', { direction: 'recvonly' });
 
             try {
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
+                const offer = await conn.createOffer();
+                await conn.setLocalDescription(offer);
 
                 const resp = await fetch(whepUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/sdp' },
-                    body: pc.localDescription.sdp
+                    body: conn.localDescription.sdp
                 });
 
                 if (!resp.ok) throw new Error(`Media server HTTP ${resp.status}`);
 
                 const sdp = await resp.text();
-                await pc.setRemoteDescription({ type: 'answer', sdp });
+                await conn.setRemoteDescription({ type: 'answer', sdp });
             } catch (err) {
-                showError("Gagal Handshake WHEP", "Media server tidak merespons koneksi stream.");
+                if (pc === conn) {
+                    showError("Gagal Handshake WHEP", "Media server tidak merespons koneksi stream.");
+                }
             }
         }
 

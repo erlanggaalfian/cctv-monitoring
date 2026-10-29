@@ -44,7 +44,7 @@ if(!defined('SECURE_ACCESS')) {
         <!-- Camera List Panel (Scrollable) -->
         <div class="maps-camera-list" id="map-sidebar-cctv-list">
             <!-- Loading indicator -->
-            <div class="flex items-center justify-center py-10 space-x-2 text-xs text-slate-400 dark:text-cyber-dim font-mono">
+            <div class="flex items-center justify-center py-10 space-x-2 text-xs text-slate-500 dark:text-cyber-dim font-mono">
                 <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -59,7 +59,7 @@ if(!defined('SECURE_ACCESS')) {
 
         <!-- Legend overlay -->
         <div class="absolute bottom-4 left-4 z-[20] bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-cyber-outline/40 p-2.5 rounded shadow-lg text-[9px] font-mono text-slate-500 dark:text-cyber-dim select-none pointer-events-none">
-            <div class="flex items-center space-x-1.5 mb-1"><span class="w-2 h-2 rounded-full bg-sky-500"></span><span>Kamera Aktif</span></div>
+            <div class="flex items-center space-x-1.5 mb-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Kamera Aktif</span></div>
             <div class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Kamera Offline</span></div>
         </div>
     </div>
@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     initMap(-6.208763, 106.845599); // Jakarta Central
                 });
                 document.getElementById("map-sidebar-cctv-list").innerHTML = `
-                    <div class="py-12 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                    <div class="py-12 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                         <p class="font-bold">TIDAK ADA KAMERA TERPETAKAN</p>
                         <p class="text-[10px] text-slate-500 mt-2">Gunakan menu Admin Console untuk menambahkan koordinat GPS pada kamera Anda.</p>
                     </div>`;
@@ -287,9 +287,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Maps data fetch error:", error);
             document.getElementById("map-sidebar-cctv-list").innerHTML = `
-                <div class="py-12 text-center text-xs text-rose-500 font-mono">
+                <div class="py-12 text-center text-xs text-rose-600 font-mono">
                     <p class="font-bold">Gagal memuat data CCTV.</p>
-                    <p class="text-[10px] mt-1 text-rose-400/80">${error.message || error}</p>
+                    <p class="text-[10px] mt-1 text-rose-500">${escHtml(error.message || error)}</p>
                 </div>`;
         }
     }
@@ -396,11 +396,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const firstStream = cluster.streams[0];
             
             const anyOnline = cluster.streams.some(s => s.status === "online");
-            const color = anyOnline ? "#0ea5e9" : "#ef4444"; // sky-500 vs rose-500
+            const color = anyOnline ? "#10b981" : "#ef4444"; // emerald-500 vs rose-500
 
-            // If more than 1 camera in this location, show a red badge with the count
+            // If more than 1 camera in this location, show a count badge
             const badgeHtml = count > 1 
-                ? `<div style="position:absolute;top:-6px;right:-6px;background:#f43f5e;color:white;border-radius:50%;width:18px;height:18px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:1.5px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.3);z-index:9999;">${count}</div>`
+                ? `<div style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border-radius:50%;width:18px;height:18px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:1.5px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.3);z-index:9999;">${count}</div>`
                 : "";
 
             // DivIcon matching our CSS theme with optional cluster badge
@@ -420,13 +420,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Create Leaflet popup content listing all cameras in this cluster
             let cameraListHtml = "";
             cluster.streams.forEach(s => {
-                const statusColor = s.status === "online" ? "text-emerald-500" : "text-rose-500";
-                const streamJson = JSON.stringify(s).replace(/"/g, '&quot;');
-                const sequenceJson = JSON.stringify(cluster.streams).replace(/"/g, '&quot;');
+                const statusColor = s.status === "online" ? "text-emerald-700" : "text-rose-600";
+                const streamJson = escHtml(JSON.stringify(s));
+                const sequenceJson = escHtml(JSON.stringify(cluster.streams));
                 cameraListHtml += `
                     <div class="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-cyber-outline/20">
                         <div class="flex flex-col min-w-0 flex-1">
-                            <span class="font-bold text-[10px] truncate max-w-[120px] text-slate-800 dark:text-slate-200" title="${s.name}">${s.name}</span>
+                            <span class="font-bold text-[10px] truncate max-w-[120px] text-slate-800 dark:text-slate-200" title="${escHtml(s.name)}">${escHtml(s.name)}</span>
                             <span class="text-[8px] uppercase ${statusColor} font-mono">${s.status.toUpperCase()}</span>
                         </div>
                         <button onclick="window.openCameraPopup(${streamJson}, ${sequenceJson})" 
@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     ${count > 1 ? `
                     <div class="text-center pt-1.5 border-t border-slate-100">
-                        <button onclick="window.openCameraPopup(${JSON.stringify(cluster.streams[0]).replace(/"/g, '&quot;')}, ${JSON.stringify(cluster.streams).replace(/"/g, '&quot;')})" 
+                        <button onclick="window.openCameraPopup(${escHtml(JSON.stringify(cluster.streams[0]))}, ${escHtml(JSON.stringify(cluster.streams))})" 
                             class="inline-block w-full text-center px-2.5 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-[9px] font-bold uppercase transition-colors">
                             Lihat Semua Live Feed
                         </button>
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (streams.length === 0) {
             container.innerHTML = `
-                <div class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+                <div class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                     <span>Kamera tidak ditemukan</span>
                 </div>`;
             return;
@@ -528,9 +528,9 @@ document.addEventListener("DOMContentLoaded", () => {
         sortedGroups.forEach(groupName => {
             // Group Header
             const groupHeader = document.createElement("div");
-            groupHeader.className = "text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim/60 pl-1 mt-4 mb-2 font-mono flex justify-between items-center";
+            groupHeader.className = "text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-cyber-dim pl-1 mt-4 mb-2 font-mono flex justify-between items-center";
             groupHeader.innerHTML = `
-                <span>📁 ${groupName}</span>
+                <span>📁 ${escHtml(groupName)}</span>
                 <span class="px-1.5 py-0.2 bg-slate-100 dark:bg-cyber-bg/50 rounded font-mono text-[9px] text-slate-500 dark:text-cyber-dim font-bold">${groups[groupName].length}</span>
             `;
             container.appendChild(groupHeader);
@@ -546,8 +546,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 item.innerHTML = `
                     <span class="w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${dotColor}"></span>
                     <div class="flex-1 min-w-0 font-mono text-xs">
-                        <div class="font-bold text-slate-800 dark:text-white truncate">${stream.name}</div>
-                        <div class="text-[9px] text-slate-400 dark:text-cyber-dim/60 mt-1 select-all truncate">${stream.coordinates}</div>
+                        <div class="font-bold text-slate-800 dark:text-white truncate">${escHtml(stream.name)}</div>
+                        <div class="text-[9px] text-slate-500 dark:text-cyber-dim mt-1 select-all truncate">${escHtml(stream.coordinates)}</div>
                     </div>
                 `;
 

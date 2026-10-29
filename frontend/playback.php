@@ -43,6 +43,10 @@
         .tombol:hover { border-color: #38bdf8; color: #38bdf8; }
         .tombol:disabled { opacity: .35; cursor: not-allowed; }
         .tombol--aktif { background: rgba(56,189,248,.12); border-color: rgba(56,189,248,.5); color: #38bdf8; }
+        /* Label kecil yang dipakai di beberapa tempat (halaman ini berdiri
+           sendiri, global.css tidak dimuat di sini). */
+        .pb-section-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin-bottom: .5rem; }
+        .pb-meta-text { font-size: .65rem; color: #94a3b8; }
         video { background: #000; width: 100%; height: 100%; display: block; }
         /* Timeline cukup tinggi untuk digeser jari */
         #garis-waktu { height: 3.5rem; touch-action: none; }
@@ -57,7 +61,7 @@
     <div class="kartu rounded-xl px-3 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div class="min-w-0">
             <div id="judul" class="text-xs font-bold text-white truncate">Rekaman CCTV</div>
-            <div id="subjudul" class="text-[10px] text-slate-500 truncate">Memuat...</div>
+            <div id="subjudul" class="text-[10px] text-slate-400 truncate">Memuat...</div>
         </div>
         <div id="lencana-tanggal" class="text-[10px] text-sky-400 shrink-0"></div>
     </div>
@@ -77,7 +81,7 @@
             </div>
             <div id="kosong" class="absolute inset-0 hidden flex-col items-center justify-center bg-black/80 text-center px-6 gap-2">
                 <div class="text-sm font-bold text-slate-300">Tidak ada rekaman</div>
-                <div id="kosong-pesan" class="text-[11px] text-slate-500"></div>
+                <div id="kosong-pesan" class="text-[11px] text-slate-400"></div>
             </div>
         </div>
 
@@ -90,7 +94,7 @@
                 <button type="button" class="tombol" onclick="mundur(30)" title="Maju 30 detik">30d &#8594;</button>
             </div>
 
-            <div class="flex items-center justify-between text-[10px] text-slate-500">
+            <div class="flex items-center justify-between text-[10px] text-slate-400">
                 <span id="jam">--:--:--</span>
                 <span id="info-segmen"></span>
             </div>
@@ -126,6 +130,7 @@
     var mulaiPotongan = 0;
     var tanggalAktif = "";
     var idKameraInternal = null;    // dipakai untuk URL video
+    var gen = 0;                    // token sesi muat: respons telat dibuang
 
     var $ = function (id) { return document.getElementById(id); };
 
@@ -156,6 +161,7 @@
 
     // ---------- muat daftar tanggal + kamera ----------
     function muatTanggal() {
+        var g = ++gen;
         var url = API + "?" + kredensial() + "&camera=" + kameraAktif;
         return fetch(url).then(function (r) {
             return r.json().then(function (d) {
@@ -163,6 +169,7 @@
                 return d;
             });
         }).then(function (d) {
+            if (g !== gen) return;
             $("judul").textContent = d.camera_name || "Rekaman CCTV";
             $("subjudul").textContent = "Kamera " + d.camera + " dari " + d.total_cameras;
 
@@ -187,6 +194,7 @@
             });
             return muatSegmen(tgl[0].date);
         }).catch(function (e) {
+            if (g !== gen) return;
             galat("Tidak dapat memuat", e.message);
         });
     }
@@ -216,6 +224,7 @@
 
     // ---------- muat segmen satu tanggal ----------
     function muatSegmen(tanggal) {
+        var g = ++gen;
         tanggalAktif = tanggal;
         $("lencana-tanggal").textContent = tanggal;
         var url = API + "?" + kredensial() + "&camera=" + kameraAktif + "&date=" + encodeURIComponent(tanggal);
@@ -225,6 +234,7 @@
                 return d;
             });
         }).then(function (d) {
+            if (g !== gen) return;
             rentangList = d.ranges || [];
             $("info-segmen").textContent = (d.segment_count || 0) + " segmen";
 
@@ -251,6 +261,7 @@
                 $("kosong-pesan").textContent = "Tidak ada segmen pada tanggal ini.";
             }
         }).catch(function (e) {
+            if (g !== gen) return;
             galat("Tidak dapat memuat", e.message);
         });
     }
@@ -356,7 +367,10 @@
         }
         tl.addEventListener("pointerdown", function (e) {
             geser = true; tl.setPointerCapture(e.pointerId);
-            lompatKe(awalHari() + rasioDi(e.clientX) * 86400);
+            // Preview saja dulu — seek tunggal dijalankan saat pointerup
+            var ph = $("penanda");
+            ph.style.display = "block";
+            ph.style.left = (rasioDi(e.clientX) * 100) + "%";
         });
         tl.addEventListener("pointermove", function (e) {
             if (!geser) return;

@@ -45,7 +45,7 @@ uji("pilihan akun kosong berbunyi polos",
 uji("pilihan grup baru tanpa tanda plus dan elipsis",
     adminjs.includes('opsiBaru.textContent = "Buat grup baru";'));
 uji("peran akun dipisah kurung, bukan em dash",
-    /\$\{u\.username\} \(\$\{\(u\.role \|\| ""\)\.toUpperCase\(\)\}\)/.test(adminjs));
+    /\$\{esc\(u\.username\)\} \(\$\{esc\(\(u\.role \|\| ""\)\.toUpperCase\(\)\)\}\)/.test(adminjs));
 
 console.log("\n=== pemilih Akun setara dengan pemilih lain di layar ===");
 const idx = modals.indexOf('id="akses-modal-akun"');

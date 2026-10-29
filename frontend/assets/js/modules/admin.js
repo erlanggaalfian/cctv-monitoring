@@ -1,4 +1,7 @@
     // --- 5. System Administration Operations ---
+    // Escaper data user untuk innerHTML/atribut + argumen onclick inline.
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const jsid = (v) => encodeURIComponent(String(v ?? "")).replace(/'/g, "%27");
     async function loadAdminData(options = {}) {
         if (!window.bolehKelola(userRole)) {
             renderNonAdminAccessNotice();
@@ -293,7 +296,7 @@
                 <div class="w-full flex flex-col items-center justify-center text-center py-12 px-4 bg-gray-50 dark:bg-cyber-bg rounded-xl border border-gray-100 dark:border-cyber-outline/30">
                     <svg class="w-8 h-8 text-gray-400 dark:text-cyber-dim mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span class="text-sm font-medium text-gray-500 dark:text-cyber-dim">No cameras match your search criteria</span>
-                    <button onclick="clearStreamFilter()" class="text-sky-500 hover:underline text-xs mt-4">Clear filter</button>
+                    <button onclick="clearStreamFilter()" class="text-sky-600 dark:text-cyber-primary hover:underline text-xs mt-4">Clear filter</button>
                 </div>
             </td></tr>`;
             return;
@@ -318,7 +321,7 @@
             const milikSendiri = stream.dipasang_sendiri !== false;
             const rtspTampil = milikSendiri
                 ? rtspUrl
-                : `<span class="text-slate-400 dark:text-cyber-dim/50 select-none" title="Kamera ini dipasang Super Admin — kredensial tidak ditampilkan">********</span>`;
+                : `<span class="text-slate-500 dark:text-cyber-dim select-none" title="Kamera ini dipasang Super Admin — kredensial tidak ditampilkan">********</span>`;
             const hasCoords = !!(stream.coordinates && stream.coordinates.trim() && stream.coordinates !== "-");
             const connectionStatus = stream.status || "offline";
             const rowNumber = pageStart + index + 1;
@@ -329,12 +332,12 @@
                         value="${stream.id}" ${milikSendiri ? "" : "disabled title=\"Dipasang Super Admin — tidak dapat dihapus dari sini\""} onchange="window.updateSelectedAdminStreamsCount()">
                 </td>
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${rowNumber}</td>
-                <td class="py-4 px-4 text-base font-semibold text-slate-900 dark:text-white" data-label="" data-grup="${groupName === '-' ? '' : groupName}">${stream.name}</td>
+                <td class="py-4 px-4 text-base font-semibold text-slate-900 dark:text-white" data-label="" data-grup="${groupName === '-' ? '' : esc(groupName)}">${esc(stream.name)}</td>
                 <td class="py-4 px-4" data-label="Group">
-                    <span class="inline-block px-2 py-0.5 bg-sky-50 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary border border-sky-200 dark:border-cyber-primary/20 rounded text-[10px] font-bold font-mono max-w-24 truncate" title="${groupName}">${groupName}</span>
+                    <span class="inline-block px-2 py-0.5 bg-sky-50 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary border border-sky-200 dark:border-cyber-primary/20 rounded text-[10px] font-bold font-mono max-w-24 truncate" title="${esc(groupName)}">${esc(groupName)}</span>
                 </td>
-                <td class="py-4 px-4 max-w-36 truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px]" data-label="Coordinates" title="${coordinates}">${coordinates}</td>
-                <td class="py-4 px-4 max-w-xs truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px] ${milikSendiri ? "select-all" : ""}" data-label="RTSP" title="${milikSendiri ? rtspUrl : "Dipasang Super Admin"}">${rtspTampil}</td>
+                <td class="py-4 px-4 max-w-36 truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px]" data-label="Coordinates" title="${esc(coordinates)}">${esc(coordinates)}</td>
+                <td class="py-4 px-4 max-w-xs truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px] ${milikSendiri ? "select-all" : ""}" data-label="RTSP" title="${milikSendiri ? esc(rtspUrl) : "Dipasang Super Admin"}">${esc(rtspTampil)}</td>
                 <td class="py-4 px-4 flex flex-row items-center gap-2" data-label="Status">
                     <span class="badge-tag ${stream.is_active ? 'badge-tag--green' : 'badge-tag--slate'}">
                         ${stream.is_active ? 'ACTIVE' : 'DISABLED'}
@@ -350,15 +353,15 @@
                     </span>` : `<span class="text-[9px] text-slate-300 dark:text-slate-600">—</span>`}
                 </td>
                 <td class="py-4 px-4 flex items-center justify-end gap-2" data-label="Actions">
-                    <button onclick="window.viewAdminStream(${stream.id})" class="text-amber-600 dark:text-amber-400 hover:underline font-bold text-[11px] uppercase">
+                    <button onclick="window.viewAdminStream(${stream.id})" class="text-amber-700 dark:text-amber-400 hover:underline font-bold text-[11px] uppercase">
                         View
                     </button>
-                    <button onclick="openMapModal(${stream.id})" title="${hasCoords ? 'View on Map' : 'No coordinates set'}" class="${hasCoords ? 'text-emerald-600 dark:text-emerald-400 hover:underline' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'} font-bold text-[11px] uppercase">
+                    <button onclick="openMapModal(${stream.id})" title="${hasCoords ? 'View on Map' : 'No coordinates set'}" class="${hasCoords ? 'text-emerald-700 dark:text-emerald-400 hover:underline' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'} font-bold text-[11px] uppercase">
                         &#9737; Map
                     </button>
                     ${milikSendiri ? `
-                    <button onclick="openEditStreamModal(${stream.id})" class="text-sky-600 dark:text-cyber-primary hover:underline font-bold text-[11px] uppercase">Edit</button>
-                    <button onclick="deleteStream(${stream.id})" class="text-red-500 dark:text-cyber-error hover:underline font-bold text-[11px] uppercase">Delete</button>
+                    <button onclick="openEditStreamModal(${stream.id}, '${jsid(groupName)}', '${jsid(stream.coordinates || '')}')" class="text-sky-600 dark:text-cyber-primary hover:underline font-bold text-[11px] uppercase" data-label="Actions">Edit</button>
+                    <button onclick="deleteStream(${stream.id})" class="text-red-600 dark:text-cyber-error hover:underline font-bold text-[11px] uppercase">Delete</button>
                     ` : ``}
                 </td>
             `;
@@ -421,7 +424,7 @@
         if (container) {
             container.innerHTML = "";
             if (adminStreams.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">No active cameras in directory.</p>`;
+                container.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">No active cameras in directory.</p>`;
             } else {
                 // Group streams by group_name
                 const grouped = {};
@@ -451,13 +454,13 @@
                     
                     headerDiv.innerHTML = `
                         <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="group-select-${groupSlug}" data-group="${groupName}" ${allChecked ? "checked" : ""}
+                            <input type="checkbox" id="group-select-${esc(groupSlug)}" data-group="${esc(groupName)}" ${allChecked ? "checked" : ""}
                                 class="group-select-checkbox chk-native chk-native--md">
-                            <label for="group-select-${groupSlug}" class="text-[10px] font-bold text-slate-500 dark:text-cyber-dim uppercase font-mono mb-0 cursor-pointer select-none">
-                                GROUP: ${groupName}
+                            <label for="group-select-${esc(groupSlug)}" class="text-[10px] font-bold text-slate-500 dark:text-cyber-dim uppercase font-mono mb-0 cursor-pointer select-none">
+                                GROUP: ${esc(groupName)}
                             </label>
                         </div>
-                        <span class="text-[9px] font-bold text-slate-400 dark:text-cyber-dim/60 font-mono">(${groupStreams.length} Cam)</span>
+                        <span class="text-[9px] font-bold text-slate-500 dark:text-cyber-dim font-mono">(${groupStreams.length} Cam)</span>
                     `;
                     groupDiv.appendChild(headerDiv);
                     
@@ -471,10 +474,10 @@
                         
                         const isChecked = user.stream_ids.includes(stream.id) ? "checked" : "";
                         div.innerHTML = `
-                            <input type="checkbox" id="perm-stream-${stream.id}" value="${stream.id}" data-group="${groupName}" ${isChecked}
+                            <input type="checkbox" id="perm-stream-${stream.id}" value="${stream.id}" data-group="${esc(groupName)}" ${isChecked}
                                 class="permissions-modal-checkbox chk-native chk-native--sm">
-                            <label for="perm-stream-${stream.id}" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text uppercase font-mono mb-0 cursor-pointer select-none w-full truncate" title="${stream.name}">
-                                ${stream.name}
+                            <label for="perm-stream-${stream.id}" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text uppercase font-mono mb-0 cursor-pointer select-none w-full truncate" title="${esc(stream.name)}">
+                                ${esc(stream.name)}
                             </label>
                         `;
                         camerasContainer.appendChild(div);
@@ -572,7 +575,12 @@
         if (mName) mName.value = "";
         if (mGroup) mGroup.value = "";
         if (mCoords) mCoords.value = "";
-        if (mRtsp) mRtsp.value = "";
+        if (mRtsp) {
+            mRtsp.value = "";
+            // Bersihkan sisa state modal edit (field bisa terkunci di sana).
+            mRtsp.readOnly = false;
+            mRtsp.placeholder = "rtsp://...";
+        }
         if (mActive) mActive.checked = true;
 
         // Reset recording fields
@@ -589,9 +597,7 @@
 
         // Load available disks
         loadAvailableDisks();
-        // Update path preview on name/group change
-        document.getElementById("modal-stream-name")?.addEventListener("input", updatePathPreview);
-        document.getElementById("modal-stream-group")?.addEventListener("input", updatePathPreview);
+        updatePathPreview();
 
         const modal = document.getElementById("stream-modal");
         if (modal) modal.classList.remove("hidden");
@@ -700,14 +706,27 @@
         preview.textContent = `${d}/recordings/${safe(group)}/${safe(name)}/`;
     }
 
+    // Pemicu preview path dipasang sekali di awal, bukan tiap modal dibuka
+    // (sebelumnya menumpuk listener setiap kali tombol Add ditekan).
+    document.getElementById("modal-stream-name")?.addEventListener("input", updatePathPreview);
+    document.getElementById("modal-stream-group")?.addEventListener("input", updatePathPreview);
+
     window.handleStreamSubmit = async function(e) {
         e.preventDefault();
         const streamId = document.getElementById("modal-stream-id").value;
         const name = document.getElementById("modal-stream-name").value;
         const groupName = (document.getElementById("modal-stream-group") || {}).value || "Default";
         const coordinates = (document.getElementById("modal-stream-coordinates") || {}).value || "";
-        const rtspUrl = document.getElementById("modal-stream-rtsp").value;
+        const rtspInput = document.getElementById("modal-stream-rtsp");
+        const rtspUrl = rtspInput.value;
         const isActive = document.getElementById("modal-stream-active").checked;
+
+        // Field terkunci = URL disembunyikan server. Nilai kosong yang dikirim
+        // akan menimpa URL asli di backend, jadi simpan ditolak lebih dahulu.
+        if (streamId && rtspInput.readOnly && !rtspUrl) {
+            window.showApiErrorBanner("URL RTSP tersembunyi \u2014 perubahan tidak dapat disimpan tanpa menimpa URL asli.");
+            return;
+        }
 
         const recordEnabled = document.getElementById("modal-stream-record")?.checked || false;
         const recordDisk = document.getElementById("modal-stream-disk")?.value || "/";
@@ -820,7 +839,7 @@
         if (usersBadge) usersBadge.textContent = adminUsers.length;
 
         if (!adminUsers || adminUsers.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">
+            tableBody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
                 <div class="flex flex-col items-center space-y-2">
                     <svg class="w-6 h-6 text-slate-300 dark:text-cyber-outline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                     <span>Belum ada akun pengguna terdaftar. Klik "+ Add User Account" untuk menambahkan.</span>
@@ -856,8 +875,8 @@
                 ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30"
                 : p === "user"
                     ? "bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/30"
-                    : "bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/50";
-            return `<span class="pgn-peran ${warna}">${(user.role || "").toUpperCase()}</span>`;
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/50";
+            return `<span class="pgn-peran ${warna}">${esc((user.role || "").toUpperCase())}</span>`;
         };
 
         const tombolAksi = user => `<span class="pgn-aksi">
@@ -873,28 +892,28 @@
         const lencanaIklan = aktif => `<span class="badge-iklan ${aktif ? "badge-iklan--on" : "badge-iklan--off"}" title="${aktif ? "Iklan tampil" : "Iklan disembunyikan"}">iklan ${aktif ? "on" : "off"}</span>`;
 
         const barisLepas = (user, nomor) => `<tr class="hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text">
-                <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim">${nomor}</td>
-                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white">
-                    ${user.username}
-                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${user.dibuat_oleh}</span>` : ""}
+                <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${nomor}</td>
+                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white" data-label="Username">
+                    ${esc(user.username)}
+                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
-                <td class="py-4 px-4">${lencanaPeran(user)}
-                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--mobile">Dibuat oleh: ${user.dibuat_oleh}</span>` : ""}
+                <td class="py-4 px-4" data-label="Role">${lencanaPeran(user)}
+                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--mobile">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
-                <td class="py-4 px-4">${!user.admin_group ? lencanaIklan(user.show_ads) : ""}</td>
-                <td class="py-4 px-4 text-right">${tombolAksi(user)}</td>
+                <td class="py-4 px-4" data-label="Iklan">${!user.admin_group ? lencanaIklan(user.show_ads) : ""}</td>
+                <td class="py-4 px-4 text-right" data-label="Actions">${tombolAksi(user)}</td>
             </tr>`;
 
         const barisAnggota = (user, akhir) => `<tr class="ang-baris-anggota${akhir ? " ang-baris-anggota--akhir" : ""}">
                 <td class="py-2 px-4"></td>
                 <td class="py-2 px-4">
                     <span class="ang-anak">
-                        <span class="ang-nama" title="${user.username}">${user.username}</span>
+                        <span class="ang-nama" title="${esc(user.username)}">${esc(user.username)}</span>
                     </span>
-                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${user.dibuat_oleh}</span>` : ""}
+                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
                 <td class="py-2 px-4">${lencanaPeran(user)}
-                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--mobile">Dibuat oleh: ${user.dibuat_oleh}</span>` : ""}
+                    ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--mobile">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
                 <td class="py-2 px-4"></td>
                 <td class="py-2 px-4 text-right">${tombolAksi(user)}</td>
@@ -902,7 +921,7 @@
 
         const barisGrup = (nama, anggota, nomor) => {
             const buka = grupPenggunaTerbentang.has(nama);
-            const sandi = encodeURIComponent(nama);
+            const sandi = jsid(nama);
             // Isi hanya disusun saat panelnya terbuka: baris tersembunyi
             // tetap terbaca pencarian dalam halaman dan pembaca layar,
             // sehingga nama ditemukan di grup yang layarnya tidak menampilkan.
@@ -914,7 +933,7 @@
                 <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/30">grup</span>
-                        <span class="ang-nama">${nama}</span>
+                        <span class="ang-nama">${esc(nama)}</span>
                     </span>
                 </td>
                 <td class="py-4 px-4">
@@ -927,7 +946,7 @@
                 <td class="py-4 px-4">${lencanaIklan(anggota.length > 0 && anggota.every(a => a.show_ads))}</td>
                 <td class="py-4 px-4 text-right">
                     <span class="pgn-aksi">
-                        <button onclick="event.stopPropagation(); window.bukaGantiNamaGrup('${sandi}')" class="ang-tombol" title="Ubah nama grup ${nama}">Edit</button>
+                        <button onclick="event.stopPropagation(); window.bukaGantiNamaGrup('${sandi}')" class="ang-tombol" title="Ubah nama grup ${esc(nama)}">Edit</button>
                         <button class="ang-tombol invisible" tabindex="-1" aria-hidden="true">Delete</button>
                     </span>
                 </td>
@@ -1084,7 +1103,7 @@
             const saya = (adminUsers || []).find(u => u.username === username);
             const grupSaya = (saya && saya.admin_group) || "";
             isian.innerHTML = grupSaya
-                ? `<option value="${grupSaya}">${grupSaya}</option>`
+                ? `<option value="${esc(grupSaya)}">${esc(grupSaya)}</option>`
                 : '<option value="">Belum masuk grup</option>';
             isian.value = grupSaya;
             isian.disabled = true;
@@ -1196,6 +1215,9 @@
         if (mPasswordLabel) mPasswordLabel.textContent = "Password";
         if (mPasswordHelp) mPasswordHelp.classList.add("hidden");
         if (mRole) mRole.value = "user";
+        // Reset sakelar iklan — sebelumnya nilai centang modal edit terbawa.
+        const iklanChkBaru = document.getElementById("modal-user-iklan");
+        if (iklanChkBaru) iklanChkBaru.checked = true;
         batasiPilihanPeran();
         siapkanPilihanGrup(null);
 
@@ -1501,7 +1523,7 @@
         container.innerHTML = "";
 
         if (customPlaylist.length === 0) {
-            container.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">No cameras authorized.</p>`;
+            container.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">No cameras authorized.</p>`;
             return;
         }
 
@@ -1534,10 +1556,10 @@
             const groupHtmlId = "custom-group-chk-" + encodeURIComponent(groupName).replace(/%/g, '');
             headerDiv.innerHTML = `
                 <div class="flex items-center space-x-2">
-                    <input type="checkbox" id="${groupHtmlId}" ${groupChecked} onchange="toggleCustomGroup('${groupName.replace(/'/g, "\\'")}', this.checked)"
+                    <input type="checkbox" id="${groupHtmlId}" ${groupChecked} onchange="toggleCustomGroup('${esc(groupName.replace(/'/g, "\\'"))}', this.checked)"
                         class="chk-native chk-native--sm">
                     <label for="${groupHtmlId}" class="text-[10px] font-bold text-slate-500 dark:text-cyber-dim uppercase font-mono cursor-pointer mb-0 select-none">
-                        ${groupName}
+                        ${esc(groupName)}
                     </label>
                 </div>
             `;
@@ -1557,16 +1579,16 @@
                         <input type="checkbox" id="custom-chk-${stream.id}" ${isChecked} onchange="toggleCustomItem(${stream.id})"
                             class="chk-native chk-native--md">
                         <label for="custom-chk-${stream.id}" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text uppercase font-mono mb-0 cursor-pointer select-none truncate">
-                            ${stream.name}
+                            ${esc(stream.name)}
                         </label>
                     </div>
                     <div class="flex space-x-1 shrink-0 ml-2">
-                        <button onclick="moveCustomItem(${index}, -1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-400 transition-colors" title="Move Up">
+                        <button onclick="moveCustomItem(${index}, -1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Up">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
                             </svg>
                         </button>
-                        <button onclick="moveCustomItem(${index}, 1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-400 transition-colors" title="Move Down">
+                        <button onclick="moveCustomItem(${index}, 1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Down">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                             </svg>
@@ -1753,7 +1775,7 @@
             
             const showTopLeft = (userRole || "").toLowerCase() !== "guest";
             const overlayTopLeftHtml = showTopLeft ? `
-                <div class="absolute top-2.5 left-2.5 z-10 bg-[#090e1a]/85 backdrop-blur-md px-2.5 py-1.5 text-[9px] font-mono text-white rounded-md flex items-center space-x-2 border border-white/10 shadow-sm">
+                <div class="absolute top-2.5 left-2.5 z-10 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 text-[9px] font-mono text-white rounded-md flex items-center space-x-2 border border-white/10 shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full ${statusDotColor}"></span>
                     <span class="font-bold">CAM_${String(stream.id).padStart(3, '0')}</span>
                     <span class="text-slate-600">|</span>
@@ -1765,7 +1787,7 @@
 
             const overlayTop = `
                 ${overlayTopLeftHtml}
-                <div class="absolute top-2.5 right-2.5 z-10 bg-[#090e1a]/85 backdrop-blur-md px-2.5 py-1.5 text-[9px] font-mono text-white rounded-md border border-white/10 flex items-center space-x-1.5 shadow-sm">
+                <div class="absolute top-2.5 right-2.5 z-10 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 text-[9px] font-mono text-white rounded-md border border-white/10 flex items-center space-x-1.5 shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full ${stream.status === 'online' ? 'bg-red-500 animate-pulse' : 'bg-slate-500'}"></span>
                     <span class="font-bold tracking-wider ${stream.status === 'online' ? 'text-red-400' : 'text-slate-400'}">${stream.status === 'online' ? 'REC' : 'LOSS'}</span>
                 </div>
@@ -1928,7 +1950,7 @@
         const groups = [...new Set(streamsData.map(s => s.group_name).filter(Boolean))].sort();
 
         if (groups.length === 0) {
-            container.innerHTML = `<p class="text-center text-[10px] text-slate-400 py-3 font-mono">Belum ada grup kamera.</p>`;
+            container.innerHTML = `<p class="text-center text-[10px] text-slate-500 dark:text-cyber-dim py-3 font-mono">Belum ada grup kamera.</p>`;
             return;
         }
 
@@ -2017,7 +2039,7 @@
         }
 
         if (savedScreens.length === 0) {
-            container.innerHTML = `<p class="text-center text-[10px] text-slate-400 py-3 font-mono">Belum ada grouping disimpan.</p>`;
+            container.innerHTML = `<p class="text-center text-[10px] text-slate-500 dark:text-cyber-dim py-3 font-mono">Belum ada grouping disimpan.</p>`;
             return;
         }
 
@@ -2037,9 +2059,9 @@
             div.innerHTML = `
                 <div class="flex-1 min-w-0 font-mono text-xs pr-2">
                     <div class="font-bold text-slate-800 dark:text-white truncate">${screen.name}</div>
-                    <div class="text-[9px] text-slate-400 dark:text-cyber-dim/60 mt-0.5">${enabledCount} Kamera · Grid ${screen.gridSize}x${screen.gridSize}</div>
+                    <div class="text-[9px] text-slate-500 dark:text-cyber-dim mt-0.5">${enabledCount} Kamera · Grid ${screen.gridSize}x${screen.gridSize}</div>
                 </div>
-                <button class="delete-screen-btn p-1 hover:bg-rose-500/10 hover:text-rose-500 rounded text-slate-400 transition-colors shrink-0" title="Hapus Grouping">
+                <button class="delete-screen-btn p-1 hover:bg-rose-500/10 hover:text-rose-500 rounded text-slate-500 dark:text-cyber-dim transition-colors shrink-0" title="Hapus Grouping">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
@@ -2268,7 +2290,7 @@
             window.renderIkhtisarAkses();
         } catch (e) {
             if (body) {
-                body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-xs text-rose-500 font-mono">Gagal memuat data akses: ${e.message}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-xs text-rose-600 dark:text-rose-400 font-mono">Gagal memuat data akses: ${esc(e.message)}</td></tr>`;
             }
         }
     };
@@ -2309,7 +2331,7 @@
         if (lencana) lencana.textContent = String(baris.length);
 
         if (!baris.length) {
-            body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-xs text-slate-400 dark:text-cyber-dim font-mono">Tidak ada yang cocok.</td></tr>`;
+            body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">Tidak ada yang cocok.</td></tr>`;
             return;
         }
 
@@ -2322,17 +2344,17 @@
 
             const grup = b.grup !== undefined;
 
-            let aksi = `<span class="aksi-isi"><span class="text-slate-400 dark:text-cyber-dim/40 text-[9px] uppercase">—</span></span>`;
+            let aksi = `<span class="aksi-isi"><span class="text-slate-500 dark:text-cyber-dim text-[9px] uppercase">—</span></span>`;
             if (!perAkun) {
                 // Arah Per Kamera: satu kamera, siapa saja yang berhak.
                 const namaAman = String(b.stream_name || "")
-                    .replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-                aksi = `<span class="aksi-isi"><button onclick="window.bukaBerbagiKamera(${b.stream_id}, '${namaAman}')" class="ang-tombol" title="Atur siapa saja yang boleh melihat ${b.stream_name}">ATUR</button></span>`;
+                    .replace(/(["'\\])/g, "\\$1");
+                aksi = `<span class="aksi-isi"><button onclick="window.bukaBerbagiKamera(${b.stream_id}, '${esc(namaAman)}')" class="ang-tombol" title="Atur siapa saja yang boleh melihat ${esc(b.stream_name)}">ATUR</button></span>`;
             } else if (perAkun) {
                 if (b.cara_atur === "grup") {
-                    aksi = `<span class="aksi-isi"><button onclick="event.stopPropagation(); window.bukaAksesGrup('${encodeURIComponent(b.grup)}')" class="ang-tombol" title="Atur kamera untuk grup ${b.grup}">Atur</button></span>`;
+                    aksi = `<span class="aksi-isi"><button onclick="event.stopPropagation(); window.bukaAksesGrup('${jsid(b.grup)}')" class="ang-tombol" title="Atur kamera untuk grup ${esc(b.grup)}">Atur</button></span>`;
                 } else if (b.cara_atur === "pemberian") {
-                    aksi = `<span class="aksi-isi"><button onclick="window.bukaAksesKamera(${b.user_id})" class="ang-tombol" title="Atur kamera untuk ${b.username}">Atur</button></span>`;
+                    aksi = `<span class="aksi-isi"><button onclick="window.bukaAksesKamera(${b.user_id})" class="ang-tombol" title="Atur kamera untuk ${esc(b.username)}">Atur</button></span>`;
                 }
             }
 
@@ -2342,7 +2364,7 @@
             let barisRinci = "";
             let buka = false;
             if (!perAkun) {
-                kol2 = `<span class="ang-nama">${b.group_name || "Default"}</span>`;
+                kol2 = `<span class="ang-nama">${esc(b.group_name || "Default")}</span>`;
             } else if (grup) {
                 buka = grupTerbentang.has(b.grup);
                 // Tiap anggota jadi satu baris utuh: inisial, nama, peran,
@@ -2366,18 +2388,18 @@
                         const peran = (a.role || "").replace("_", " ");
                         const tanda = a.otomatis
                             ? `<span class="aksi-isi"><span class="ang-tanda ang-tanda--auto" title="Admin grup mengikuti kamera grupnya; tidak diatur satu per satu">otomatis</span></span>`
-                            : `<span class="aksi-isi"><button onclick="window.bukaAksesKamera(${a.user_id})" class="ang-tombol" title="Atur kamera untuk ${a.username}">Atur</button></span>`;
+                            : `<span class="aksi-isi"><button onclick="window.bukaAksesKamera(${a.user_id})" class="ang-tombol" title="Atur kamera untuk ${esc(a.username)}">Atur</button></span>`;
                         return `<tr class="ang-baris-anggota${iA === jmlAnggota - 1 ? " ang-baris-anggota--akhir" : ""}" onclick="event.stopPropagation();">
                             <td class="py-2 px-4"></td>
-                            <td class="py-2 px-4">
+                            <td class="py-2 px-4" data-label="Nama">
                                 <span class="ang-anak">
                                     
-                                    <span class="ang-nama" title="${a.username}">${a.username}</span>
+                                    <span class="ang-nama" title="${esc(a.username)}">${esc(a.username)}</span>
                                 </span>
                             </td>
-                            <td class="py-2 px-4"><span class="ang-peran">${peran}</span></td>
-                            <td class="py-2 px-4 text-center ang-jml">${a.jumlah_kamera}</td>
-                            <td class="py-2 px-4 aksi-sel">${tanda}</td>
+                            <td class="py-2 px-4" data-label="Peran"><span class="ang-peran">${esc(peran)}</span></td>
+                            <td class="py-2 px-4 text-center ang-jml" data-label="Jml">${a.jumlah_kamera}</td>
+                            <td class="py-2 px-4 aksi-sel" data-label="Aksi">${tanda}</td>
                         </tr>`;
                     }).join("");
                 }
@@ -2387,7 +2409,7 @@
                 // Panelnya sendiri turun ke baris tersendiri di bawah; bila
                 // ia tinggal di sel ini, sel-sel tetangga ikut melar
                 // mengikuti tingginya dan meninggalkan bidang kosong.
-                kol2 = `<button type="button" onclick="event.stopPropagation(); window.bentangGrup('${encodeURIComponent(b.grup)}')"
+                kol2 = `<button type="button" onclick="event.stopPropagation(); window.bentangGrup('${jsid(b.grup)}')"
                         class="ang-pemicu${buka ? " ang-pemicu--buka" : ""}"
                         aria-expanded="${buka}">
                         <span class="ang-pemicu-jml">${jml}</span>
@@ -2397,28 +2419,28 @@
                     ? (anggota || `<tr class="ang-baris-anggota"><td colspan="5" class="px-4 py-2"><span class="ang-kosong">Belum ada anggota</span></td></tr>`)
                     : "";
             } else {
-                kol2 = `<span class="ang-peran">${(b.role || "").replace("_", " ")}</span>`;
+                kol2 = `<span class="ang-peran">${esc((b.role || "").replace("_", " "))}</span>`;
             }
 
             // Seluruh baris grup menjadi sasaran klik: menuntut orang mengenai
             // tombol kecil di satu kolom membuat baris terasa mati di tempat
             // lain. Tombol di dalamnya tetap menang lewat stopPropagation.
             const baris_klik = (perAkun && grup)
-                ? ` onclick="window.bentangGrup('${encodeURIComponent(b.grup)}')" class="ang-baris-grup${buka ? " ang-baris-grup--buka" : ""} hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors align-middle"`
+                ? ` onclick="window.bentangGrup('${jsid(b.grup)}')" class="ang-baris-grup${buka ? " ang-baris-grup--buka" : ""} hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors align-middle"`
                 : ` class="hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors align-middle"`;
             return `<tr${baris_klik}>
-                <td class="py-3.5 px-4 font-bold text-slate-500 dark:text-cyber-dim">${i + 1}</td>
-                <td class="py-3.5 px-4">
+                <td class="py-3.5 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${i + 1}</td>
+                <td class="py-3.5 px-4" data-label="Nama">
                     ${perAkun && grup
                         ? `<span class="inline-flex items-center gap-1.5">
                                <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/30">Grup</span>
-                               <span class="ang-nama">${b.grup}</span>
+                               <span class="ang-nama">${esc(b.grup)}</span>
                            </span>`
-                        : `<span class="ang-nama">${perAkun ? b.username : b.stream_name}</span>`}
+                        : `<span class="ang-nama">${esc(perAkun ? b.username : b.stream_name)}</span>`}
                 </td>
-                <td class="py-3.5 px-4">${kol2}</td>
-                <td class="py-3.5 px-4 text-center ang-jml">${b.jumlah}</td>
-                <td class="py-3.5 px-4 aksi-sel">${aksi}</td>
+                <td class="py-3.5 px-4" data-label="Grup">${kol2}</td>
+                <td class="py-3.5 px-4 text-center ang-jml" data-label="Jml">${b.jumlah}</td>
+                <td class="py-3.5 px-4 aksi-sel" data-label="Aksi">${aksi}</td>
             </tr>${barisRinci}`;
         }).join("");
     };
@@ -2437,7 +2459,7 @@
         if (judul) judul.textContent = `Atur siapa saja yang boleh melihat ${namaKamera || "kamera ini"}`;
 
         const daftar = document.getElementById("berbagi-daftar");
-        if (daftar) daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">Memuat&hellip;</p>`;
+        if (daftar) daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Memuat&hellip;</p>`;
         const cari = document.getElementById("berbagi-cari");
         if (cari) cari.value = "";
         modal.classList.remove("hidden");
@@ -2460,7 +2482,7 @@
             gambarBerbagi();
         } catch (e) {
             if (daftar) {
-                daftar.innerHTML = `<p class="text-center text-xs text-rose-500 py-4 font-mono">Gagal memuat: ${e.message}</p>`;
+                daftar.innerHTML = `<p class="text-center text-xs text-rose-600 dark:text-rose-400 py-4 font-mono">Gagal memuat: ${esc(e.message)}</p>`;
             }
         }
     };
@@ -2477,8 +2499,8 @@
             daftarGrup.innerHTML = grup.map(g => `
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 dark:bg-cyber-surface2/60">
                     <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400">Grup</span>
-                    <span class="ang-nama flex-1">${g.username}</span>
-                    <span class="text-[9px] uppercase font-mono text-slate-400 dark:text-cyber-dim/70">lewat pemilik</span>
+                    <span class="ang-nama flex-1">${esc(g.username)}</span>
+                    <span class="text-[9px] uppercase font-mono text-slate-500 dark:text-cyber-dim">lewat pemilik</span>
                 </div>`).join("");
         }
 
@@ -2494,7 +2516,7 @@
         }
 
         if (!tampil.length) {
-            daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">${
+            daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">${
                 berbagiKini.penerima.length ? "Tak ada akun yang cocok" : "Belum ada akun yang dapat diberi izin"}</p>`;
         } else {
             daftar.innerHTML = tampil.map(p => {
@@ -2502,26 +2524,26 @@
                 // akses yang tak terjelaskan. Tampil, tetapi tak dapat diubah.
                 const mati = p.terkunci ? " disabled" : "";
                 const ket = p.terkunci
-                    ? `<span class="text-[9px] font-mono text-amber-600 dark:text-amber-500" title="Hanya pemberinya yang dapat mencabut">oleh ${p.granted_by_username || "admin lain"}</span>`
+                    ? `<span class="text-[9px] font-mono text-amber-700 dark:text-amber-400" title="Hanya pemberinya yang dapat mencabut">oleh ${esc(p.granted_by_username || "admin lain")}</span>`
                     : "";
                 return `
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors${p.terkunci ? " opacity-70" : ""}">
                     <span class="flex-1 min-w-0">
-                        <span class="ang-nama block truncate">${p.username}</span>
-                        <span class="ang-peran">${(p.role || "").toUpperCase()}</span> ${ket}
+                        <span class="ang-nama block truncate">${esc(p.username)}</span>
+                        <span class="ang-peran">${esc((p.role || "").toUpperCase())}</span> ${ket}
                     </span>
                     <span class="w-14 flex justify-center">
                         <input type="checkbox" data-uid="${p.user_id}" data-jenis="view"
                                onchange="window.ubahBerbagi(${p.user_id}, 'view', this.checked)"
                                ${p.can_view ? "checked" : ""}${mati}
-                               aria-label="Lihat ${p.username}"
+                               aria-label="Lihat ${esc(p.username)}"
                                class="w-4 h-4 rounded border-slate-300 dark:border-cyber-outline text-brand-blue cursor-pointer disabled:cursor-not-allowed">
                     </span>
                     <span class="w-16 flex justify-center">
                         <input type="checkbox" data-uid="${p.user_id}" data-jenis="playback"
                                onchange="window.ubahBerbagi(${p.user_id}, 'playback', this.checked)"
                                ${p.can_playback ? "checked" : ""}${mati}
-                               aria-label="Rekaman ${p.username}"
+                               aria-label="Rekaman ${esc(p.username)}"
                                class="w-4 h-4 rounded border-slate-300 dark:border-cyber-outline text-brand-blue cursor-pointer disabled:cursor-not-allowed">
                     </span>
                 </div>`;
@@ -2623,7 +2645,7 @@
 
         grupDiatur = nama;
         // Pemilih akun tidak berlaku untuk grup: sasarannya sudah pasti.
-        sel.innerHTML = `<option value="grup">Grup: ${nama}</option>`;
+        sel.innerHTML = `<option value="grup">Grup: ${esc(nama)}</option>`;
         sel.value = "grup";
         sel.disabled = true;
         pasangModeAkun("atur", `Grup: ${nama}`);
@@ -2659,7 +2681,7 @@
             return p || a.username.localeCompare(b.username);
         });
         sel.innerHTML = `<option value="">Pilih akun</option>`
-            + calon.map(u => `<option value="${u.id}">${u.username} (${(u.role || "").toUpperCase()})</option>`).join("");
+            + calon.map(u => `<option value="${u.id}">${esc(u.username)} (${esc((u.role || "").toUpperCase())})</option>`).join("");
 
         if (userId) sel.value = String(userId);
 
@@ -2677,7 +2699,7 @@
 
         const daftar = document.getElementById("akses-modal-kamera");
         if (daftar && !sel.value) {
-            daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">Pilih akun dahulu</p>`;
+            daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Pilih akun dahulu</p>`;
         }
 
         modal.classList.remove("hidden");
@@ -2725,7 +2747,7 @@
         const catatan = document.getElementById("akses-modal-catatan");
         if (!sel || !daftar) return;
         if (!sel.value) {
-            daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">Pilih akun dahulu</p>`;
+            daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Pilih akun dahulu</p>`;
             const kepala = document.getElementById("akses-modal-kepala");
             if (kepala) kepala.classList.add("hidden");
             const hitung = document.getElementById("akses-modal-hitung");
@@ -2750,7 +2772,7 @@
             catatan.classList.toggle("hidden", !keAdmin);
         }
 
-        daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">Memuat…</p>`;
+        daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Memuat…</p>`;
         try {
             const jalur = alamatAkses();
             const res = await fetch(jalur, {
@@ -2760,7 +2782,7 @@
             const d = await res.json();
 
             if (!d.kamera.length) {
-                daftar.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 font-mono">Tidak ada kamera untuk dibagikan</p>`;
+                daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Tidak ada kamera untuk dibagikan</p>`;
                 return;
             }
 
@@ -2770,9 +2792,9 @@
             });
 
             daftar.innerHTML = Object.keys(grup).sort().map(nama => `
-                <div class="mb-3 akses-grup" data-grup="${nama.toLowerCase()}">
+                <div class="mb-3 akses-grup" data-grup="${esc(nama.toLowerCase())}">
                     <div class="akses-grup-kepala">
-                        <p class="akses-grup-nama">${nama}<span class="akses-grup-jumlah">${grup[nama].length}</span></p>
+                        <p class="akses-grup-nama">${esc(nama)}<span class="akses-grup-jumlah">${grup[nama].length}</span></p>
                         <button type="button" onclick="window.pilihGrupAkses(this)"
                             class="akses-grup-tombol"
                             title="Centang atau hapus seluruh grup ini">Semua</button>
@@ -2793,12 +2815,12 @@
                         // Alasan baris mati ditulis, bukan hanya dilambangkan:
                         // lambang kecil pada nama tidak memberi tahu apa pun.
                         const sebab = !mati ? "" : (keAdmin
-                            ? `<span class="block text-[9px] font-mono text-amber-600/80 dark:text-amber-400/70">kamera miliknya sendiri</span>`
-                            : `<span class="block text-[9px] font-mono text-slate-400 dark:text-cyber-dim/60">diberikan oleh orang lain</span>`);
+                            ? `<span class="block text-[9px] font-mono text-amber-700 dark:text-amber-400">kamera miliknya sendiri</span>`
+                            : `<span class="block text-[9px] font-mono text-slate-500 dark:text-cyber-dim">diberikan oleh orang lain</span>`);
                         return `
-                        <div class="akses-baris${mati ? " akses-baris--mati" : ""}" data-nama="${k.stream_name.toLowerCase()}">
+                        <div class="akses-baris${mati ? " akses-baris--mati" : ""}" data-nama="${esc(k.stream_name.toLowerCase())}">
                             <span class="min-w-0 pr-2">
-                                <span class="block text-[11px] text-slate-700 dark:text-cyber-text truncate" title="${ket}">${k.stream_name}${tanda}</span>
+                                <span class="block text-[11px] text-slate-700 dark:text-cyber-text truncate" title="${esc(ket)}">${esc(k.stream_name)}${tanda}</span>
                                 ${sebab}
                             </span>
                             <span class="flex items-center gap-2 shrink-0">
@@ -2822,7 +2844,7 @@
             if (cari) cari.value = "";
             window.hitungAksesTerpilih();
         } catch (e) {
-            daftar.innerHTML = `<p class="text-center text-xs text-rose-500 py-4 font-mono">Gagal memuat kamera: ${e.message}</p>`;
+            daftar.innerHTML = `<p class="text-center text-xs text-rose-600 dark:text-rose-400 py-4 font-mono">Gagal memuat kamera: ${esc(e.message)}</p>`;
             const kepala = document.getElementById("akses-modal-kepala");
             if (kepala) kepala.classList.add("hidden");
         }

@@ -123,7 +123,7 @@ uji("klik pada baris anggota tidak menutup grupnya",
     /<tr class="ang-baris-anggota\$\{[^`]*?onclick="event\.stopPropagation\(\);"/.test(JS),
     "baris anggota berada di dalam jangkauan klik baris grup");
 uji("tindakan berada di kolom terakhir",
-    /<td class="py-2 px-4 aksi-sel">\$\{tanda\}<\/td>/.test(JS),
+    /<td class="py-2 px-4 aksi-sel"[^>]*>\$\{tanda\}<\/td>/.test(JS),
     "otomatis dan Atur harus lurus di bawah judul Aksi");
 uji("anggota ditandai bergantung pada grupnya", /class="ang-anak"/.test(JS));
 uji("CSS baris anggota ada", /\.ang-baris-anggota > td/.test(CSS));
@@ -131,7 +131,7 @@ uji("garis siku menandai anak", /\.ang-anak::before/.test(CSS));
 
 console.log("\n=== seluruh baris grup dapat diklik ===");
 uji("baris grup membawa penanganan klik",
-    /onclick="window\.bentangGrup\('\$\{encodeURIComponent\(b\.grup\)\}'\)" class="ang-baris-grup/.test(JS),
+    /onclick="window\.bentangGrup\('\$\{jsid\(b\.grup\)\}'\)" class="ang-baris-grup/.test(JS),
     "menuntut orang mengenai tombol kecil membuat baris terasa mati");
 uji("baris grup ditandai dapat diklik",
     /\.ang-baris-grup \{[^}]*cursor: pointer/.test(CSS));
@@ -185,8 +185,8 @@ console.log("\n=== kolom Actions lurus satu sumbu ===");
 
     // Induk dan anak memakai kelas sel yang sama; text-right telanjang
     // membuat sumbunya bergeser mengikuti bingkai tombol.
-    uji("sel aksi induk memakai aksi-sel", /<td class="py-3\.5 px-4 aksi-sel">/.test(JS));
-    uji("sel aksi anak memakai aksi-sel", /<td class="py-2 px-4 aksi-sel">/.test(JS));
+    uji("sel aksi induk memakai aksi-sel", /<td class="py-3\.5 px-4 aksi-sel"[^>]*>/.test(JS));
+    uji("sel aksi anak memakai aksi-sel", /<td class="py-2 px-4 aksi-sel"[^>]*>/.test(JS));
     uji("tak ada sel aksi yang tersisa text-right",
         !/<td[^>]*text-right">\$\{(aksi|tanda)\}/.test(JS));
 
@@ -233,11 +233,11 @@ console.log("\n=== teks peran dan nama seragam induk-anak ===");
     uji("tidak ada peran berkelas Tailwind sendiri",
         !/uppercase text-\[10px\] font-bold/.test(JS));
     uji("nama akun induk memakai ang-nama",
-        /<span class="ang-nama">\$\{perAkun \? b\.username : b\.stream_name\}<\/span>/.test(JS));
+        /<span class="ang-nama">\$\{esc\(perAkun \? b\.username : b\.stream_name\)\}<\/span>/.test(JS));
     uji("nama grup induk memakai ang-nama",
-        /<span class="ang-nama">\$\{b\.grup\}<\/span>/.test(JS));
+        /<span class="ang-nama">\$\{esc\(b\.grup\)\}<\/span>/.test(JS));
     uji("kolom Group per-kamera memakai ang-nama",
-        /kol2 = `<span class="ang-nama">\$\{b\.group_name/.test(JS));
+        /kol2 = `<span class="ang-nama">\$\{esc\(b\.group_name/.test(JS));
     uji("sel nama induk tidak lagi memaksa bobotnya sendiri",
         !/<td class="py-3\.5 px-4 font-semibold text-slate-900/.test(JS),
         "font-semibold di sel menimpa gaya bersama");

@@ -650,7 +650,6 @@ window.kuasaPenuh = function (peran) {
                 window.hydrateViewerFromSessionCache();
             }
         }
-        if (typeof window.loadSidebarData === "function") window.loadSidebarData();
         window.navigateToPage(currentPage, false);
 
         // Start status auto-updater (polls status in background)
