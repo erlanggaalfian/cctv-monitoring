@@ -1550,7 +1550,7 @@
 
             // Group Header
             const headerDiv = document.createElement("div");
-            headerDiv.className = "flex items-center justify-between bg-slate-100 dark:bg-cyber-container/50 px-2 py-1.5 rounded-md border border-slate-200/50 dark:border-cyber-outline/40 mb-1.5 mt-2.5 shadow-sm";
+            headerDiv.className = "flex items-center justify-between px-1.5 pt-2 pb-1";
             
             const groupChecked = allChecked ? "checked" : "";
             const groupHtmlId = "custom-group-chk-" + encodeURIComponent(groupName).replace(/%/g, '');
@@ -1558,7 +1558,7 @@
                 <div class="flex items-center space-x-2">
                     <input type="checkbox" id="${groupHtmlId}" ${groupChecked} onchange="toggleCustomGroup('${esc(groupName.replace(/'/g, "\\'"))}', this.checked)"
                         class="chk-native chk-native--sm">
-                    <label for="${groupHtmlId}" class="text-[10px] font-bold text-slate-500 dark:text-cyber-dim uppercase font-mono cursor-pointer mb-0 select-none">
+                    <label for="${groupHtmlId}" title="${esc(groupName)}" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-cyber-dim font-mono cursor-pointer mb-0 select-none">
                         ${esc(groupName)}
                     </label>
                 </div>
@@ -1567,28 +1567,28 @@
 
             // Group Items Container
             const itemsContainer = document.createElement("div");
-            itemsContainer.className = "space-y-1.5 pl-2 border-l border-slate-200/60 dark:border-cyber-outline/20 ml-1.5";
+            itemsContainer.className = "space-y-0.5 pl-1";
 
             items.forEach(({ item, index, stream }) => {
                 const itemDiv = document.createElement("div");
-                itemDiv.className = "flex items-center justify-between bg-white dark:bg-cyber-container p-2 rounded-md border border-slate-200/50 dark:border-cyber-outline/40 hover:border-sky-500/40 dark:hover:border-cyber-primary/45 transition-colors shadow-sm";
+                itemDiv.className = "flex items-center justify-between gap-2 px-1.5 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-cyber-container/60 transition-colors";
                 
                 const isChecked = item.enabled ? "checked" : "";
                 itemDiv.innerHTML = `
-                    <div class="flex items-center space-x-2.5 truncate flex-1">
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
                         <input type="checkbox" id="custom-chk-${stream.id}" ${isChecked} onchange="toggleCustomItem(${stream.id})"
-                            class="chk-native chk-native--md">
-                        <label for="custom-chk-${stream.id}" class="text-[11px] font-bold text-slate-700 dark:text-cyber-text uppercase font-mono mb-0 cursor-pointer select-none truncate">
+                            class="chk-native chk-native--md shrink-0">
+                        <label for="custom-chk-${stream.id}" title="${esc(stream.name)}" class="text-xs font-medium text-slate-700 dark:text-cyber-text mb-0 cursor-pointer select-none truncate">
                             ${esc(stream.name)}
                         </label>
                     </div>
-                    <div class="flex space-x-1 shrink-0 ml-2">
-                        <button onclick="moveCustomItem(${index}, -1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Up">
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="moveCustomItem(${index}, -1)" class="p-2 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Up">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
                             </svg>
                         </button>
-                        <button onclick="moveCustomItem(${index}, 1)" class="p-1 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Down">
+                        <button onclick="moveCustomItem(${index}, 1)" class="p-2 hover:bg-slate-100 dark:hover:bg-cyber-bg hover:text-sky-500 rounded text-slate-500 dark:text-cyber-dim transition-colors" title="Move Down">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                             </svg>
@@ -1963,9 +1963,9 @@
 
             const div = document.createElement("div");
             if (isActive) {
-                div.className = "flex items-center justify-between p-2 rounded-md bg-sky-500/10 dark:bg-cyber-primary/10 border border-sky-500 dark:border-cyber-primary text-sky-700 dark:text-cyber-primary font-bold cursor-pointer text-xs";
+                div.className = "flex items-center justify-between px-1.5 py-2 rounded-md bg-sky-500/10 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary font-semibold cursor-pointer text-xs";
             } else {
-                div.className = "flex items-center justify-between p-2 rounded-md bg-white dark:bg-cyber-container border border-slate-200/50 dark:border-cyber-outline/40 hover:border-sky-500/40 dark:hover:border-cyber-primary/45 text-slate-800 dark:text-white transition-colors cursor-pointer text-xs";
+                div.className = "flex items-center justify-between px-1.5 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-cyber-container/60 text-slate-800 dark:text-white transition-colors cursor-pointer text-xs";
             }
 
             div.onclick = () => {
@@ -1974,7 +1974,7 @@
 
             div.innerHTML = `
                 <span class="truncate">${g}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-cyber-bg text-slate-500 dark:text-cyber-dim font-bold">${count} Cam</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-cyber-bg text-slate-500 dark:text-cyber-dim font-semibold">${count} Cam</span>
             `;
 
             container.appendChild(div);
@@ -2047,7 +2047,7 @@
             const enabledCount = screen.playlist.filter(p => p.enabled).length;
 
             const div = document.createElement("div");
-            div.className = "flex items-center justify-between p-2 rounded-md bg-white dark:bg-cyber-container border border-slate-200/50 dark:border-cyber-outline/40 hover:border-sky-500/40 dark:hover:border-cyber-primary/45 transition-colors cursor-pointer shadow-sm group";
+            div.className = "flex items-center justify-between gap-2 px-1.5 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-cyber-container/60 transition-colors cursor-pointer group";
             
             // Clicking the row loads the screen
             div.onclick = (e) => {
@@ -2057,11 +2057,11 @@
             };
 
             div.innerHTML = `
-                <div class="flex-1 min-w-0 font-mono text-xs pr-2">
-                    <div class="font-bold text-slate-800 dark:text-white truncate">${screen.name}</div>
-                    <div class="text-[9px] text-slate-500 dark:text-cyber-dim mt-0.5">${enabledCount} Kamera · Grid ${screen.gridSize}x${screen.gridSize}</div>
+                <div class="flex-1 min-w-0 text-xs">
+                    <div class="font-semibold text-slate-800 dark:text-white truncate">${esc(screen.name)}</div>
+                    <div class="text-[10px] text-slate-500 dark:text-cyber-dim mt-0.5">${enabledCount} Kamera · Grid ${screen.gridSize}x${screen.gridSize}</div>
                 </div>
-                <button class="delete-screen-btn p-1 hover:bg-rose-500/10 hover:text-rose-500 rounded text-slate-500 dark:text-cyber-dim transition-colors shrink-0" title="Hapus Grouping">
+                <button class="delete-screen-btn p-2 hover:bg-rose-500/10 hover:text-rose-500 rounded text-slate-500 dark:text-cyber-dim transition-colors shrink-0" title="Hapus Grouping">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
