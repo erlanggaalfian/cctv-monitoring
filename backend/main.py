@@ -2024,7 +2024,7 @@ def kamera_dapat_ditonton(pengguna, db):
 @app.get("/api/streams", response_model=StreamPaginatedResponse)
 async def get_streams(
     page: int = 1,
-    limit: int = Query(9, ge=1, le=100),
+    limit: int = Query(9, ge=1, le=1000),
     group: Optional[str] = None,
     no_check: bool = False,
     user: UserModel = Depends(get_authenticated_user),
