@@ -140,14 +140,12 @@
 
 /* ==============================================================
    LIGHT MODE -- Token turunan
-   --c-blue sengaja sedikit lebih gelap dari --brand-blue agar teks
-   biru di atas putih dan teks putih di atas biru sama-sama lolos
-   kontras 4.5:1 (diukur: 5.42:1). --c-blue-h = varian kuat untuk
-   latar berteks putih (7.69:1).
+   --c-blue = warna teks/aksen (kontras 5.42:1).
+   --c-blue-h = warna tombol mode terang (isi latar berteks putih).
    ============================================================== */
 :root {
   --c-blue:     color-mix(in srgb, var(--brand-blue) 84%, black);
-  --c-blue-h:   color-mix(in srgb, var(--brand-blue) 66%, black);
+  --c-blue-h:   #3081d1;
   --c-orange:   var(--brand-orange);
   --c-orange-h: color-mix(in srgb, var(--brand-orange) 80%, black);
   --c-navy:     var(--brand-navy);
@@ -177,7 +175,7 @@
    DARK MODE -- Token turunan
    --c-blue di mode gelap justru dibuat LEBIH TERANG dari brand:
    teks biru di atas latar gelap perlu 4.5:1 (diukur: 5.60:1).
-   Latar berteks putih memakai --c-blue-h (5.85:1).
+   Latar berteks putih memakai --c-blue-h.
    ============================================================== */
 .dark {
   --c-map-tile:      var(--color-map-tile-dark);
@@ -187,7 +185,7 @@
   --c-border:   rgba(255, 255, 255, 0.07);
 
   --c-blue:     color-mix(in srgb, var(--brand-blue) 85%, white);
-  --c-blue-h:   color-mix(in srgb, var(--brand-blue) 80%, black);
+  --c-blue-h:   #2F578E;
 
   --c-text:          var(--color-text-dark-base);
   --c-text-muted:    var(--color-text-dark-muted);
@@ -335,7 +333,7 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 }
 .sidebar-btn-card:hover, .sidebar-nav-link:hover {
   background: rgba(48, 129, 209, 0.06) !important;
-  color: var(--c-blue-h) !important;
+  color: var(--c-blue) !important;
   border-color: rgba(48, 129, 209, 0.12) !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px rgba(48, 129, 209, 0.06) !important;
@@ -384,7 +382,7 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
 }
 .sidebar-btn-card:hover .nav-btn-icon-wrap, .sidebar-nav-link:hover .nav-btn-icon-wrap {
   background: rgba(48, 129, 209, 0.12) !important;
-  color: var(--c-blue-h) !important;
+  color: var(--c-blue) !important;
 }
 .sidebar-nav-icon { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
 .nav-btn-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -458,7 +456,7 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) 
   box-shadow: 0 4px 14px rgba(var(--rgb-blue), 0.35) !important;
 }
 .mob-nav-item.active .mob-nav-icon, .mob-nav-btn.active .mob-nav-icon { transform: translateY(-1px) scale(1.06); }
-.mob-nav-item:not(.active):hover, .mob-nav-btn:not(.active):hover { color: var(--c-blue-h) !important; background: rgba(48, 129, 209, 0.06) !important; }
+.mob-nav-item:not(.active):hover, .mob-nav-btn:not(.active):hover { color: var(--c-blue) !important; background: rgba(48, 129, 209, 0.06) !important; }
 .mob-nav-item:active, .mob-nav-btn:active { transform: scale(0.94); }
 .mob-nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--c-orange); opacity: 0; transition: opacity 0.2s ease; }
 .mob-nav-item.active .mob-nav-dot, .mob-nav-btn.active .mob-nav-dot { opacity: 1; box-shadow: 0 0 6px var(--c-orange); }
@@ -584,6 +582,9 @@ select.app-select option, select.app-input option, select.field-input option { b
 .dark .btn-elegant:hover { background: rgba(var(--rgb-blue), 0.12); }
 .btn-elegant-primary { background: var(--c-blue-h) !important; color: var(--c-white) !important; border-color: var(--c-blue-h) !important; box-shadow: 0 2px 8px rgba(var(--rgb-blue), 0.28); }
 .btn-elegant-primary:hover { background: color-mix(in srgb, var(--c-blue-h) 82%, black) !important; border-color: color-mix(in srgb, var(--c-blue-h) 82%, black) !important; box-shadow: 0 4px 16px rgba(var(--rgb-blue), 0.36) !important; }
+/* Tombol solid berkelas tailwind (mis. pagination aktif): ikut warna tombol per mode */
+.dark .bg-sky-500 { background-color: var(--c-blue-h) !important; }
+.dark .hover\:bg-sky-600:hover { background-color: color-mix(in srgb, var(--c-blue-h) 82%, white) !important; }
 /* ==============================================================
    MISC COMPONENTS
    ============================================================== */
