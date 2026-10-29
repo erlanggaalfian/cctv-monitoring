@@ -1814,19 +1814,47 @@ table tbody tr:hover { background: rgba(var(--rgb-blue), 0.05); }
   background: var(--c-surface);
 }
 
-/* Checkbox nativ (accent warna sky) - pola berulang 5x di admin.js/webrtc.js.
+/* Checkbox custom - pola berulang 5x di admin.js/webrtc.js.
    Class fungsional (group-select-checkbox dst) dipertahankan apa adanya
    untuk query JS; ini cuma menggantikan styling visualnya. */
 .chk-native {
-  border: 1px solid var(--c-border);
-  border-radius: 0.25rem;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+  border: 1.5px solid var(--c-border);
+  border-radius: 0.3rem;
   background: var(--c-surface2);
-  accent-color: #0ea5e9;
   cursor: pointer;
+  vertical-align: middle;
+  transition: background var(--dur-fast) var(--ease-out-soft), border-color var(--dur-fast) var(--ease-out-soft), box-shadow var(--dur-fast) var(--ease-out-soft);
 }
-.chk-native:focus { outline: none; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.35); }
-.chk-native--sm { width: 0.875rem; height: 0.875rem; }
-.chk-native--md { width: 1rem; height: 1rem; }
+.chk-native::before {
+  content: "";
+  width: 62%;
+  height: 62%;
+  transform: scale(0);
+  transition: transform 0.12s var(--ease-out-soft);
+  background: var(--c-white);
+  clip-path: polygon(14% 46%, 0 65%, 43% 100%, 100% 17%, 84% 0%, 39% 68%);
+}
+.chk-native:checked, .chk-native:indeterminate {
+  background: var(--c-blue-h);
+  border-color: var(--c-blue-h);
+}
+.chk-native:checked::before { transform: scale(1); }
+.chk-native:indeterminate::before {
+  transform: scale(1);
+  height: 2px;
+  width: 55%;
+  clip-path: none;
+  border-radius: 2px;
+}
+.chk-native:hover { border-color: var(--c-blue); }
+.chk-native:focus { outline: none; box-shadow: 0 0 0 2px rgba(var(--rgb-blue), 0.35); }
+.chk-native--sm { width: 0.875rem; height: 0.875rem; border-radius: 0.25rem; }
+.chk-native--md { width: 1.0625rem; height: 1.0625rem; }
 
 /* Kotak scroll checklist kamera (Edit/Generate API Key) - identik 2x
    di modals.php: grid responsif + border + bg muted + scroll. */
