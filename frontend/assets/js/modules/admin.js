@@ -337,7 +337,7 @@
                     <span class="inline-block px-2 py-0.5 bg-sky-50 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary border border-sky-200 dark:border-cyber-primary/20 rounded text-[10px] font-bold font-mono max-w-24 truncate" title="${esc(groupName)}">${esc(groupName)}</span>
                 </td>
                 <td class="py-4 px-4 max-w-36 truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px]" data-label="Coordinates" title="${esc(coordinates)}">${esc(coordinates)}</td>
-                <td class="py-4 px-4 max-w-xs truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px] ${milikSendiri ? "select-all" : ""}" data-label="RTSP" title="${milikSendiri ? esc(rtspUrl) : "Dipasang Super Admin"}">${esc(rtspTampil)}</td>
+                <td class="py-4 px-4 max-w-xs truncate text-slate-500 dark:text-cyber-dim font-mono text-[10px] ${milikSendiri ? "select-all" : ""}" data-label="RTSP" title="${milikSendiri ? esc(rtspUrl) : "Dipasang Super Admin"}">${milikSendiri ? esc(rtspTampil) : rtspTampil}</td>
                 <td class="py-4 px-4 flex flex-row items-center gap-2" data-label="Status">
                     <span class="badge-tag ${stream.is_active ? 'badge-tag--green' : 'badge-tag--slate'}">
                         ${stream.is_active ? 'ACTIVE' : 'DISABLED'}
@@ -586,7 +586,6 @@
         // Reset recording fields
         const mRecord = document.getElementById("modal-stream-record");
         const mDisk = document.getElementById("modal-stream-disk");
-        const mRecordPath = document.getElementById("modal-stream-record-path");
         const mRetention = document.getElementById("modal-stream-retention");
         const mRecOpts = document.getElementById("recording-options");
         if (mRecord) mRecord.checked = false;
@@ -636,7 +635,6 @@
         // Set recording fields
         const mRecord = document.getElementById("modal-stream-record");
         const mDisk = document.getElementById("modal-stream-disk");
-        const mRecordPath = document.getElementById("modal-stream-record-path");
         const mRetention = document.getElementById("modal-stream-retention");
         const mRecOpts = document.getElementById("recording-options");
         if (mRecord) mRecord.checked = stream.record_enabled || false;
@@ -1779,7 +1777,7 @@
                     <span class="w-1.5 h-1.5 rounded-full ${statusDotColor}"></span>
                     <span class="font-bold">CAM_${String(stream.id).padStart(3, '0')}</span>
                     <span class="text-slate-600">|</span>
-                    <span class="text-slate-300">${stream.name.toUpperCase()}</span>
+                    <span class="text-slate-300">${esc(stream.name.toUpperCase())}</span>
                     <span class="text-slate-600">|</span>
                     <span class="font-bold ${statusLabelColor}">${statusLabelText}</span>
                 </div>

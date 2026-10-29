@@ -449,7 +449,8 @@ for (const key of Object.keys(state)) {
                 const tr = document.createElement("tr");
                 tr.className = "border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100";
 
-                const hasPassword = !!(key.secret_pass && String(key.secret_pass).trim() !== "");
+                // K2: backend tidak lagi mengembalikan nilai secret; pakai flag.
+                const hasPassword = !!(key.has_secret_pass ?? (key.secret_pass && String(key.secret_pass).trim() !== ""));
                 const secretPassVal = key.secret_pass || "";
                 const secretPassEscaped = escJs(secretPassVal);
                 const keyValue = key.key_value;
@@ -465,7 +466,7 @@ for (const key of Object.keys(state)) {
                     `Nama Klien    : ${key.client_name}`,
                     `Kamera        : ${key.camera_name}` + (key.custom_camera_name ? ` (Kustom: ${key.custom_camera_name})` : ``),
                     `API Key       : ${keyValue}`,
-                    `Password      : ${hasPassword ? key.secret_pass : "(tidak ada)"}`,
+                    `Password      : ${hasPassword ? (key.secret_pass || "(tersimpan — tidak ditampilkan)") : "(tidak ada)"}`,
                     `Domain        : ${key.allowed_domain || "Semua domain (public)"}`,
                     ``,
                     `--- Embed Iframe (copy ke HTML) ---`,
@@ -663,7 +664,7 @@ for (const key of Object.keys(state)) {
 
         const camIds = (key.camera_ids && key.camera_ids.length) ? key.camera_ids : [key.camera_id];
         const camNames = (key.camera_names && key.camera_names.length) ? key.camera_names : [key.camera_name];
-        const hasPassword = key.secret_pass && String(key.secret_pass).trim() !== "";
+        const hasPassword = !!(key.has_secret_pass ?? (key.secret_pass && String(key.secret_pass).trim() !== ""));
 
         window._apiSetupCtx = {
             keyValue: key.key_value,
@@ -715,7 +716,8 @@ for (const key of Object.keys(state)) {
         } else {
             securityTexts.push("Terbuka untuk semua domain (Public)");
         }
-        if (hasPassword) securityTexts.push(`Dilindungi password: <code>${escHtml(key.secret_pass)}</code>`);
+        // K2: nilai password tidak pernah ditampilkan lagi — hanya indikator.
+        if (hasPassword) securityTexts.push("Dilindungi password: Ya");
         if (key.include_playback) securityTexts.push("Klien dapat mengakses rekaman kamera di atas");
         noticeTextEl.innerHTML = securityTexts.join(" &middot; ");
         noticeEl.classList.remove("hidden");
@@ -884,7 +886,8 @@ for (const key of Object.keys(state)) {
         document.getElementById("edit-api-client-name").value = keyRecord.client_name;
         document.getElementById("edit-api-custom-camera-name").value = keyRecord.custom_camera_name || "";
         document.getElementById("edit-api-allowed-domain").value = keyRecord.allowed_domain || "";
-        document.getElementById("edit-api-secret-pass").value = keyRecord.secret_pass || "";
+        // K2: password tidak diisi ulang dari server; kosong = tidak diubah.
+        document.getElementById("edit-api-secret-pass").value = "";
         
         modal.classList.remove("hidden");
     };

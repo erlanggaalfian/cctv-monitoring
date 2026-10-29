@@ -26,7 +26,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, Table, F
 from sqlalchemy.orm import relationship, sessionmaker, Session, declarative_base
 import bcrypt
 from jose import JWTError, jwt
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # --- Global Thread Pool for background I/O ---
 executor = ThreadPoolExecutor(max_workers=20)
@@ -419,8 +419,8 @@ def register_transcoded_mediamtx_path(stream_id: int) -> bool:
 def register_stream_in_mediamtx(stream_id: int, rtsp_url: str) -> bool:
     # Get recording config from DB
     record_config = None
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         stream = db.query(CCTVStreamModel).filter(CCTVStreamModel.id == stream_id).first()
         if stream and stream.record_enabled:
             def safe_name(s):
@@ -434,9 +434,11 @@ def register_stream_in_mediamtx(stream_id: int, rtsp_url: str) -> bool:
                 "record_path": auto_path,
                 "record_retention_days": stream.record_retention_days or 7
             }
-        db.close()
     except Exception as e:
         print(f"[Record] Error reading stream config: {e}")
+    finally:
+        # Session harus selalu ditutup agar koneksi pool tidak bocor (T4).
+        db.close()
 
     # 1. Register main stream (with recording if enabled)
     main_ok = register_single_mediamtx_path(f"stream_{stream_id}", rtsp_url, record_config)
@@ -1393,21 +1395,34 @@ def seed_database():
 
         if db.query(UserModel).count() == 0:
             print("No users found. Seeding initial accounts...")
-            hashed_pass = get_password_hash("password123")
-            
-            admin_user = UserModel(username="admin", password_hash=hashed_pass, role="admin")
-            operator_user = UserModel(username="operator", password_hash=hashed_pass, role="user")
+            # K1: tidak ada lagi password default statis "password123".
+            # Setiap akun mendapat password acak yang dicetak SEKALI ke log
+            # (pola Jenkins). Hanya jalan di instalasi baru (user count == 0).
+            admin_pass = secrets.token_urlsafe(16)
+            operator_pass = secrets.token_urlsafe(16)
+            viewer_pass = secrets.token_urlsafe(16)
+
+            admin_user = UserModel(username="admin", password_hash=get_password_hash(admin_pass), role="admin")
+            operator_user = UserModel(username="operator", password_hash=get_password_hash(operator_pass), role="user")
             # Berperan user, bukan guest: peran guest disediakan lewat akun
             # bawaan bernama 'guest' saja, agar tidak ada dua guest.
-            viewer_user = UserModel(username="viewer", password_hash=hashed_pass, role="user")
+            viewer_user = UserModel(username="viewer", password_hash=get_password_hash(viewer_pass), role="user")
             db.add_all([admin_user, operator_user, viewer_user])
             db.commit()
+            print("=" * 64)
+            print("[SEED] Akun awal dibuat dengan password acak — catat & ganti setelah login pertama:")
+            print(f"[SEED]   admin    : {admin_pass}")
+            print(f"[SEED]   operator : {operator_pass}")
+            print(f"[SEED]   viewer   : {viewer_pass}")
+            print("=" * 64)
 
             print("Seeding initial CCTV streams...")
-            s1 = CCTVStreamModel(name="Front Gate Camera", rtsp_url="rtsp://admin:gatepass@192.168.1.100:554/h264Preview_01_main", group_name="Rumah", coordinates="-6.2088, 106.8456", is_active=True)
-            s2 = CCTVStreamModel(name="Main Lobby Camera", rtsp_url="rtsp://admin:lobbypass@192.168.1.101:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1214, 106.7741", is_active=True)
-            s3 = CCTVStreamModel(name="Parking Lot Area A", rtsp_url="rtsp://admin:parkpass@192.168.1.102:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1751, 106.8272", is_active=True)
-            s4 = CCTVStreamModel(name="Server Room Camera", rtsp_url="rtsp://admin:serverpass@192.168.1.103:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1805, 106.8284", is_active=True)
+            # T7: seed memakai placeholder USER:PASS, bukan kredensial contoh
+            # yang mudah ditebak. Ganti dengan kredensial kamera asli via panel admin.
+            s1 = CCTVStreamModel(name="Front Gate Camera", rtsp_url="rtsp://USER:PASS@192.168.1.100:554/h264Preview_01_main", group_name="Rumah", coordinates="-6.2088, 106.8456", is_active=True)
+            s2 = CCTVStreamModel(name="Main Lobby Camera", rtsp_url="rtsp://USER:PASS@192.168.1.101:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1214, 106.7741", is_active=True)
+            s3 = CCTVStreamModel(name="Parking Lot Area A", rtsp_url="rtsp://USER:PASS@192.168.1.102:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1751, 106.8272", is_active=True)
+            s4 = CCTVStreamModel(name="Server Room Camera", rtsp_url="rtsp://USER:PASS@192.168.1.103:554/h264Preview_01_main", group_name="Kantor", coordinates="-6.1805, 106.8284", is_active=True)
             db.add_all([s1, s2, s3, s4])
             db.commit()
 
@@ -1684,6 +1699,9 @@ class ApiKeySchema(BaseModel):
     custom_camera_name: Optional[str] = ""
     allowed_domain: Optional[str] = ""
     secret_pass: Optional[str] = ""
+    # K2: flag baca-saja — nilai secret tidak pernah dikembalikan di respons
+    # daftar/ubah; hanya saat pembuatan (sekali, "show once").
+    has_secret_pass: bool = False
     is_active: bool = True
     embed_timeout_seconds: int = 300
     click_to_play: bool = True
@@ -1704,6 +1722,7 @@ class ApiKeyAdminResponse(BaseModel):
     custom_camera_name: Optional[str] = ""
     allowed_domain: Optional[str] = ""
     secret_pass: Optional[str] = ""
+    has_secret_pass: bool = False
     is_active: bool
     embed_timeout_seconds: int
     click_to_play: bool
@@ -3992,12 +4011,20 @@ def get_available_disks(admin: UserModel = Depends(verify_admin_role)):
 import re as _re
 
 def _sandi_kunci_cocok(pass_masukan, key_record) -> bool:
-    """Bandingkan secret_pass kunci API tanpa bocor lewat waktu eksekusi."""
+    """Bandingkan secret_pass kunci API.
+    Mendukung hash bcrypt (format baru, K2) dan plaintext legacy (instalasi
+    lama). Nilai legacy tetap bisa dipakai, tapi sebaiknya dirotasi lewat
+    panel admin agar ikut ter-hash."""
     if not pass_masukan:
         return False
+    tersimpan = (key_record.secret_pass or "").strip()
+    if not tersimpan:
+        return False
+    if tersimpan.startswith(("$2b$", "$2a$", "$2y$")):
+        return verify_password(pass_masukan.strip(), tersimpan)
     return secrets.compare_digest(
         pass_masukan.strip().encode("utf-8"),
-        (key_record.secret_pass or "").strip().encode("utf-8"))
+        tersimpan.encode("utf-8"))
 
 
 def _domain_cocok(target: str, host: str) -> bool:
@@ -5184,7 +5211,9 @@ def get_all_api_keys(
             "client_name": k.client_name,
             "custom_camera_name": k.custom_camera_name or "",
             "allowed_domain": k.allowed_domain or "",
-            "secret_pass": k.secret_pass or "",
+            # K2: nilai secret tidak dikembalikan; frontend hanya menerima flag.
+            "secret_pass": "",
+            "has_secret_pass": bool(k.secret_pass),
             "is_active": k.is_active,
             "embed_timeout_seconds": k.embed_timeout_seconds,
             "click_to_play": k.click_to_play,
@@ -5222,7 +5251,8 @@ def create_api_key(
         client_name=payload.client_name,
         custom_camera_name=payload.custom_camera_name.strip() if payload.custom_camera_name else None,
         allowed_domain=payload.allowed_domain.strip() if payload.allowed_domain else None,
-        secret_pass=payload.secret_pass.strip() if payload.secret_pass else None,
+        # K2: secret_pass di-hash bcrypt, tidak pernah disimpan plaintext.
+        secret_pass=get_password_hash(payload.secret_pass.strip()) if payload.secret_pass and payload.secret_pass.strip() else None,
         is_active=payload.is_active,
         embed_timeout_seconds=payload.embed_timeout_seconds,
         click_to_play=payload.click_to_play,
@@ -5250,7 +5280,10 @@ def create_api_key(
         "client_name": key_record.client_name,
         "custom_camera_name": key_record.custom_camera_name or "",
         "allowed_domain": key_record.allowed_domain or "",
-        "secret_pass": key_record.secret_pass or "",
+        # K2: plaintext hanya dikembalikan SEKALI saat pembuatan agar admin
+        # bisa menyalin URL embed; respons lain hanya membawa flag.
+        "secret_pass": (payload.secret_pass.strip() if payload.secret_pass else ""),
+        "has_secret_pass": bool(key_record.secret_pass),
         "is_active": key_record.is_active,
         "embed_timeout_seconds": key_record.embed_timeout_seconds,
         "click_to_play": key_record.click_to_play,
@@ -5283,7 +5316,10 @@ def update_api_key(
     key_record.client_name = payload.client_name
     key_record.custom_camera_name = payload.custom_camera_name.strip() if payload.custom_camera_name else None
     key_record.allowed_domain = payload.allowed_domain.strip() if payload.allowed_domain else None
-    key_record.secret_pass = payload.secret_pass.strip() if payload.secret_pass else None
+    # K2: hanya timpa bila admin mengisi password baru; kosong = biarkan nilai lama
+    # (mencegah password terhapus diam-diam saat form edit tidak me-refresh nilainya).
+    if payload.secret_pass and payload.secret_pass.strip():
+        key_record.secret_pass = get_password_hash(payload.secret_pass.strip())
     key_record.is_active = payload.is_active
     key_record.embed_timeout_seconds = payload.embed_timeout_seconds
     key_record.click_to_play = payload.click_to_play
@@ -5294,6 +5330,10 @@ def update_api_key(
 
     db.commit()
     db.refresh(key_record)
+    # K2: jangan bocorkan hash secret ke respons; frontend hanya butuh flag.
+    # Atribut sementara ini tidak di-commit ke DB.
+    key_record.has_secret_pass = bool(key_record.secret_pass)
+    key_record.secret_pass = ""
     return key_record
 
 @app.delete("/api/admin/api-keys/{key_id}")

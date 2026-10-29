@@ -406,6 +406,11 @@ window.kuasaPenuh = function (peran) {
         if (pageName === 'viewer') {
             pageName = 'monitor';
         }
+        // R15: page tidak dikenal -> fallback ke monitor, jangan halaman kosong.
+        const knownPages = ["monitor", "custom", "maps", "admin", "playback"];
+        if (!knownPages.includes(pageName)) {
+            pageName = "monitor";
+        }
         if (pageName !== "custom") {
         if (typeof window.exitWebFullscreen === "function") window.exitWebFullscreen();
         }

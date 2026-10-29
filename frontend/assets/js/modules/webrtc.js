@@ -1083,6 +1083,8 @@
                             if (stream) stream.status = "online";
                             const retryUrls = buildWhepCandidates(stream?.webrtc_url || whepCandidates[0], streamId);
                             await startNativeWebRTC(streamId, retryUrls, elementId, videoOnly);
+                            // R19: reset agar kegagalan berikutnya boleh auto-reconnect lagi.
+                            window.autoReconnects[streamId] = false;
                             return;
                         }
                     }
@@ -1513,9 +1515,9 @@
                         <svg class="w-10 h-10 text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
-                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider mb-1">Akses Terbatas (${roleName})</h4>
+                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider mb-1">Akses Terbatas (${escHtml(roleName)})</h4>
                         <p class="text-xs text-amber-700 dark:text-amber-400 font-sans leading-relaxed">
-                            Menu <strong>Admin Console</strong> memerlukan hak akses <strong>ADMINISTRATOR</strong>. Akun Anda saat ini masuk sebagai <strong>${roleName}</strong>.
+                            Menu <strong>Admin Console</strong> memerlukan hak akses <strong>ADMINISTRATOR</strong>. Akun Anda saat ini masuk sebagai <strong>${escHtml(roleName)}</strong>.
                         </p>
                     </div>
                 </td>
@@ -3584,12 +3586,17 @@
     // --- 8. WebRTC Live Telemetry Stats Loop ---
     async function updateWebRTCStatsLoop() {
         if (!window.peerConnections) return;
+        // S14: hemat CPU — jangan panggil getStats() bila tidak ada elemen
+        // telemetri di DOM (mis. pengguna sedang di halaman admin/maps).
+        if (!document.querySelector("[id^='cam-telemetry-fps-']")) return;
         for (const key of Object.keys(window.peerConnections)) {
             const pc = window.peerConnections[key];
             if (!pc || pc.connectionState !== "connected") continue;
             
             const parts = key.split("-");
-            const streamId = parts[0];
+            // S12: id stream adalah segmen TERAKHIR ("video-feed-123" -> "123"),
+            // bukan segmen pertama ("video").
+            const streamId = parts[parts.length - 1];
             if (!streamId) continue;
             
             try {

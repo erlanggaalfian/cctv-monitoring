@@ -732,7 +732,7 @@
                 </div>
                 <div>
                     <label for="edit-api-secret-pass" class="field-label">Password Keamanan Tambahan</label>
-                    <input type="text" id="edit-api-secret-pass" class="app-input w-full text-xs" placeholder="Masukkan password (Kosongkan jika tanpa password)">
+                    <input type="text" id="edit-api-secret-pass" class="app-input w-full text-xs" placeholder="Kosongkan untuk tidak mengubah password">
                 </div>
             </div>
 
