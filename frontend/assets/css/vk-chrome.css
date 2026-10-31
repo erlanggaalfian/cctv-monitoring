@@ -275,3 +275,40 @@
 @media (max-width: 768px) {
   .vk-login-title { font-size: 20px !important; }
 }
+
+/* ---------- G13: netralkan gradient yang berbenturan ---------- */
+/* Anti-slop vibekoding: tanpa gradient berlebih — ganti dengan token
+   datar. Berlaku di semua breakpoint (seperti .vk-login-title di atas).
+   body.login-body sengaja TIDAK disentuh (estetika login tersendiri). */
+.tab-intro-box,
+.dark .tab-intro-box {
+  background: var(--color-bg-content);
+}
+.tab-intro-accent {
+  background: var(--color-primary);
+}
+.tab-intro-icon {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border);
+  color: var(--color-primary);
+  box-shadow: none;
+}
+.ms-btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+.ms-btn--danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff;
+}
+/* .sidebar-avatar: hanya dalam media mobile (desktop sudah datar via
+   blok min-width:769px di atas). */
+@media (max-width: 768px) {
+  .sidebar-avatar {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    box-shadow: none;
+  }
+}

@@ -5,6 +5,13 @@ if(!defined('SECURE_ACCESS')) {
 }
 ?>
 <!-- Playback View -->
+<!-- G14: select tanggal 16px di mobile (cegah auto-zoom iOS);
+     aturan inline di sini agar tidak menyentuh file vk-* -->
+<style>
+@media (max-width: 768px) {
+    #playback-date-select { font-size: 16px; }
+}
+</style>
 <div id="tab-playback" class="page-layout tab-view-bottom-space">
     <div class="layout-section layout-intro">
         <?php
@@ -65,7 +72,7 @@ if(!defined('SECURE_ACCESS')) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <p class="empty-state-title">Belum Ada Rekaman</p>
-            <p id="pb-empty-text" class="empty-state-desc mt-2 max-w-sm mx-auto">Belum ada kamera dengan rekaman tersimpan</p>
+            <p id="pb-empty-text" class="vk-empty mt-2 max-w-sm mx-auto">Belum ada kamera dengan rekaman tersimpan</p>
         </div>
     </div>
 </div>

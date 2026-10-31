@@ -57,12 +57,61 @@
   border-color: var(--color-border);
 }
 
+/* Varian .badge-tag existing (admin.js/core.js) disatukan ke satu gaya
+   pill §4.1: 11px/700/uppercase/0.6px, padding 5px 12px, radius 999px.
+   --rose/--red dipetakan ke peran danger; --red dipertahankan sebagai
+   alias karena dipakai core.js (✓ HIT / ✕ DENIED). */
+.badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--vk-text-badge);      /* 11px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  line-height: 1;
+}
+.badge-tag--green {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success);
+}
+.badge-tag--amber {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning);
+}
+.badge-tag--rose,
+.badge-tag--red {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger);
+}
+.badge-tag--slate {
+  background: var(--color-bg-hover);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+.badge-tag--sky {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: var(--color-info);
+}
+
 /* ---------------- 4.2 Tombol ----------------
    Mapping: .btn-elegant (dipakai di banyak view PHP) diharmonisasi ke
    token dengan metrik kompaknya tetap; class kanonis vk-btn mengikuti
    spek §4.2 penuh. */
 
 .btn-elegant {
+  /* §4.2: target sentuh min 40px, font tombol 14px/600 — gaya lain tetap. */
+  min-height: 40px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-muted);
   border-color: var(--color-border);
   background: var(--color-bg-content);
@@ -80,6 +129,11 @@
 .btn-elegant-primary:hover {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
+}
+/* Tombol aksi admin console: target sentuh min 40px (gaya lain tetap). */
+.ms-btn-add,
+.ms-btn-toggle {
+  min-height: 40px;
 }
 
 .vk-btn {
@@ -137,6 +191,20 @@
 
 /* Block penuh — untuk aksi di dalam panel mobile yang terbuka */
 .vk-btn--block { width: 100%; }
+
+/* --danger — aksi destruktif (dipakai modals.php).
+   Metrik radius 8px / min-height 40px / 14px-600 diwarisi .vk-btn. */
+.vk-btn--danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff;
+}
+.vk-btn--danger:hover {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  filter: brightness(.92);
+}
+.vk-btn--danger:active { transform: scale(0.98); }
 
 /* ---------------- 4.3 Kartu status ----------------
    Tidak ada padanan existing → class baru vk-. */
@@ -451,4 +519,17 @@
 }
 @media (max-width: 768px) {
   .ms-modal__title { font-size: 18px !important; }
+}
+
+/* ---------------- KONTRAK #1: angka metrik Display (§2.2) ----------------
+   Skala Display: 32px/800 desktop, 26px mobile, letter-spacing -0.01em. */
+.vk-metric-value {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--color-text-header);
+  line-height: 1.2;
+}
+@media (max-width: 768px) {
+  .vk-metric-value { font-size: 26px; }
 }

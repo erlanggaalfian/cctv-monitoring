@@ -187,40 +187,47 @@ for (const key of Object.keys(state)) {
     // ──────────────────────────────────────────────────────────────────────────
 
     // --- Global Toast Notification ---
+    // §4.7: toast di atas bottom nav (bawah layar), gaya mengikuti .vk-toast.
     window.showToast = function(message, type = "success") {
         const container = document.getElementById("toast-container") || (() => {
             const el = document.createElement("div");
             el.id = "toast-container";
-            el.className = "fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none";
+            // Di atas bottom nav 56px + jarak 16px + safe-area iPhone.
+            el.className = "fixed left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none";
+            el.style.bottom = "calc(56px + 16px + env(safe-area-inset-bottom))";
             document.body.appendChild(el);
             return el;
         })();
 
         const toast = document.createElement("div");
-        const isError = type === "error";
-        toast.className = [
-            "pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border text-xs font-mono font-bold",
-            "-translate-y-5 opacity-0 transition-all duration-300 ease-out",
-            isError
-                ? "bg-red-950/90 border-red-500/40 text-red-300 backdrop-blur-sm"
-                : "bg-emerald-950/90 border-emerald-500/40 text-emerald-300 backdrop-blur-sm"
-        ].join(" ");
+        const variant = type === "error" ? "vk-toast--danger"
+            : type === "info" ? "vk-toast--info"
+            : "vk-toast--success";
+        // .vk-toast dari vk-components.css; position static supaya
+        // beberapa toast menumpuk rapi di dalam container.
+        toast.className = `vk-toast pointer-events-auto ${variant}`;
+        toast.style.position = "static";
+        toast.style.transform = "none";
+        toast.setAttribute("role", "status");
 
-        toast.innerHTML = isError
-            ? `<svg class="w-4 h-4 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${escHtml(message)}</span>`
-            : `<svg class="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${escHtml(message)}</span>`;
+        toast.innerHTML = `<span>${escHtml(message)}</span>`;
 
         container.appendChild(toast);
         // Animate in
+        toast.style.opacity = "0";
+        toast.style.translate = "0 8px";
+        toast.style.transition = "opacity 200ms ease-out, translate 200ms ease-out";
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                toast.classList.remove("-translate-y-5", "opacity-0");
+                toast.style.opacity = "1";
+                toast.style.translate = "0 0";
             });
         });
         // Auto remove after 3.5s
         setTimeout(() => {
-            toast.classList.add("-translate-y-5", "opacity-0");
-            setTimeout(() => toast.remove(), 350);
+            toast.style.opacity = "0";
+            toast.style.translate = "0 8px";
+            setTimeout(() => toast.remove(), 250);
         }, 3500);
     };
 
@@ -270,7 +277,7 @@ for (const key of Object.keys(state)) {
         const sel = new Set((selectedIds || []).map(Number));
 
         if (!cams.length) {
-            box.innerHTML = '<p class="text-[10px] font-mono text-slate-500 dark:text-cyber-dim p-2">Tidak ada kamera.</p>';
+            box.innerHTML = '<p class="vk-empty">Tidak ada kamera.</p>';
             window.updateApiCamCount(prefix);
             return;
         }
@@ -999,16 +1006,18 @@ for (const key of Object.keys(state)) {
             ? `<span class="text-sky-600 dark:text-cyber-primary">${esc(domain)}</span>`
             : `<span class="text-slate-300 dark:text-cyber-dim/40">—</span>`;
 
-        return `<tr class="border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100">
-            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim whitespace-nowrap" title="${esc(log.accessed_at)}">${_relativeTime(log.accessed_at)}</td>
-            <td class="py-3 px-4">
+        // Kontrak accordion tabel→kartu §3.2: tr.m-row, sel pertama
+        // .td-primary + ringkasan di .m-collapsed-extra (konsisten dgn admin.js).
+        return `<tr class="border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100 m-row" aria-expanded="false">
+            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim whitespace-nowrap td-primary" title="${esc(log.accessed_at)}">${_relativeTime(log.accessed_at)}<span class="m-collapsed-extra" hidden>${_relativeTime(log.accessed_at)} · ${statusBadge}</span></td>
+            <td class="py-3 px-4" data-label="Klien">
                 <div class="font-bold text-[11px] text-slate-800 dark:text-white">${esc(log.client_name) || '—'}</div>
                 ${cameraText}
             </td>
-            <td class="py-3 px-4 font-mono text-[10px] text-slate-600 dark:text-cyber-text">${esc(log.ip_address) || '—'}</td>
-            <td class="py-3 px-4 font-mono text-[10px]">${domainEl}</td>
-            <td class="py-3 px-4 text-center">${statusBadge}</td>
-            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim">${esc(log.deny_reason)}</td>
+            <td class="py-3 px-4 font-mono text-[10px] text-slate-600 dark:text-cyber-text" data-label="IP">${esc(log.ip_address) || '—'}</td>
+            <td class="py-3 px-4 font-mono text-[10px]" data-label="Domain">${domainEl}</td>
+            <td class="py-3 px-4 text-center" data-label="Status">${statusBadge}</td>
+            <td class="py-3 px-4 text-[10px] text-slate-500 dark:text-cyber-dim" data-label="Alasan">${esc(log.deny_reason)}</td>
         </tr>`;
     }
 

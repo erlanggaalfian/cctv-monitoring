@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     initMap(-6.208763, 106.845599); // Jakarta Central
                 });
                 document.getElementById("map-sidebar-cctv-list").innerHTML = `
-                    <div class="py-12 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">
+                    <div class="vk-empty font-mono">
                         <p class="font-bold">TIDAK ADA KAMERA TERPETAKAN</p>
                         <p class="text-[10px] text-slate-500 mt-2">Gunakan menu Admin Console untuk menambahkan koordinat GPS pada kamera Anda.</p>
                     </div>`;

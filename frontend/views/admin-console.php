@@ -378,6 +378,7 @@ if(!defined('SECURE_ACCESS')) {
                     <div class="flex flex-col justify-start h-full w-full">
                         <label for="scan-ip-range" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-cyber-dim mb-1.5 font-mono">IP Subnet Range (CIDR)</label>
                         <input type="text" id="scan-ip-range" required value="192.168.1.0/24"
+                            inputmode="url"
                             class="app-input w-full h-10">
                         <p class="text-[11px] text-gray-500 dark:text-cyber-dim mt-1 min-h-[16px] font-mono">Contoh: 192.168.1.0/24, 10.0.0.0/24</p>
                     </div>
@@ -432,8 +433,8 @@ if(!defined('SECURE_ACCESS')) {
                     <span id="scan-progress-label">Scanner Idle</span>
                     <span id="scan-progress-percent">0%</span>
                 </div>
-                <div id="scan-progress-bar-track" class="w-full bg-slate-200 dark:bg-cyber-bg h-2 rounded-full overflow-hidden">
-                    <div id="scan-progress-bar" class="w-0 bg-brand-blue h-full transition-all duration-200"></div>
+                <div id="scan-progress-bar-track" class="vk-progress">
+                    <div id="scan-progress-bar" class="vk-progress__fill"></div>
                 </div>
             </div>
         </div>
@@ -867,6 +868,7 @@ if(!defined('SECURE_ACCESS')) {
                             <span id="embed-timeout-val-desc" class="text-[10px] font-mono text-sky-600 dark:text-cyber-primary font-bold">5.0 Menit</span>
                         </div>
                         <input type="number" id="embed-timeout-seconds" min="10" max="86400" value="300" 
+                            inputmode="numeric"
                             class="app-input w-full font-mono text-xs" 
                             placeholder="Default: 300 (5 menit)" 
                             oninput="
@@ -965,19 +967,19 @@ if(!defined('SECURE_ACCESS')) {
             <div id="api-log-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-cyber-bg/40 border border-slate-200/80 dark:border-cyber-outline/20 flex flex-col gap-1">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-cyber-dim font-mono">Total Akses</span>
-                    <span id="log-stat-total" class="text-xl font-bold font-mono text-slate-800 dark:text-white">—</span>
+                    <span id="log-stat-total" class="vk-metric-value font-mono text-slate-800 dark:text-white">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-1">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-mono">HIT</span>
-                    <span id="log-stat-hits" class="text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">—</span>
+                    <span id="log-stat-hits" class="vk-metric-value font-mono text-emerald-700 dark:text-emerald-400">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/20 flex flex-col gap-1">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">DENIED</span>
-                    <span id="log-stat-denied" class="text-xl font-bold font-mono text-rose-600 dark:text-rose-400">—</span>
+                    <span id="log-stat-denied" class="vk-metric-value font-mono text-rose-600 dark:text-rose-400">—</span>
                 </div>
                 <div class="p-3.5 rounded-xl bg-sky-500/5 border border-sky-500/20 flex flex-col gap-1">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-sky-600 dark:text-cyber-primary font-mono">IP Unik</span>
-                    <span id="log-stat-ips" class="text-xl font-bold font-mono text-sky-600 dark:text-cyber-primary">—</span>
+                    <span id="log-stat-ips" class="vk-metric-value font-mono text-sky-600 dark:text-cyber-primary">—</span>
                 </div>
             </div>
 

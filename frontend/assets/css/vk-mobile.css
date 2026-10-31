@@ -216,6 +216,9 @@
     background: var(--color-primary-900);
   }
 
+  /* G20: header tabel 11px di mobile (Small §2.2) — th desktop tetap 12px. */
+  th { font-size: 11px; }
+
   /* Kartu generik untuk tbody TANPA sistem kartu bespoke.
      (#admin-streams-table-body punya sistem sendiri di global.css.) */
   tbody:not(#admin-streams-table-body) tr.m-row {
@@ -232,7 +235,8 @@
     border: 0;
     padding: 6px 0;
   }
-  /* Judul kartu = sel pertama (.td-primary): nama kiri, panah kanan */
+  /* Judul kartu = sel pertama (.td-primary): nama kiri, panah kanan.
+     KONTRAK G10: font-weight 700 selalu (nama utama kartu, §2.2). */
   tbody:not(#admin-streams-table-body) tr.m-row > td.td-primary {
     display: flex;
     align-items: center;

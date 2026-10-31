@@ -15,6 +15,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/assets/css/global.css?v=<?= @filemtime(__DIR__ . '/assets/css/global.css') ?: time() ?>">
+
+    <!-- vk-* tahap 2 (pola frontend/includes/header.php; login.php ada di
+         frontend/ sehingga __DIR__ . '/assets/...' tanpa '/../') -->
+    <link rel="stylesheet" href="/assets/css/vk-chrome.css?v=<?= @filemtime(__DIR__ . '/assets/css/vk-chrome.css') ?: time() ?>">
+    <link rel="stylesheet" href="/assets/css/vk-components.css?v=<?= @filemtime(__DIR__ . '/assets/css/vk-components.css') ?: time() ?>">
+    <link rel="stylesheet" href="/assets/css/vk-mobile.css?v=<?= @filemtime(__DIR__ . '/assets/css/vk-mobile.css') ?: time() ?>">
+    <script src="/assets/js/modules/vk-patterns.js?v=<?= @filemtime(__DIR__ . '/assets/js/modules/vk-patterns.js') ?: time() ?>"></script>
     <script>
         // Langsung ke halaman utama bila sudah login
         if (localStorage.getItem("cctv_auth_token")) {

@@ -213,7 +213,8 @@ input, select, textarea { font-family: inherit; font-weight: 400; letter-spacing
 input::placeholder, textarea::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; font-weight: 400; letter-spacing: normal; }
 .font-mono:not(input):not(select):not(textarea), [class*="font-mono"]:not(input):not(select):not(textarea) { font-family: var(--font-mono); letter-spacing: normal; }
 .font-sans, [class*="font-sans"] { font-family: var(--font-sans); letter-spacing: -0.011em; }
-h1, h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) !important; font-weight: 700; letter-spacing: -0.025em; }
+h1 { font-family: var(--font-heading) !important; font-weight: 800; letter-spacing: -0.025em; } /* G15: H1 = 800 (§2.2) */
+h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) !important; font-weight: 700; letter-spacing: -0.025em; }
 @media (max-width: 768px) { html { font-size: 13px; } }
 @media (min-width: 768px) { :root { --page-gap: 1.25rem; } }
 /* ==============================================================

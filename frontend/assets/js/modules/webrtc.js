@@ -1515,7 +1515,7 @@
                         <svg class="w-10 h-10 text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
-                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider mb-1">Akses Terbatas (${escHtml(roleName)})</h4>
+                        <h4 class="text-[13px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider mb-1">Akses Terbatas (${escHtml(roleName)})</h4>
                         <p class="text-xs text-amber-700 dark:text-amber-400 font-sans leading-relaxed">
                             Menu <strong>Admin Console</strong> memerlukan hak akses <strong>ADMINISTRATOR</strong>. Akun Anda saat ini masuk sebagai <strong>${escHtml(roleName)}</strong>.
                         </p>
@@ -1883,9 +1883,9 @@
             const statusPill = document.getElementById("popup-cam-status-pill");
             if (statusPill) {
                 if (isOnline) {
-                    statusPill.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider font-sans bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 shadow-sm";
+                    statusPill.className = "badge-tag badge-tag--green";
                 } else {
-                    statusPill.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider font-sans bg-rose-500/20 text-rose-200 border border-rose-400/30 shadow-sm";
+                    statusPill.className = "badge-tag badge-tag--rose";
                 }
             }
             if (camStatusEl) {
@@ -1895,9 +1895,9 @@
             const statusContainer = document.getElementById("popup-cam-status-container");
             if (statusContainer) {
                 if (isOnline) {
-                    statusContainer.className = "px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 shadow-sm flex items-center justify-center shrink-0 transition-colors duration-300";
+                    statusContainer.className = "badge-tag badge-tag--green shrink-0 transition-colors duration-300";
                 } else {
-                    statusContainer.className = "px-2 py-0.5 rounded bg-rose-950/40 text-rose-400 border border-rose-500/20 shadow-sm flex items-center justify-center shrink-0 transition-colors duration-300";
+                    statusContainer.className = "badge-tag badge-tag--rose shrink-0 transition-colors duration-300";
                 }
             }
             if (statusDot) statusDot.className = isOnline ? "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" : "w-1.5 h-1.5 rounded-full bg-rose-400";
@@ -2068,7 +2068,7 @@
                         }
 
                         streamContainer.innerHTML = `
-                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 font-mono text-center px-4 border border-red-500/20 rounded-md z-30">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 font-mono text-center px-4 border border-red-500/20 rounded-md z-30 vk-card-status">
                                 <div class="p-3 bg-red-500/20 rounded-full border border-red-500/30 mb-2 animate-pulse">
                                     <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -2243,7 +2243,7 @@
                         
                         // Offline layout (transparent overlay, no solid dark background)
                         streamContainer.innerHTML = `
-                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 font-mono text-center px-4 border border-red-500/20 rounded-md z-30">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 font-mono text-center px-4 border border-red-500/20 rounded-md z-30 vk-card-status">
                                 <div class="p-3 bg-red-500/20 rounded-full border border-red-500/30 mb-2 animate-pulse">
                                     <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -2938,21 +2938,23 @@
                 } else {
                     cameras.forEach(cam => {
                         const tr = document.createElement("tr");
-                        tr.className = "border-b border-slate-100 dark:border-cyber-outline/40 hover:bg-slate-50 dark:hover:bg-cyber-primary/5 transition-colors";
+                        tr.className = "border-b border-slate-100 dark:border-cyber-outline/40 hover:bg-slate-50 dark:hover:bg-cyber-primary/5 transition-colors m-row";
+                        tr.setAttribute("aria-expanded", "false");
                         
                         // Hide password in display for security
                         const maskUrl = cam.rtsp_url.replace(/:[^:@]+@/, ":******@");
                         
                         tr.innerHTML = `
-                            <td class="py-3.5 px-4 text-center">
+                            <td class="py-3.5 px-4 text-center td-primary">
                                 <input type="checkbox" class="scanned-cam-checkbox chk-native chk-native--md" 
                                     data-name="${escHtml(cam.name)}" data-rtsp="${escHtml(cam.rtsp_url)}" onchange="window.updateSelectedScannedCamsCount()">
+                                <span class="m-collapsed-extra" hidden><span class="m-dot ok" aria-hidden="true"></span>${escHtml(cam.name)} · ${escHtml(cam.ip)}</span>
                             </td>
-                            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-300">${escHtml(cam.ip)}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${escHtml(cam.port)}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono">${escHtml(username)} / ${escHtml(password)}</td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim select-all truncate max-w-[280px]" title="${escHtml(cam.rtsp_url)}">${escHtml(maskUrl)}</td>
-                            <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-300" data-label="IP Address">${escHtml(cam.ip)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono" data-label="Port">${escHtml(cam.port)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim font-mono" data-label="Credentials">${escHtml(username)} / ${escHtml(password)}</td>
+                            <td class="py-3.5 px-4 text-slate-500 dark:text-cyber-dim select-all truncate max-w-[280px]" data-label="RTSP Target URL" title="${escHtml(cam.rtsp_url)}">${escHtml(maskUrl)}</td>
+                            <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap" data-label="Actions">
                                 <button onclick="window.previewScannedCamera('${escHtml(escJs(cam.name))}', '${escHtml(escJs(cam.rtsp_url))}', this)"
                                     class="px-2.5 py-1 bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold uppercase tracking-wider rounded transition-all duration-150 active:scale-95">
                                     👁️ Preview

@@ -14,14 +14,14 @@
             <input type="hidden" id="modal-stream-id">
             <div>
                 <label for="modal-stream-name" class="field-label vk-label">Camera Name / ID</label>
-                <input type="text" id="modal-stream-name" required
+                <input type="text" id="modal-stream-name" enterkeyhint="next" required
                     class="app-input vk-input w-full"
                     placeholder="e.g., Office Back Entrance">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label for="modal-stream-group" class="field-label vk-label">Camera Group</label>
-                    <input type="text" id="modal-stream-group" list="existing-groups-list" required
+                    <input type="text" id="modal-stream-group" enterkeyhint="next" list="existing-groups-list" required
                         class="app-input vk-input w-full"
                         placeholder="e.g., Kantor">
                     <datalist id="existing-groups-list">
@@ -30,14 +30,14 @@
                 </div>
                 <div>
                     <label for="modal-stream-coordinates" class="field-label vk-label">Coordinates (lat, lon)</label>
-                    <input type="text" id="modal-stream-coordinates"
+                    <input type="text" id="modal-stream-coordinates" enterkeyhint="next"
                         class="app-input vk-input w-full"
                         placeholder="-6.2095, 106.8456">
                 </div>
             </div>
             <div>
                 <label for="modal-stream-rtsp" class="field-label vk-label">RTSP Target URL (Raw Source)</label>
-                <input type="text" id="modal-stream-rtsp" required
+                <input type="text" id="modal-stream-rtsp" inputmode="url" enterkeyhint="next" required
                     class="app-input vk-input w-full"
                     placeholder="rtsp://username:password@ip_address:554/path">
                 <p class="field-hint">RTSP credential links will remain securely hidden from user role profiles.</p>
@@ -97,18 +97,18 @@
                 </div>
                 <div>
                     <label for="modal-stream-retention" class="block text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 mb-1.5 font-mono">Retention (days)</label>
-                    <input type="number" id="modal-stream-retention" min="1" max="365" value="7" class="app-input vk-input w-24 text-xs">
+                    <input type="number" id="modal-stream-retention" inputmode="numeric" enterkeyhint="done" min="1" max="365" value="7" class="app-input vk-input w-24 text-xs">
                     <p class="field-hint">Auto-delete recording lebih lama dari ini</p>
                 </div>
             </div>
 
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="closeStreamModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95">
+                    class="vk-btn">
                     Save Configuration
                 </button>
             </div>
@@ -132,13 +132,13 @@
             <input type="hidden" id="modal-user-id">
             <div>
                 <label for="modal-user-username" class="field-label vk-label">Username</label>
-                <input type="text" id="modal-user-username" required
+                <input type="text" id="modal-user-username" enterkeyhint="next" required
                     class="app-input vk-input w-full"
                     placeholder="e.g., operator_123">
             </div>
             <div>
                 <label for="modal-user-password" id="modal-user-password-label" class="field-label vk-label">Password</label>
-                <input type="password" id="modal-user-password" required
+                <input type="password" id="modal-user-password" enterkeyhint="done" required
                     class="app-input vk-input w-full"
                     placeholder="••••••••">
                 <p id="modal-user-password-help" class="field-hint hidden">Leave empty to keep current password.</p>
@@ -186,7 +186,7 @@
                         </svg>
                     </span>
                 </div>
-                <input type="text" id="modal-user-grup-baru" maxlength="60"
+                <input type="text" id="modal-user-grup-baru" enterkeyhint="done" maxlength="60"
                     autocomplete="off" placeholder="Nama grup baru"
                     class="app-input vk-input w-full mt-2 hidden">
                 <p class="field-hint">Akun segrup saling terjangkau. Kosongkan bila akun ini belum masuk grup mana pun.</p>
@@ -203,11 +203,11 @@
             </div>
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="closeUserModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95">
+                    class="vk-btn">
                     Save User Account
                 </button>
             </div>
@@ -231,7 +231,7 @@
             <div>
                 <label for="grup-nama-baru" class="field-label vk-label">Nama Grup</label>
                 <div class="app-field-wrap">
-                    <input type="text" id="grup-nama-baru" required maxlength="60" class="app-input vk-input">
+                    <input type="text" id="grup-nama-baru" enterkeyhint="done" required maxlength="60" class="app-input vk-input">
                 </div>
                 <p class="pgn-ket mt-2">
                     <span id="grup-nama-lama">&mdash;</span> &middot; <span id="grup-nama-jumlah">0</span> anggota ikut pindah
@@ -249,11 +249,11 @@
             </div>
             <div class="flex justify-end space-x-3 pt-2 vk-sticky-actions">
                 <button type="button" onclick="tutupGantiNamaGrup()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-dim text-xs font-bold uppercase tracking-wider rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider rounded-md transition-colors">
+                    class="vk-btn">
                     Save Group Name
                 </button>
             </div>
@@ -284,11 +284,11 @@
             </div>
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="closePermissionsModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button onclick="saveUserPermissions()" id="save-permissions-btn"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95">
+                    class="vk-btn">
                     Save Permissions
                 </button>
             </div>
@@ -327,7 +327,7 @@
                     <label class="field-label vk-label mb-0">Akun</label>
                     <span id="berbagi-hitung" class="akses-lencana"></span>
                 </div>
-                <input type="text" id="berbagi-cari" placeholder="Cari akun&hellip;"
+                <input type="text" id="berbagi-cari" enterkeyhint="search" placeholder="Cari akun&hellip;"
                        oninput="window.saringBerbagi()"
                        class="app-input vk-input w-full mb-2 text-xs" autocomplete="off">
                 <div class="border border-slate-200 dark:border-cyber-outline/40 rounded-lg max-h-72 overflow-y-auto">
@@ -343,11 +343,11 @@
         </div>
         <div class="flex justify-end gap-2 mt-5 vk-sticky-actions">
             <button type="button" onclick="window.tutupBerbagiKamera()"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-lg border border-slate-200 dark:border-cyber-outline/50 text-slate-500 dark:text-cyber-dim hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors">
+                class="vk-btn--secondary">
                 Batal
             </button>
             <button onclick="window.simpanBerbagiKamera()" id="berbagi-simpan"
-                class="ms-btn-add px-4 py-2 text-xs font-semibold uppercase tracking-wider font-mono rounded-lg transition-colors">
+                class="vk-btn">
                 Simpan
             </button>
         </div>
@@ -408,7 +408,7 @@
                     <label class="field-label vk-label mb-0">Kamera</label>
                     <span id="akses-modal-hitung" class="akses-lencana"></span>
                 </div>
-                <input type="text" id="akses-modal-cari" placeholder="Cari kamera…"
+                <input type="text" id="akses-modal-cari" enterkeyhint="search" placeholder="Cari kamera…"
                     oninput="window.saringKameraAkses()"
                     class="app-input vk-input w-full text-xs mb-2">
                 <div class="akses-kotak-kamera border border-slate-200/50 dark:border-cyber-outline/40 rounded-md bg-slate-50 dark:bg-cyber-bg/50 max-h-72 overflow-y-auto">
@@ -431,11 +431,11 @@
 
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="window.tutupAksesKamera()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors cursor-pointer">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button onclick="window.simpanAksesKamera()" id="akses-modal-simpan"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95 cursor-pointer">
+                    class="vk-btn">
                     Simpan Akses
                 </button>
             </div>
@@ -510,7 +510,7 @@
             <!-- Group Name Input -->
             <div id="bulk-group-input-container">
                 <label for="bulk-stream-group" class="field-label vk-label">Nama Grup Kamera</label>
-                <input type="text" id="bulk-stream-group" value="Scanned" list="existing-groups-list" required
+                <input type="text" id="bulk-stream-group" enterkeyhint="next" value="Scanned" list="existing-groups-list" required
                     class="app-input vk-input w-full"
                     placeholder="e.g., Scanned atau Kantor">
             </div>
@@ -518,7 +518,7 @@
             <!-- Coordinates Input -->
             <div>
                 <label for="bulk-stream-coordinates" class="field-label vk-label">Koordinat Kamera (lat, lon)</label>
-                <input type="text" id="bulk-stream-coordinates" value=""
+                <input type="text" id="bulk-stream-coordinates" enterkeyhint="next" value=""
                     class="app-input vk-input w-full"
                     placeholder="-6.2095, 106.8456 (opsional)">
             </div>
@@ -537,18 +537,18 @@
             <!-- Naming Prefix Input -->
             <div id="bulk-naming-prefix-container" class="hidden">
                 <label for="bulk-naming-prefix" class="field-label vk-label">Nama Kustom (Prefix)</label>
-                <input type="text" id="bulk-naming-prefix"
+                <input type="text" id="bulk-naming-prefix" enterkeyhint="next"
                     class="app-input vk-input w-full"
                     placeholder="e.g., Lobi Depan">
             </div>
 
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="closeBulkAddModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95">
+                    class="vk-btn">
                     Tambahkan Kamera
                 </button>
             </div>
@@ -572,7 +572,7 @@
             <!-- Coordinates Input -->
             <div>
                 <label for="bulk-cctv-coordinates" class="field-label vk-label">Koordinat Kamera Baru (lat, lon)</label>
-                <input type="text" id="bulk-cctv-coordinates" required
+                <input type="text" id="bulk-cctv-coordinates" enterkeyhint="done" required
                     class="app-input vk-input w-full"
                     placeholder="e.g., -6.2095, 106.8456">
                 <p class="field-hint">Koordinat ini akan diterapkan ke <span id="bulk-coords-target-count" class="font-bold text-sky-600 dark:text-cyber-primary">0</span> kamera terpilih secara bersamaan.</p>
@@ -580,11 +580,11 @@
 
             <div class="ms-modal__foot vk-sticky-actions">
                 <button type="button" onclick="window.closeBulkCoordsModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95">
+                    class="vk-btn">
                     Simpan Koordinat
                 </button>
             </div>
@@ -668,7 +668,7 @@
                     <button onclick="window.copySetupCode('api-setup-iframe-code', 'btn-copy-iframe')" id="btn-copy-iframe" class="text-[10px] text-sky-600 dark:text-cyber-primary hover:underline font-bold">Salin Code</button>
                 </div>
                 <p class="field-hint" id="api-setup-m1-desc">Gunakan kode HTML berikut untuk menyematkan pemutar video langsung di halaman web Anda.</p>
-                <textarea id="api-setup-iframe-code" readonly class="w-full h-16 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
+                <textarea id="api-setup-iframe-code" readonly class="app-input w-full h-16 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
             <!-- Metode 2: REST API Endpoint -->
@@ -678,7 +678,7 @@
                     <button onclick="window.copySetupCode('api-setup-api-url', 'btn-copy-api')" id="btn-copy-api" class="text-[10px] text-sky-600 dark:text-cyber-primary hover:underline font-bold">Salin URL</button>
                 </div>
                 <p class="field-hint" id="api-setup-m2-desc">Gunakan HTTP GET request untuk mengambil detail stream format JSON (termasuk WebRTC / WHEP URL untuk player kustom).</p>
-                <textarea id="api-setup-api-url" readonly class="w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
+                <textarea id="api-setup-api-url" readonly class="app-input w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
             <!-- Metode 3: Link Direct Player -->
@@ -688,12 +688,12 @@
                     <button onclick="window.copySetupCode('api-setup-direct-url', 'btn-copy-direct')" id="btn-copy-direct" class="text-[10px] text-sky-600 dark:text-cyber-primary hover:underline font-bold">Salin URL</button>
                 </div>
                 <p class="field-hint" id="api-setup-m3-desc">Link direct untuk membuka halaman pemutar mandiri.</p>
-                <textarea id="api-setup-direct-url" readonly class="w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
+                <textarea id="api-setup-direct-url" readonly class="app-input w-full h-12 p-2 bg-slate-900 text-sky-400 border border-slate-700 rounded text-[10px] font-mono focus:outline-none focus:border-sky-500 resize-none"></textarea>
             </div>
 
             <div class="flex justify-end pt-2 ms-modal__divider vk-sticky-actions">
                 <button type="button" onclick="window.closeApiSetupModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Close
                 </button>
             </div>
@@ -717,22 +717,22 @@
             
             <div>
                     <label for="edit-api-client-name" class="field-label vk-label">Nama Klien / Server Penerima</label>
-                    <input type="text" id="edit-api-client-name" required class="app-input vk-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
+                    <input type="text" id="edit-api-client-name" enterkeyhint="next" required class="app-input vk-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
                 </div>
 
             <div>
                 <label for="edit-api-custom-camera-name" class="field-label vk-label">Judul Kamera Kustom (Opsional)</label>
-                <input type="text" id="edit-api-custom-camera-name" class="app-input vk-input w-full text-xs" placeholder="Contoh: Kamera Depan, Pos Jaga (Untuk menyamarkan nama asli)">
+                <input type="text" id="edit-api-custom-camera-name" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Contoh: Kamera Depan, Pos Jaga (Untuk menyamarkan nama asli)">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit-api-allowed-domain" class="field-label vk-label">Batasi Domain Asal (Whitelisting)</label>
-                    <input type="text" id="edit-api-allowed-domain" class="app-input vk-input w-full text-xs" placeholder="Contoh: domain.com (Kosongkan jika ingin PUBLIC)">
+                    <input type="text" id="edit-api-allowed-domain" inputmode="url" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Contoh: domain.com (Kosongkan jika ingin PUBLIC)">
                 </div>
                 <div>
                     <label for="edit-api-secret-pass" class="field-label vk-label">Password Keamanan Tambahan</label>
-                    <input type="text" id="edit-api-secret-pass" class="app-input vk-input w-full text-xs" placeholder="Kosongkan untuk tidak mengubah password">
+                    <input type="text" id="edit-api-secret-pass" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Kosongkan untuk tidak mengubah password">
                 </div>
             </div>
 
@@ -749,7 +749,7 @@
                             class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-rose-400 dark:hover:border-rose-500 transition-colors">Kosong</button>
                     </div>
                 </div>
-                <input type="text" id="edit-api-cam-search" placeholder="Cari kamera..."
+                <input type="text" id="edit-api-cam-search" enterkeyhint="search" placeholder="Cari kamera..."
                     oninput="window.filterApiCameraList('edit-api')"
                     class="app-input vk-input w-full text-xs mb-2">
                 <div id="edit-api-camera-list"
@@ -786,11 +786,11 @@
 
             <div class="flex justify-end gap-3 pt-3 ms-modal__divider vk-sticky-actions">
                 <button type="button" onclick="window.closeApiKeyEditModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95 shadow-sm shadow-sky-500/20">
+                    class="vk-btn">
                     Simpan Perubahan
                 </button>
             </div>
@@ -813,23 +813,23 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="api-client-name" class="field-label vk-label">Nama Klien / Server Penerima</label>
-                    <input type="text" id="api-client-name" required class="app-input vk-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
+                    <input type="text" id="api-client-name" enterkeyhint="next" required class="app-input vk-input w-full text-xs" placeholder="Contoh: Server A, Website Dinas">
                 </div>
                 <div>
                     <label for="api-custom-camera-name" class="field-label vk-label">Judul Kamera Kustom (Opsional)</label>
-                    <input type="text" id="api-custom-camera-name" class="app-input vk-input w-full text-xs" placeholder="Contoh: Kamera Depan, Pos Jaga (Untuk menyamarkan nama asli)">
+                    <input type="text" id="api-custom-camera-name" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Contoh: Kamera Depan, Pos Jaga (Untuk menyamarkan nama asli)">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="api-allowed-domain" class="field-label vk-label">Batasi Domain Asal (Whitelisting Referrer)</label>
-                    <input type="text" id="api-allowed-domain" class="app-input vk-input w-full text-xs" placeholder="Contoh: klien.com (Kosongkan jika ingin PUBLIC)">
+                    <input type="text" id="api-allowed-domain" inputmode="url" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Contoh: klien.com (Kosongkan jika ingin PUBLIC)">
                     <p class="field-hint">Jika diisi, iframe hanya bisa diputar dari domain tersebut.</p>
                 </div>
                 <div>
                     <label for="api-secret-pass" class="field-label vk-label">Password Keamanan Tambahan (Opsional)</label>
-                    <input type="text" id="api-secret-pass" class="app-input vk-input w-full text-xs" placeholder="Masukkan password tambahan (Kosongkan jika tanpa password)">
+                    <input type="text" id="api-secret-pass" enterkeyhint="next" class="app-input vk-input w-full text-xs" placeholder="Masukkan password tambahan (Kosongkan jika tanpa password)">
                     <p class="field-hint">Jika diisi, pemanggil wajib menambahkan parameter &pass=... pada url.</p>
                 </div>
             </div>
@@ -847,7 +847,7 @@
                             class="px-2 py-1 text-[10px] font-mono uppercase rounded border border-slate-200 dark:border-cyber-outline text-slate-500 dark:text-cyber-dim hover:border-rose-400 dark:hover:border-rose-500 transition-colors">Kosong</button>
                     </div>
                 </div>
-                <input type="text" id="api-cam-search" placeholder="Cari kamera..."
+                <input type="text" id="api-cam-search" enterkeyhint="search" placeholder="Cari kamera..."
                     oninput="window.filterApiCameraList('api')"
                     class="app-input vk-input w-full text-xs mb-2">
                 <div id="api-camera-list"
@@ -884,11 +884,11 @@
 
             <div class="flex justify-end gap-3 pt-3 ms-modal__divider vk-sticky-actions">
                 <button type="button" onclick="window.closeApiKeyGenerateModal()"
-                    class="px-4 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-300 dark:hover:border-white text-slate-600 dark:text-cyber-text text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-colors">
+                    class="vk-btn--secondary">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-sky-500 hover:bg-sky-600 dark:bg-cyber-primary dark:hover:bg-sky-500 text-white dark:text-cyber-bg text-xs font-bold uppercase tracking-wider font-mono rounded-md transition-all duration-150 active:scale-95 shadow-sm shadow-sky-500/20">
+                    class="vk-btn">
                     Generate API Key
                 </button>
             </div>

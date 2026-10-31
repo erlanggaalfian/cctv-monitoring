@@ -70,7 +70,7 @@
 
             leafletMarker = L.marker([lat, lon], { icon: cameraIcon })
                 .addTo(leafletMap)
-                .bindPopup(`<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;font-size:12px;"><strong>${escHtml(stream.name)}</strong><br><span style="color:#2569b0;font-size:10px;">${escHtml(stream.group_name || "")}</span><br><span style="color:#4a5f80;font-size:10px;">${escHtml(stream.coordinates)}</span></div>`)
+                .bindPopup(`<div style="font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:12px;"><strong>${escHtml(stream.name)}</strong><br><span style="color:#2569b0;font-size:10px;">${escHtml(stream.group_name || "")}</span><br><span style="color:#4a5f80;font-size:10px;">${escHtml(stream.coordinates)}</span></div>`)
                 .openPopup();
 
             leafletMap.invalidateSize();

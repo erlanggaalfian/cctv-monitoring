@@ -336,7 +336,7 @@
                         value="${stream.id}" ${milikSendiri ? "" : "disabled title=\"Dipasang Super Admin — tidak dapat dihapus dari sini\""} onchange="window.updateSelectedAdminStreamsCount()">
                 </td>
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${rowNumber}</td>
-                <td class="py-4 px-4 text-base font-semibold text-slate-900 dark:text-white td-primary" data-label="" data-grup="${groupName === '-' ? '' : esc(groupName)}">${esc(stream.name)}<span class="m-collapsed-extra" hidden><span class="m-dot ${connectionStatus === 'online' ? 'ok' : 'bad'}" aria-hidden="true"></span><span class="badge-tag ${connectionStatus === 'online' ? 'badge-tag--sky' : 'badge-tag--rose'}">${connectionStatus === 'online' ? 'CONNECTED' : 'DISCONNECTED'}</span></span></td>
+                <td class="py-4 px-4 text-sm font-semibold text-slate-900 dark:text-white td-primary" data-label="" data-grup="${groupName === '-' ? '' : esc(groupName)}">${esc(stream.name)}<span class="m-collapsed-extra" hidden><span class="m-dot ${connectionStatus === 'online' ? 'ok' : 'bad'}" aria-hidden="true"></span><span class="badge-tag ${connectionStatus === 'online' ? 'badge-tag--sky' : 'badge-tag--rose'}">${connectionStatus === 'online' ? 'CONNECTED' : 'DISCONNECTED'}</span></span></td>
                 <td class="py-4 px-4" data-label="Group">
                     <span class="inline-block px-2 py-0.5 bg-sky-50 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary border border-sky-200 dark:border-cyber-primary/20 rounded text-[10px] font-bold font-mono max-w-24 truncate" title="${esc(groupName)}">${esc(groupName)}</span>
                 </td>
@@ -902,7 +902,7 @@
 
         const barisLepas = (user, nomor) => `<tr class="m-row hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text">
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${nomor}</td>
-                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white td-primary" data-label="Username">
+                <td class="py-4 px-4 text-sm font-semibold text-slate-900 dark:text-white td-primary" data-label="Username">
                     ${esc(user.username)}<span class="m-collapsed-extra" hidden>${lencanaPeran(user)}${!user.admin_group ? lencanaIklan(user.show_ads) : ""}</span>
                     ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
@@ -939,7 +939,7 @@
                 : "";
             return `<tr onclick="window.bentangGrupPengguna('${sandi}')" class="m-row ang-baris-grup${buka ? " ang-baris-grup--buka is-expanded" : ""} hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text" aria-expanded="${buka}">
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim">${nomor}</td>
-                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white td-primary">
+                <td class="py-4 px-4 text-sm font-semibold text-slate-900 dark:text-white td-primary">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/30">grup</span>
                         <span class="ang-nama">${esc(nama)}</span>
@@ -1966,7 +1966,7 @@
         const groups = [...new Set(streamsData.map(s => s.group_name).filter(Boolean))].sort();
 
         if (groups.length === 0) {
-            container.innerHTML = `<p class="text-center text-[10px] text-slate-500 dark:text-cyber-dim py-3 font-mono">Belum ada grup kamera.</p>`;
+            container.innerHTML = `<p class="vk-empty">Belum ada grup kamera.</p>`;
             return;
         }
 
@@ -2062,7 +2062,7 @@
         }
 
         if (savedScreens.length === 0) {
-            container.innerHTML = `<p class="text-center text-[10px] text-slate-500 dark:text-cyber-dim py-3 font-mono">Belum ada grouping disimpan.</p>`;
+            container.innerHTML = `<p class="vk-empty">Belum ada grouping disimpan.</p>`;
             return;
         }
 
@@ -2364,7 +2364,7 @@
         if (lencana) lencana.textContent = String(baris.length);
 
         if (!baris.length) {
-            body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-xs text-slate-500 dark:text-cyber-dim font-mono">Tidak ada yang cocok.</td></tr>`;
+            body.innerHTML = `<tr><td colspan="5" class="vk-empty">Tidak ada yang cocok.</td></tr>`;
             return;
         }
 
@@ -2449,7 +2449,7 @@
                         <span class="ang-pemicu-teks">anggota</span>
                     </button>`;
                 barisRinci = buka
-                    ? (anggota || `<tr class="ang-baris-anggota"><td colspan="5" class="px-4 py-2"><span class="ang-kosong">Belum ada anggota</span></td></tr>`)
+                    ? (anggota || `<tr class="ang-baris-anggota"><td colspan="5" class="px-4 py-2"><span class="vk-empty">Belum ada anggota</span></td></tr>`)
                     : "";
             } else {
                 kol2 = `<span class="ang-peran">${esc((b.role || "").replace("_", " "))}</span>`;
@@ -2815,7 +2815,7 @@
             const d = await res.json();
 
             if (!d.kamera.length) {
-                daftar.innerHTML = `<p class="text-center text-xs text-slate-500 dark:text-cyber-dim py-4 font-mono">Tidak ada kamera untuk dibagikan</p>`;
+                daftar.innerHTML = `<p class="vk-empty">Tidak ada kamera untuk dibagikan</p>`;
                 return;
             }
 
@@ -2825,13 +2825,14 @@
             });
 
             daftar.innerHTML = Object.keys(grup).sort().map(nama => `
-                <div class="mb-3 akses-grup" data-grup="${esc(nama.toLowerCase())}">
-                    <div class="akses-grup-kepala">
+                <div class="mb-3 akses-grup m-item" data-grup="${esc(nama.toLowerCase())}" aria-expanded="false">
+                    <div class="akses-grup-kepala m-item-title">
                         <p class="akses-grup-nama">${esc(nama)}<span class="akses-grup-jumlah">${grup[nama].length}</span></p>
                         <button type="button" onclick="window.pilihGrupAkses(this)"
                             class="akses-grup-tombol"
                             title="Centang atau hapus seluruh grup ini">Semua</button>
                     </div>
+                    <div class="m-item-extra">
                     ${grup[nama].map(k => {
                         // Kamera milik Admin itu sendiri: sudah sepenuhnya di
                         // tangannya, pemberian tambahan tak ada gunanya.
@@ -2869,6 +2870,7 @@
                             </span>
                         </div>`;
                     }).join("")}
+                    </div>
                 </div>`).join("");
 
             const kepala = document.getElementById("akses-modal-kepala");
