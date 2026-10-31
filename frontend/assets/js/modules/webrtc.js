@@ -3538,7 +3538,14 @@
         const checkedBoxes = document.querySelectorAll(".admin-stream-checkbox:checked");
         if (checkedBoxes.length === 0) return;
 
-        if (!confirm(`Apakah Anda yakin ingin menghapus secara permanen ${checkedBoxes.length} kamera terpilih dari direktori?`)) return;
+        const streamsDeleteOk = await window.mConfirm({
+            title: "Hapus kamera terpilih?",
+            message: `Apakah Anda yakin ingin menghapus secara permanen ${checkedBoxes.length} kamera terpilih dari direktori?`,
+            confirmText: "Ya, hapus",
+            cancelText: "Batal",
+            danger: true
+        });
+        if (!streamsDeleteOk) return;
 
         const btnEl = document.getElementById("delete-selected-streams-btn");
         if (btnEl) btnEl.disabled = true;

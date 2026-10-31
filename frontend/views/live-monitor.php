@@ -10,6 +10,8 @@ if(!defined('SECURE_ACCESS')) {
 
     <div class="layout-section layout-intro">
         <?php
+        // §3.5 kini native di tab-intro-box.php (m-item di box itu sendiri);
+        // pembungkus luar dihapus agar tidak nested accordion.
         $tabIntroTitle = 'Semua Kamera';
         $tabIntroDesc = 'Pantau kamera langsung, saring grup, atur tata letak';
         $tabIntroIcon = 'camera';

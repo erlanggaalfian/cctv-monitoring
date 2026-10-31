@@ -18,6 +18,13 @@ if(!defined('SECURE_ACCESS')) {
     </div>
 
     <div class="layout-section layout-toolbar">
+        <!-- §3.3 filter collapsible (mobile): tombol hanya tampil di mobile
+             (disembunyikan di desktop oleh vk-patterns.js); .m-filter-more
+             memakai display:contents di desktop sehingga layout piksel-identik. -->
+        <button type="button" class="m-mobile-only m-filter-head" data-toggle="pb-filter-bar" aria-expanded="false">
+            <span>Filter &amp; Tampilan</span>
+        </button>
+        <div class="m-filter-more" id="pb-filter-bar">
         <div class="control-bar monitor-toolbar-bar">
             <div class="app-field-wrap">
                 <span class="app-field-icon app-field-icon-left" aria-hidden="true">
@@ -44,6 +51,7 @@ if(!defined('SECURE_ACCESS')) {
                 </div>
             </div>
         </div>
+        </div><!-- /#pb-filter-bar -->
     </div>
 
     <div class="layout-section layout-grid">
@@ -95,16 +103,15 @@ if(!defined('SECURE_ACCESS')) {
             </div>
         </div>
 
-        <!-- Controls Area — shared popup style -->
-        <div class="ms-popup-controls space-y-3">
-            <!-- Date + Info row -->
-            <div class="flex items-center gap-3">
-                <label class="ms-popup-label font-mono">Tanggal</label>
-                <select id="playback-date-select" class="ms-popup-controls select text-xs flex-1 max-w-xs font-mono appearance-none cursor-pointer" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 0.75rem; padding-right: 1.75rem;"></select>
-            </div>
-
-            <!-- Transport controls + clock -->
-            <div class="flex items-center justify-between">
+        <!-- Controls Area — shared popup style.
+             Mobile: pola lipat §3.1 — judul = transport + jam (kontrol esensial
+             tetap terlihat saat terlipat); extra = tanggal + timeline +
+             keterangan. Ketuk/geser pada timeline tidak melipat
+             (data-no-toggle) supaya tetap berfungsi sebagai seek.
+             Desktop: tidak berubah. -->
+        <div class="ms-popup-controls m-item space-y-3" aria-expanded="false">
+            <!-- Transport controls + clock (selalu terlihat) -->
+            <div class="m-item-title flex items-center justify-between">
                 <div class="flex items-center gap-1.5">
                     <button type="button" onclick="window.pbSeekRelative(-30)" class="ms-popup-btn font-mono" title="Mundur 30 detik">← 30s</button>
                     <button type="button" onclick="window.pbTogglePlay()" id="pb-play-btn" class="ms-popup-btn ms-popup-btn--primary font-mono">Play / Pause</button>
@@ -116,19 +123,31 @@ if(!defined('SECURE_ACCESS')) {
                 </div>
             </div>
 
-            <!-- Timeline -->
-            <div id="pb-timeline" class="ms-popup-timeline relative h-12 cursor-pointer select-none overflow-hidden">
-                <div id="pb-timeline-ranges" class="absolute inset-0"></div>
-                <div id="pb-timeline-ticks" class="absolute inset-x-0 bottom-0 h-4"></div>
-                <div id="pb-playhead" class="absolute top-0 bottom-0 w-0.5 bg-rose-500 pointer-events-none hidden">
-                    <div class="absolute -top-0.5 -left-1 w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+            <!-- Date + Info row -->
+            <div class="m-item-extra">
+                <div class="flex items-center gap-3">
+                    <label class="ms-popup-label font-mono">Tanggal</label>
+                    <select id="playback-date-select" class="ms-popup-controls select text-xs flex-1 max-w-xs font-mono appearance-none cursor-pointer" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237a8faa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 0.75rem; padding-right: 1.75rem;"></select>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between ms-popup-text-muted text-[9px] font-mono">
-                <span id="pb-tl-start">00:00</span>
-                <span>Klik timeline untuk melompat ke jam tertentu</span>
-                <span id="pb-tl-end">23:59</span>
+            <!-- Timeline -->
+            <div class="m-item-extra" data-no-toggle>
+                <div id="pb-timeline" class="ms-popup-timeline relative h-12 cursor-pointer select-none overflow-hidden">
+                    <div id="pb-timeline-ranges" class="absolute inset-0"></div>
+                    <div id="pb-timeline-ticks" class="absolute inset-x-0 bottom-0 h-4"></div>
+                    <div id="pb-playhead" class="absolute top-0 bottom-0 w-0.5 bg-rose-500 pointer-events-none hidden">
+                        <div class="absolute -top-0.5 -left-1 w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="m-item-extra">
+                <div class="flex items-center justify-between ms-popup-text-muted text-[9px] font-mono">
+                    <span id="pb-tl-start">00:00</span>
+                    <span>Klik timeline untuk melompat ke jam tertentu</span>
+                    <span id="pb-tl-end">23:59</span>
+                </div>
             </div>
         </div>
     </div>

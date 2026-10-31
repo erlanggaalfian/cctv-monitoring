@@ -23,7 +23,10 @@ $iconPaths = [
 ];
 $iconPath = $iconPaths[$tabIntroIcon] ?? $iconPaths['camera'];
 ?>
-<div class="tab-intro-box">
+<!-- §3.5 judul halaman bisa diketuk (mobile only): .m-item di box,
+     .m-item-title di baris judul, .m-item-extra di deskripsi.
+     Desktop piksel-identik; klik tombol aksi diabaikan handler. -->
+<div class="tab-intro-box m-item" aria-expanded="false">
     <div class="tab-intro-accent" aria-hidden="true"></div>
     <div class="tab-intro-icon" aria-hidden="true">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,14 +34,14 @@ $iconPath = $iconPaths[$tabIntroIcon] ?? $iconPaths['camera'];
         </svg>
     </div>
     <div class="tab-intro-content">
-        <div class="tab-intro-title-row">
+        <div class="tab-intro-title-row m-item-title">
             <h2 class="tab-intro-title"><?php echo htmlspecialchars($tabIntroTitle); ?></h2>
             <?php if ($tabIntroBadge !== null || $tabIntroBadgeId): ?>
                 <span <?php if ($tabIntroBadgeId): ?>id="<?php echo htmlspecialchars($tabIntroBadgeId); ?>"<?php endif; ?> class="tab-intro-badge"><?php echo htmlspecialchars($tabIntroBadge ?? ''); ?></span>
             <?php endif; ?>
         </div>
         <?php if ($tabIntroDesc): ?>
-            <p class="tab-intro-desc"><?php echo htmlspecialchars($tabIntroDesc); ?></p>
+            <p class="tab-intro-desc m-item-extra"><?php echo htmlspecialchars($tabIntroDesc); ?></p>
         <?php endif; ?>
     </div>
     <?php if ($tabIntroActionHtml): ?>

@@ -1,0 +1,295 @@
+/* ==========================================================================
+   vk-mobile.css — Pola mobile (§3, §4.7, §4.8 design-system).
+   ATURAN KERAS: seluruh isi file ini HARUS berada di dalam
+   @media (max-width: 768px). Tidak ada CSS desktop di sini.
+   Gaya dasar + varian desktop mConfirm disuntik dari vk-patterns.js
+   (alasan: file ini dilarang memuat aturan di luar @media mobile).
+   Warna memakai token vibekoding (--color-*), tanpa hardcode hex.
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* ---------- §3.1 Per-item accordion (.m-item) ---------- */
+  .m-item { cursor: pointer; }
+  .m-item-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  /* Panah otomatis via ::after; rotate -135deg saat .is-open */
+  .m-item-title::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-right: 2px solid var(--color-text-muted);
+    border-bottom: 2px solid var(--color-text-muted);
+    transform: rotate(45deg);
+    transition: transform var(--dur-short, 200ms) cubic-bezier(0, 0, 0.2, 1);
+  }
+  .m-item.is-open .m-item-title::after { transform: rotate(-135deg); }
+  .m-item .m-item-extra { display: none; }
+  .m-item.is-open .m-item-extra { display: block; }
+  /* Tombol dalam item yang terbuka: full-width */
+  .m-item.is-open .m-item-extra.btn,
+  .m-item.is-open a.m-item-extra.btn,
+  .m-item.is-open button.m-item-extra.btn {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ---------- §3.3 Filter collapsible ---------- */
+  .m-filter-head {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--vk-font-sans);
+    color: var(--color-text-body);
+    background: var(--color-bg-content);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .m-filter-head::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-right: 2px solid var(--color-text-muted);
+    border-bottom: 2px solid var(--color-text-muted);
+    transform: rotate(45deg);
+    transition: transform var(--dur-short, 200ms) cubic-bezier(0, 0, 0.2, 1);
+  }
+  .m-filter-head.is-open::after { transform: rotate(-135deg); }
+  .m-filter-more { display: none; }
+  .m-filter-more.is-open { display: block; }
+
+  /* ---------- §3.5 Judul halaman tab-intro bisa diketuk (mobile only) ---------- */
+  /* live-monitor.php membungkus tab-intro-box (h2.tab-intro-title +
+     p.tab-intro-desc) dalam .page-header-container.m-item; kontrak
+     .page-header/.page-subtitle tidak ada di komponen ini, jadi petakan
+     perilakunya di sini. Desktop tidak berubah. */
+  .page-header-container.m-item .tab-intro-desc { display: none; }
+  .page-header-container.m-item.is-open .tab-intro-desc { display: block; }
+  /* Panah otomatis di kanan baris judul — sejajar pola .m-item-title::after */
+  .page-header-container.m-item .tab-intro-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .page-header-container.m-item .tab-intro-title-row::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-right: 2px solid var(--color-text-muted);
+    border-bottom: 2px solid var(--color-text-muted);
+    transform: rotate(45deg);
+    transition: transform var(--dur-short, 200ms) cubic-bezier(0, 0, 0.2, 1);
+  }
+  .page-header-container.m-item.is-open .tab-intro-title-row::after { transform: rotate(-135deg); }
+
+  /* ---------- §3.4 mConfirm: varian bottom-sheet (mobile) ---------- */
+  .vk-confirm-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .vk-confirm-dialog {
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(32px);
+  }
+  .vk-confirm-backdrop.vk-show .vk-confirm-dialog { transform: none; }
+  .vk-confirm-actions {
+    flex-direction: column;
+  }
+  .vk-confirm-actions .vk-confirm-btn {
+    width: 100%;
+  }
+
+  /* ---------- §4.7 Toast di atas bottom nav ---------- */
+  #toast-container {
+    top: auto;
+    bottom: calc(56px + 6px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---------- §4.8 Bottom tab bar ---------- */
+  .mobile-bottom-nav-wrap {
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  .mobile-bottom-nav {
+    height: auto;
+    border-radius: 0;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    padding: 0 4px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mob-nav-item,
+  .mob-nav-btn {
+    min-height: 56px;
+    height: auto;
+    border-radius: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  /* Indikator aktif = bar 3px primer di atas tab (bukan pil) */
+  .mob-nav-item.active,
+  .mob-nav-btn.active {
+    position: relative;
+    background: transparent !important;
+    color: var(--color-primary) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+  .mob-nav-item.active::before,
+  .mob-nav-btn.active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 22px;
+    right: 22px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--color-primary);
+  }
+  .mob-nav-item.active .mob-nav-icon,
+  .mob-nav-btn.active .mob-nav-icon {
+    transform: none;
+  }
+  /* Titik oranye digantikan bar indikator */
+  .mob-nav-dot { display: none; }
+
+  /* ---------- §3.2 Accordion tabel→kartu: kontrak generik (tr.m-row) ---------- */
+  /* Ringkasan terlipat: selalu tampil di mobile (override atribut hidden).
+     Isi: nama + 1 info penting (badge/titik status). */
+  .m-row .m-collapsed-extra {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .m-collapsed-extra-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+  /* Titik status generik */
+  .m-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: var(--color-text-muted);
+  }
+  .m-dot.ok { background: var(--color-success); }
+  .m-dot.bad { background: var(--color-danger); }
+  /* Hitungan filter aktif di kepala filter collapsible */
+  .m-filter-head-count {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: var(--color-primary-700);
+    background: var(--color-primary-100);
+  }
+  .dark .m-filter-head-count {
+    color: var(--color-primary-300);
+    background: var(--color-primary-900);
+  }
+
+  /* Kartu generik untuk tbody TANPA sistem kartu bespoke.
+     (#admin-streams-table-body punya sistem sendiri di global.css.) */
+  tbody:not(#admin-streams-table-body) tr.m-row {
+    display: block;
+    background: var(--color-bg-content);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  tbody:not(#admin-streams-table-body) tr.m-row > td {
+    display: block;
+    border: 0;
+    padding: 6px 0;
+  }
+  /* Judul kartu = sel pertama (.td-primary): nama kiri, panah kanan */
+  tbody:not(#admin-streams-table-body) tr.m-row > td.td-primary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-weight: 700;
+  }
+  tbody:not(#admin-streams-table-body) tr.m-row > td.td-primary::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-right: 2px solid var(--color-text-muted);
+    border-bottom: 2px solid var(--color-text-muted);
+    transform: rotate(45deg);
+    transition: transform var(--dur-short, 200ms) cubic-bezier(0, 0, 0.2, 1);
+  }
+  tbody:not(#admin-streams-table-body) tr.m-row.is-expanded > td.td-primary::after {
+    transform: rotate(-135deg);
+  }
+  /* Kolom lain tersembunyi sampai kartu dibuka; sel berisi checkbox
+     (bulk-select) tetap terlihat. */
+  tbody:not(#admin-streams-table-body) tr.m-row:not(.is-expanded) > td:not(.td-primary):not(:has(input[type="checkbox"])) {
+    display: none;
+  }
+  /* Baris detail: label kiri (dari data-label), nilai kanan */
+  tbody:not(#admin-streams-table-body) tr.m-row.is-expanded > td[data-label]:not(.td-primary) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  tbody:not(#admin-streams-table-body) tr.m-row.is-expanded > td[data-label]:not(.td-primary)::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  /* Tombol aksi full-width saat kartu terbuka */
+  tbody:not(#admin-streams-table-body) tr.m-row.is-expanded > td[data-label="Actions"] .btn,
+  tbody:not(#admin-streams-table-body) tr.m-row.is-expanded > td[data-label="Actions"] button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ---------- Anti-slop: hormati prefers-reduced-motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .m-item-title::after,
+    .m-filter-head::after,
+    .page-header-container.m-item .tab-intro-title-row::after,
+    tbody:not(#admin-streams-table-body) tr.m-row > td.td-primary::after,
+    .vk-confirm-dialog {
+      transition: none;
+    }
+  }
+
+}

@@ -42,6 +42,23 @@ if(!defined('SECURE_ACCESS')) {
     <!-- Global CSS -->
     <link rel="stylesheet" href="/assets/css/global.css?v=<?= @filemtime(__DIR__ . '/../assets/css/global.css') ?: time() ?>">
 
+    <!-- Chrome vibekoding tahap 2: restyle sidebar + header + judul halaman (desktop).
+         Dimuat SETELAH global.css agar override-nya menang. -->
+    <link rel="stylesheet" href="/assets/css/vk-chrome.css?v=<?= @filemtime(__DIR__ . '/../assets/css/vk-chrome.css') ?: time() ?>">
+
+    <!-- Komponen vibekoding tahap 2: badge, tombol, kartu status, pagination,
+         toggle, progress, form. Dimuat setelah chrome agar konsisten. -->
+    <link rel="stylesheet" href="/assets/css/vk-components.css?v=<?= @filemtime(__DIR__ . '/../assets/css/vk-components.css') ?: time() ?>">
+
+    <!-- Pola mobile vibekoding tahap 2: seluruh isi hanya dalam
+         @media (max-width:768px); desktop piksel-identik. -->
+    <link rel="stylesheet" href="/assets/css/vk-mobile.css?v=<?= @filemtime(__DIR__ . '/../assets/css/vk-mobile.css') ?: time() ?>">
+
+    <!-- Pola interaksi vibekoding: handler [data-toggle], accordion .m-item,
+         window.mConfirm / mConfirmSubmit. Aman dimuat di <head>
+         (delegated listener + DOMContentLoaded). -->
+    <script src="/assets/js/modules/vk-patterns.js?v=<?= @filemtime(__DIR__ . '/../assets/js/modules/vk-patterns.js') ?: time() ?>"></script>
+
     <!-- Basemap CARTO: API key dipusatkan di sini (satu-satunya tempat) -->
     <script>
         (function () {

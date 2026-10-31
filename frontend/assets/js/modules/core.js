@@ -447,7 +447,9 @@ for (const key of Object.keys(state)) {
             tbody.innerHTML = "";
             keys.forEach(key => {
                 const tr = document.createElement("tr");
-                tr.className = "border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100";
+                // Kontrak accordion tabel→kartu §3.2: tr.m-row (konsisten dgn admin.js).
+                tr.className = "border-b border-slate-100 dark:border-cyber-outline/20 hover:bg-slate-50 dark:hover:bg-cyber-bg/20 transition-colors duration-100 m-row";
+                tr.setAttribute("aria-expanded", "false");
 
                 // K2: backend tidak lagi mengembalikan nilai secret; pakai flag.
                 const hasPassword = !!(key.has_secret_pass ?? (key.secret_pass && String(key.secret_pass).trim() !== ""));
@@ -494,14 +496,14 @@ for (const key of Object.keys(state)) {
                 ).join(" ");
 
                 tr.innerHTML = `
-                    <td class="py-4 px-4">
-                        <div class="font-bold text-slate-800 dark:text-white text-xs">${esc(key.client_name)}</div>
+                    <td class="py-4 px-4 td-primary" data-label="Klien">
+                        <div class="font-bold text-slate-800 dark:text-white text-xs">${esc(key.client_name)}<span class="m-collapsed-extra" hidden><span class="badge-tag ${key.allowed_domain ? 'badge-tag--amber' : 'badge-tag--green'}">${key.allowed_domain ? '🔑 DOMAIN' : '🌐 PUBLIC'}</span> <span class="badge-tag ${hasPassword ? 'badge-tag--rose' : 'badge-tag--slate'}">${hasPassword ? '🔒' : '🔓'}</span></span></div>
                         <div class="text-[10px] text-slate-500 dark:text-cyber-dim font-mono mt-0.5">
                             ${key.custom_camera_name ? `<span class="text-sky-500 dark:text-cyber-primary font-semibold">[Kustom] ${esc(key.custom_camera_name)}</span><br>` : ''}
                             <div class="flex flex-wrap items-center gap-1 mt-1">${daftarKameraHtml}</div>
                         </div>
                     </td>
-                    <td class="py-4 px-4 space-y-1.5">
+                    <td class="py-4 px-4 space-y-1.5" data-label="Akses">
                         <div>
                             <span class="badge-tag ${key.allowed_domain ? 'badge-tag--amber' : 'badge-tag--green'}">
                                 ${key.allowed_domain ? `🔑 ${esc(key.allowed_domain.toUpperCase())}` : '🌐 PUBLIC'}
@@ -521,7 +523,7 @@ for (const key of Object.keys(state)) {
                                 : '<span class="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-slate-100 dark:bg-cyber-bg text-slate-500 dark:text-cyber-dim border border-slate-300 dark:border-cyber-outline/40">LIVE SAJA</span>'}
                         </div>
                     </td>
-                    <td class="py-4 px-4 max-w-xs">
+                    <td class="py-4 px-4 max-w-xs" data-label="API Key">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <code class="text-[10px] text-sky-600 dark:text-cyber-primary font-bold font-mono select-all bg-sky-500/5 dark:bg-cyber-primary/5 px-2 py-0.5 rounded border border-sky-500/10">${esc(keyValue)}</code>
                             <!-- Copy API Key Button -->
@@ -538,7 +540,7 @@ for (const key of Object.keys(state)) {
                         </div>
                         <div class="text-[9px] text-slate-500 dark:text-cyber-dim mt-1.5 truncate font-mono max-w-xs" title="${esc(embedUrl)}">${esc(embedUrl)}</div>
                     </td>
-                    <td class="py-4 px-4 text-right space-x-2.5">
+                    <td class="py-4 px-4 text-right space-x-2.5" data-label="Aksi">
                         <a href="${origin}/frontend/embed.php?key=${encodeURIComponent(keyValue)}${hasPassword ? `&pass=${encodeURIComponent(secretPassVal)}` : ''}" target="_blank" rel="noopener noreferrer"
                             class="text-emerald-700 dark:text-emerald-400 hover:underline font-bold text-[11px] uppercase inline-block">
                             Test Player
@@ -1087,7 +1089,14 @@ for (const key of Object.keys(state)) {
     };
 
     window.clearApiAccessLogs = async function() {
-        if (!confirm('Hapus semua log akses API? Tindakan ini tidak dapat dibatalkan.')) return;
+        const logsClearOk = await window.mConfirm({
+            title: "Hapus semua log?",
+            message: "Hapus semua log akses API? Tindakan ini tidak dapat dibatalkan.",
+            confirmText: "Ya, hapus",
+            cancelText: "Batal",
+            danger: true
+        });
+        if (!logsClearOk) return;
         try {
             const res = await fetch(`${API_URL}/admin/api-access-logs`, {
                 method: 'DELETE',

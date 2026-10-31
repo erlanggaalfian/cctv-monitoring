@@ -1,0 +1,277 @@
+/* ================================================================
+   LAPISAN CHROME VIBEKODING (tahap 2) — sidebar + header + judul
+   halaman (desktop). Override minimal di atas global.css, hanya
+   memakai token tahap 1 (var(--color-…), var(--vk-…),
+   var(--dur-…), var(--shadow-card), var(--layout-gutter)).
+
+   - Sidebar desktop TETAP di samping (override eksplisit terhadap
+     §4.8 design system: tidak ada top bar pengganti sidebar).
+   - Link aktif = teks + ikon warna primer, TANPA background pil,
+     dengan indikator 3px vertikal di tepi link (adaptasi indikator
+     tab mobile §4.8 untuk sidebar).
+   - Anti-slop: tanpa gradient/glass, tanpa pulse; transisi 100–200ms.
+   - Semua rule dibungkus @media (min-width: 769px) → tampilan
+     mobile (<=768px) tidak berubah sama sekali.
+   ================================================================ */
+
+@media (min-width: 769px) {
+
+  /* ---------- 1. Sidebar shell ---------- */
+  .app-sidebar {
+    background: var(--color-bg-content) !important;
+    border-right: 1px solid var(--color-border) !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+  .dark .app-sidebar {
+    background: var(--color-bg-content) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-right: 1px solid var(--color-border) !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+
+  /* ---------- 2. Link navigasi ---------- */
+  /* Dasar: teks body, tanpa pil/latar. */
+  .sidebar-nav-link,
+  .sidebar-btn-card,
+  .dark .sidebar-nav-link,
+  .dark .sidebar-btn-card {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    color: var(--color-text-body) !important;
+    transform: none !important;
+    transition: background-color var(--dur-short) ease,
+                color var(--dur-short) ease;
+  }
+  /* Hover: latar hover token, tanpa angkat/bayang. */
+  .sidebar-nav-link:hover,
+  .sidebar-btn-card:hover,
+  .dark .sidebar-nav-link:hover,
+  .dark .sidebar-btn-card:hover {
+    background: var(--color-bg-hover) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--color-primary) !important;
+    transform: none !important;
+  }
+  /* Aktif: teks + ikon warna primer, TANPA background pil. */
+  .sidebar-nav-link.active,
+  .sidebar-btn-card.active,
+  .dark .sidebar-nav-link.active,
+  .dark .sidebar-btn-card.active {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--color-primary) !important;
+    transform: none !important;
+  }
+  .sidebar-nav-link.active .nav-btn-label,
+  .sidebar-btn-card.active .nav-btn-label {
+    font-weight: 700;
+  }
+
+  /* Bungkus ikon mengikuti warna teks link (currentColor). */
+  .nav-btn-icon-wrap,
+  .dark .nav-btn-icon-wrap {
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent) !important;
+    color: inherit !important;
+    transition: background-color var(--dur-short) ease,
+                color var(--dur-short) ease;
+  }
+  .sidebar-nav-link:hover .nav-btn-icon-wrap,
+  .sidebar-btn-card:hover .nav-btn-icon-wrap,
+  .dark .sidebar-nav-link:hover .nav-btn-icon-wrap,
+  .dark .sidebar-btn-card:hover .nav-btn-icon-wrap,
+  .sidebar-nav-link.active .nav-btn-icon-wrap,
+  .sidebar-btn-card.active .nav-btn-icon-wrap,
+  .dark .sidebar-nav-link.active .nav-btn-icon-wrap,
+  .dark .sidebar-btn-card.active .nav-btn-icon-wrap {
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent) !important;
+    color: var(--color-primary) !important;
+  }
+
+  /* Indikator aktif: bar vertikal 3px di tepi kiri link
+     (menggantikan titik oranye lama). */
+  .sidebar-nav-link .nav-btn-indicator,
+  .sidebar-btn-card .nav-btn-indicator {
+    position: absolute;
+    left: 0;
+    top: 7px;
+    bottom: 7px;
+    width: 3px;
+    height: auto;
+    border-radius: 999px;
+    background: var(--color-primary) !important;
+    opacity: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transition: opacity var(--dur-short) ease;
+  }
+  .sidebar-nav-link.active .nav-btn-indicator,
+  .sidebar-btn-card.active .nav-btn-indicator,
+  .dark .sidebar-nav-link.active .nav-btn-indicator,
+  .dark .sidebar-btn-card.active .nav-btn-indicator {
+    opacity: 1 !important;
+  }
+
+  /* ---------- 3. Kartu profil sidebar ---------- */
+  .sidebar-profile-card,
+  .dark .sidebar-profile-card {
+    background: var(--color-bg-content) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 8px;
+    box-shadow: var(--shadow-card) !important;
+  }
+  .sidebar-avatar {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    box-shadow: none;
+  }
+  .sidebar-profile-name,
+  .dark .sidebar-profile-name {
+    color: var(--color-text-body) !important;
+  }
+  /* Lencana peran mengikuti skala badge §4.1: 11px/700/uppercase. */
+  .sidebar-role-badge,
+  .dark .sidebar-role-badge {
+    font-size: var(--vk-text-badge);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-primary) !important;
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important;
+  }
+
+  /* Label seksi sidebar: label kecil muted §2.2 (600/uppercase/.06em). */
+  .sidebar-section-lbl,
+  .dark .sidebar-section-lbl {
+    font-size: var(--vk-text-badge);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted) !important;
+    border-bottom-color: var(--color-border) !important;
+  }
+
+  /* ---------- 4. Header atas ---------- */
+  .glass-header {
+    background: var(--color-bg-content);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
+    transition: background-color var(--dur-short) ease,
+                border-color var(--dur-short) ease;
+  }
+  .dark .glass-header {
+    background: var(--color-bg-content) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+  .animated-header {
+    animation: none;
+  }
+  .hdr-logo-box {
+    background: var(--color-primary);
+    border: 0;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .hdr-title {
+    color: var(--color-text-header);
+  }
+  .hdr-sub {
+    color: var(--color-text-muted);
+  }
+  .hdr-clock {
+    color: var(--color-text-muted);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
+  }
+  .hdr-icon-btn,
+  .dark .hdr-icon-btn {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-body);
+    transition: background-color var(--dur-micro) ease,
+                border-color var(--dur-micro) ease,
+                color var(--dur-micro) ease;
+  }
+  .hdr-icon-btn:hover,
+  .dark .hdr-icon-btn:hover {
+    background: var(--color-bg-hover);
+    border-color: var(--color-border);
+    color: var(--color-primary);
+    transform: none;
+  }
+  /* Tombol logout: tombol sekunder tenang, merah status saat hover. */
+  .hdr-logout-btn {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-body);
+    box-shadow: none;
+    font-size: var(--vk-text-content);
+    font-weight: 600;
+    transition: background-color var(--dur-micro) ease,
+                border-color var(--dur-micro) ease,
+                color var(--dur-micro) ease;
+  }
+  .hdr-logout-btn:hover {
+    background: var(--color-danger-bg);
+    border-color: var(--color-danger-border-soft);
+    color: var(--color-danger-text);
+    box-shadow: none;
+    transform: none;
+  }
+  .hdr-logout-btn:active {
+    transform: none;
+  }
+
+  /* ---------- 5. Judul halaman (skala §2.2) ---------- */
+  /* Judul tiap halaman (elemen h2 di kotak intro tab) = H2 20px/700. */
+  .tab-intro-title {
+    font-size: var(--vk-text-h2);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-text-header);
+  }
+  .tab-intro-desc {
+    font-size: var(--vk-text-small);
+    color: var(--color-text-muted);
+  }
+  /* Judul kartu/panel sudah 13px uppercase/700 — selaraskan warnanya. */
+  .panel-card-title {
+    color: var(--color-text-header);
+  }
+
+  /* ---------- 6. Hormati prefers-reduced-motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .app-sidebar,
+    .glass-header,
+    .sidebar-nav-link,
+    .sidebar-btn-card,
+    .nav-btn-icon-wrap,
+    .nav-btn-indicator,
+    .hdr-icon-btn,
+    .hdr-logout-btn {
+      transition: none !important;
+    }
+    .animated-header {
+      animation: none !important;
+    }
+  }
+
+}
+
+/* Judul kartu login: skala H1 vibekoding §2.2 (28px/800 desktop, 20px mobile). */
+.vk-login-title {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em;
+  color: var(--color-text-header);
+}
+@media (max-width: 768px) {
+  .vk-login-title { font-size: 20px !important; }
+}

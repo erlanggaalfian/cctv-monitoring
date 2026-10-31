@@ -3791,3 +3791,107 @@ h1, h2, h3, .hdr-title, .sidebar-section-lbl,
 .ms-switch input:checked + .ms-switch__track { background: #10b981; }
 .ms-switch input:checked + .ms-switch__track::before { transform: translateX(18px); }
 .dark .ms-switch__track { background: #3f4a5e; }
+
+/* ================================================================
+   LAPISAN TOKEN VIBEKODING (tahap 1)
+   Base design system — diterapkan ke CCTV dengan sidebar desktop
+   tetap di samping (override §4.8: top bar tidak dipakai).
+   Basis palet: brand blue #3081d1 (h 210°). Token memakai nama
+   persis seperti design-system.md agar cocok dengan generator palet.
+   Lapisan ini ADITIF: belum mengubah tampilan apa pun.
+   ================================================================ */
+:root {
+  /* --- Skala primer: hue tetap 210°, lightness bertahap --- */
+  --color-primary-50: #f5f7fa;
+  --color-primary-100: #e2ebf3;
+  --color-primary-200: #b8d1ea;
+  --color-primary-300: #83b2e2;
+  --color-primary-400: #4f94d8;
+  --color-primary-500: #3081d1;   /* = warna dasar brand */
+  --color-primary-600: #1f61a3;
+  --color-primary-700: #154c84;
+  --color-primary-800: #0f3d6b;
+  --color-primary-900: #0a2e52;
+
+  --color-primary: var(--color-primary-500);
+  --color-primary-hover: var(--color-primary-600);
+  --color-primary-text: #ffffff;
+
+  /* --- Aksen: monokromatik (default paling aman) --- */
+  --color-accent: var(--color-primary-700);
+
+  /* --- Teks: netral mengikuti hue dasar (saturasi ~12%) --- */
+  --color-text-header: #282e33;
+  --color-text-body: #3f4750;
+  --color-text-muted: #657381;
+
+  /* --- Latar --- */
+  --color-bg-body: #f4f5f6;
+  --color-bg-content: #ffffff;
+  --color-bg-hover: #f9fafb;
+
+  /* --- Status: hue tetap di roda warna --- */
+  --color-success: #10b981;  --color-success-bg: #d1fae5;  --color-success-text: #047857;
+  --color-danger: #dc2626;   --color-danger-bg: #fee2e2;   --color-danger-text: #991b1b;
+  --color-danger-soft-bg: #fff5f5;
+  --color-danger-border-soft: #fecaca;
+  --color-info: #1392ec;     --color-info-bg: #e0f2fe;     --color-info-text: #0284c7;
+  --color-warning: #f3b116;  --color-warning-bg: #fef9c3;  --color-warning-text: #a16207;
+
+  /* --- Border & garis --- */
+  --color-border: #e2e6e9;
+  --color-metric-border: #eaeff5;
+
+  /* --- Tipografi (Inter; Mono: Menlo) --- */
+  --vk-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --vk-font-mono: 'Menlo', 'Courier New', monospace;
+  --vk-text-display: 32px;
+  --vk-text-h1: 28px;
+  --vk-text-h2: 20px;
+  --vk-text-h3: 16px;
+  --vk-text-body: 16px;
+  --vk-text-content: 14px;
+  --vk-text-card-title: 13px;
+  --vk-text-small: 12px;
+  --vk-text-badge: 11px;
+
+  /* --- Spacing, radius, shadow --- */
+  --layout-gutter: 32px;
+  --layout-gutter-sm: 20px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+  --backdrop-blur: blur(12px);
+
+  /* --- Motion (durasi; easing pakai --ease-out milik tema yg sudah ada) --- */
+  --dur-micro: 100ms;
+  --dur-short: 200ms;
+  --dur-medium: 350ms;
+}
+
+/* --- Mode gelap: diturunkan dari hue yang sama (h 210°).
+       Dikaitkan ke class .dark milik aplikasi (bukan [data-theme])
+       agar toggle tema yang sudah ada tetap berfungsi. --- */
+.dark {
+  color-scheme: dark;
+  --color-primary: var(--color-primary-400);
+  --color-primary-hover: var(--color-primary-300);
+  --color-primary-text: #0a2e52;
+
+  --color-text-header: #ebedef;
+  --color-text-body: #c7ccd1;
+  --color-text-muted: #949ea8;
+
+  --color-bg-body: #13171b;
+  --color-bg-content: #1c2126;
+  --color-bg-hover: #242b32;
+
+  --color-success-bg: #163b29;  --color-success-text: #99e6bf;
+  --color-danger-bg: #3b1616;   --color-danger-text: #e69999;
+  --color-danger-soft-bg: #2a1518;
+  --color-danger-border-soft: #5b2326;
+  --color-info-bg: #162c3b;     --color-info-text: #99c6e6;
+  --color-warning-bg: #3b3016;  --color-warning-text: #e6cf99;
+
+  --color-border: #303840;
+  --color-metric-border: #2a323b;
+}

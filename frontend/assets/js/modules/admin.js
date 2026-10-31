@@ -305,8 +305,12 @@
         pageItems.forEach((stream, index) => {
             const tr = document.createElement("tr");
             const streamBuka = streamTerbentang.has(stream.id);
-            tr.className = "hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors text-slate-800 dark:text-cyber-text stream-row" + (streamBuka ? " stream-row--buka" : "");
+            // Kontrak accordion tabel→kartu §3.2 (demo.html): tr.m-row,
+            // sel pertama .td-primary, status lipat di .is-expanded +
+            // aria-expanded. stream-row--buka tetap dipakai CSS lama.
+            tr.className = "hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors text-slate-800 dark:text-cyber-text stream-row m-row" + (streamBuka ? " stream-row--buka is-expanded" : "");
             tr.setAttribute("onclick", `window.toggleStreamCard(${stream.id}, event)`);
+            tr.setAttribute("aria-expanded", String(streamBuka));
             const groupName = stream.group_name || "-";
             const coordinates = stream.coordinates || "-";
             // Kamera milik orang lain dikembalikan server tanpa rtsp_url.
@@ -332,7 +336,7 @@
                         value="${stream.id}" ${milikSendiri ? "" : "disabled title=\"Dipasang Super Admin — tidak dapat dihapus dari sini\""} onchange="window.updateSelectedAdminStreamsCount()">
                 </td>
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${rowNumber}</td>
-                <td class="py-4 px-4 text-base font-semibold text-slate-900 dark:text-white" data-label="" data-grup="${groupName === '-' ? '' : esc(groupName)}">${esc(stream.name)}</td>
+                <td class="py-4 px-4 text-base font-semibold text-slate-900 dark:text-white td-primary" data-label="" data-grup="${groupName === '-' ? '' : esc(groupName)}">${esc(stream.name)}<span class="m-collapsed-extra" hidden><span class="m-dot ${connectionStatus === 'online' ? 'ok' : 'bad'}" aria-hidden="true"></span><span class="badge-tag ${connectionStatus === 'online' ? 'badge-tag--sky' : 'badge-tag--rose'}">${connectionStatus === 'online' ? 'CONNECTED' : 'DISCONNECTED'}</span></span></td>
                 <td class="py-4 px-4" data-label="Group">
                     <span class="inline-block px-2 py-0.5 bg-sky-50 dark:bg-cyber-primary/10 text-sky-700 dark:text-cyber-primary border border-sky-200 dark:border-cyber-primary/20 rounded text-[10px] font-bold font-mono max-w-24 truncate" title="${esc(groupName)}">${esc(groupName)}</span>
                 </td>
@@ -774,7 +778,14 @@
     };
 
     window.deleteStream = async function(streamId) {
-        if (!confirm("Are you sure you want to permanently delete this camera stream config?")) return;
+        const streamDeleteOk = await window.mConfirm({
+            title: "Hapus stream kamera?",
+            message: "Are you sure you want to permanently delete this camera stream config?",
+            confirmText: "Ya, hapus",
+            cancelText: "Batal",
+            danger: true
+        });
+        if (!streamDeleteOk) return;
 
         try {
             const response = await fetch(`${API_URL}/admin/streams/${streamId}`, {
@@ -889,10 +900,10 @@
         // sebab grupnya sudah tertulis di baris induk di atasnya.
         const lencanaIklan = aktif => `<span class="badge-iklan ${aktif ? "badge-iklan--on" : "badge-iklan--off"}" title="${aktif ? "Iklan tampil" : "Iklan disembunyikan"}">iklan ${aktif ? "on" : "off"}</span>`;
 
-        const barisLepas = (user, nomor) => `<tr class="hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text">
+        const barisLepas = (user, nomor) => `<tr class="m-row hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text">
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim" data-label="No">${nomor}</td>
-                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white" data-label="Username">
-                    ${esc(user.username)}
+                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white td-primary" data-label="Username">
+                    ${esc(user.username)}<span class="m-collapsed-extra" hidden>${lencanaPeran(user)}${!user.admin_group ? lencanaIklan(user.show_ads) : ""}</span>
                     ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
                 <td class="py-4 px-4" data-label="Role">${lencanaPeran(user)}
@@ -902,12 +913,12 @@
                 <td class="py-4 px-4 text-right" data-label="Actions">${tombolAksi(user)}</td>
             </tr>`;
 
-        const barisAnggota = (user, akhir) => `<tr class="ang-baris-anggota${akhir ? " ang-baris-anggota--akhir" : ""}">
+        const barisAnggota = (user, akhir) => `<tr class="m-row ang-baris-anggota${akhir ? " ang-baris-anggota--akhir" : ""}">
                 <td class="py-2 px-4"></td>
-                <td class="py-2 px-4">
+                <td class="py-2 px-4 td-primary">
                     <span class="ang-anak">
                         <span class="ang-nama" title="${esc(user.username)}">${esc(user.username)}</span>
-                    </span>
+                    </span><span class="m-collapsed-extra" hidden>${lencanaPeran(user)}</span>
                     ${user.dibuat_oleh ? `<span class="pgn-ket pgn-ket--desktop">Dibuat oleh: ${esc(user.dibuat_oleh)}</span>` : ""}
                 </td>
                 <td class="py-2 px-4">${lencanaPeran(user)}
@@ -926,13 +937,13 @@
             const isi = buka
                 ? anggota.map((a, i) => barisAnggota(a, i === anggota.length - 1)).join("")
                 : "";
-            return `<tr onclick="window.bentangGrupPengguna('${sandi}')" class="ang-baris-grup${buka ? " ang-baris-grup--buka" : ""} hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text">
+            return `<tr onclick="window.bentangGrupPengguna('${sandi}')" class="m-row ang-baris-grup${buka ? " ang-baris-grup--buka is-expanded" : ""} hover:bg-slate-50 dark:hover:bg-cyber-hover/35 transition-colors border-b border-slate-100 dark:border-cyber-outline/20 text-slate-800 dark:text-cyber-text" aria-expanded="${buka}">
                 <td class="py-4 px-4 font-bold text-slate-500 dark:text-cyber-dim">${nomor}</td>
-                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white">
+                <td class="py-4 px-4 font-semibold text-slate-900 dark:text-white td-primary">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/30">grup</span>
                         <span class="ang-nama">${esc(nama)}</span>
-                    </span>
+                    </span><span class="m-collapsed-extra" hidden><span class="m-collapsed-extra-count">${anggota.length} anggota</span> ${lencanaIklan(anggota.length > 0 && anggota.every(a => a.show_ads))}</span>
                 </td>
                 <td class="py-4 px-4">
                     <button type="button" onclick="event.stopPropagation(); window.bentangGrupPengguna('${sandi}')"
@@ -1370,7 +1381,14 @@
     };
 
     window.deleteUser = async function(userId) {
-        if (!confirm("Are you sure you want to delete this user account?")) return;
+        const userDeleteOk = await window.mConfirm({
+            title: "Hapus akun pengguna?",
+            message: "Are you sure you want to delete this user account?",
+            confirmText: "Ya, hapus",
+            cancelText: "Batal",
+            danger: true
+        });
+        if (!userDeleteOk) return;
 
         try {
             const response = await fetch(`${API_URL}/admin/users/${userId}`, {
@@ -1979,7 +1997,7 @@
         });
     }
 
-    window.saveCurrentAsNewScreen = function() {
+    window.saveCurrentAsNewScreen = async function() {
         const nameInput = document.getElementById("new-screen-name");
         if (!nameInput) return;
         const name = nameInput.value.trim();
@@ -2009,7 +2027,14 @@
         };
 
         if (existsIndex >= 0) {
-            if (!confirm(`Grouping dengan nama "${name}" sudah ada. Apakah Anda ingin menimpanya?`)) return;
+            const overwriteOk = await window.mConfirm({
+                title: "Timpa grouping?",
+                message: `Grouping dengan nama "${name}" sudah ada. Apakah Anda ingin menimpanya?`,
+                confirmText: "Ya, timpa",
+                cancelText: "Batal",
+                danger: true
+            });
+            if (!overwriteOk) return;
             savedScreens[existsIndex] = newScreen;
         } else {
             savedScreens.push(newScreen);
@@ -2044,35 +2069,38 @@
         savedScreens.forEach(screen => {
             const enabledCount = screen.playlist.filter(p => p.enabled).length;
 
+            // Accordion .m-item (§3.1): ringkasan terlipat = nama + jumlah
+            // kamera; detail (info grid + tombol) muncul saat diketuk.
+            // Pemuatan pindah ke tombol Muat agar tidak konflik dengan
+            // toggle lipat — klik baris kini hanya melipat/membuka.
             const div = document.createElement("div");
-            div.className = "flex items-center justify-between gap-2 px-1.5 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-cyber-container/60 transition-colors cursor-pointer group";
-            
-            // Clicking the row loads the screen
-            div.onclick = (e) => {
-                // Prevent trigger if clicking delete button
-                if (e.target.closest('.delete-screen-btn')) return;
-                applySavedScreen(screen);
-            };
+            div.className = "m-item px-1.5 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-cyber-container/60 transition-colors group";
+            div.setAttribute("aria-expanded", "false");
 
             div.innerHTML = `
-                <div class="flex-1 min-w-0 text-xs">
-                    <div class="font-semibold text-slate-800 dark:text-white truncate">${esc(screen.name)}</div>
-                    <div class="text-[10px] text-slate-500 dark:text-cyber-dim mt-0.5">${enabledCount} Kamera · Grid ${screen.gridSize}x${screen.gridSize}</div>
-                </div>
-                <button class="delete-screen-btn p-2 hover:bg-rose-500/10 hover:text-rose-500 rounded text-slate-500 dark:text-cyber-dim transition-colors shrink-0" title="Hapus Grouping">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
+                <span class="m-item-title">
+                    <span class="min-w-0 text-xs">
+                        <span class="block font-semibold text-slate-800 dark:text-white truncate">${esc(screen.name)}</span>
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-cyber-bg text-slate-500 dark:text-cyber-dim font-semibold shrink-0">${enabledCount} Kamera</span>
+                </span>
+                <span class="m-item-extra block text-[10px] text-slate-500 dark:text-cyber-dim mt-1.5">Grid ${esc(screen.gridSize)}x${esc(screen.gridSize)} &middot; ${enabledCount} kamera aktif</span>
+                <button type="button" class="btn vk-btn m-item-extra load-screen-btn mt-2">Muat Grouping</button>
+                <button type="button" class="delete-screen-btn m-item-extra mt-1.5 w-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wider rounded-lg border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Hapus Grouping">Hapus</button>
             `;
 
-            // Bind delete button
+            // Tombol Muat: satu-satunya jalan memuat screen.
+            const loadBtn = div.querySelector('.load-screen-btn');
+            if (loadBtn) {
+                loadBtn.addEventListener('click', () => applySavedScreen(screen));
+            }
+
+            // Tombol Hapus: konfirmasi lewat window.mConfirm (di dalam
+            // deleteSavedScreen), tidak ikut melipat karena <button>
+            // diabaikan handler .m-item.
             const deleteBtn = div.querySelector('.delete-screen-btn');
             if (deleteBtn) {
-                deleteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    deleteSavedScreen(screen.name);
-                };
+                deleteBtn.addEventListener('click', () => deleteSavedScreen(screen.name));
             }
 
             container.appendChild(div);
@@ -2110,8 +2138,15 @@
         alert(`Grouping "${screen.name}" berhasil dimuat!`);
     }
 
-    function deleteSavedScreen(name) {
-        if (!confirm(`Apakah Anda yakin ingin menghapus grouping "${name}"?`)) return;
+    async function deleteSavedScreen(name) {
+        const screenDeleteOk = await window.mConfirm({
+            title: "Hapus grouping?",
+            message: `Apakah Anda yakin ingin menghapus grouping "${name}"?`,
+            confirmText: "Ya, hapus",
+            cancelText: "Batal",
+            danger: true
+        });
+        if (!screenDeleteOk) return;
 
         let savedScreens = [];
         const savedStr = localStorage.getItem(getStorageKey("cctv_custom_screens"));

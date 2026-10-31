@@ -117,6 +117,14 @@ if(!defined('SECURE_ACCESS')) {
             <div class="layout-section layout-toolbar">
             <!-- Toolbar Row -->
             <div class="admin-filter-bar mb-4">
+                <!-- §3.3 filter collapsible: di mobile hanya kepala yang
+                     tampil; isi filter terlipat. Di desktop .m-filter-more
+                     = display:contents (vk-patterns.js) sehingga layout
+                     piksel-identik; .m-filter-head disembunyikan. -->
+                <button type="button" class="m-filter-head" data-toggle="stream-filter-more" aria-expanded="false">
+                    <span>Filter</span><span class="m-filter-head-count" id="stream-filter-count"></span>
+                </button>
+                <div class="m-filter-more" id="stream-filter-more">
                 <!-- Search -->
                 <div class="app-search-wrap">
                     <span class="app-search-icon" aria-hidden="true">
@@ -166,6 +174,7 @@ if(!defined('SECURE_ACCESS')) {
                         </svg>
                     </span>
                 </div>
+                </div><!-- /#stream-filter-more -->
 
                 <div class="admin-filter-actions flex items-center space-x-2">
                     <!-- Clear Filter -->
@@ -922,6 +931,13 @@ if(!defined('SECURE_ACCESS')) {
                     <p class="panel-card-desc">Jejak server dan domain yang memakai kunci API</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
+                    <!-- §3.3 filter collapsible: dua dropdown terlipat di
+                         mobile; tombol aksi tetap terlihat. Desktop:
+                         .m-filter-more = display:contents (piksel-identik). -->
+                    <button type="button" class="m-filter-head" data-toggle="api-log-filter-more" aria-expanded="false">
+                        <span>Filter</span><span class="m-filter-head-count" id="api-log-filter-count"></span>
+                    </button>
+                    <div class="m-filter-more" id="api-log-filter-more">
                     <!-- Filter dropdown -->
                     <select id="api-log-filter-key" onchange="window.loadApiAccessLogs()" class="app-input text-[11px] font-mono py-1.5 px-2.5 h-9 rounded-xl">
                         <option value="">Semua Kunci</option>
@@ -931,6 +947,7 @@ if(!defined('SECURE_ACCESS')) {
                         <option value="hit">HIT saja</option>
                         <option value="denied">DENIED saja</option>
                     </select>
+                    </div><!-- /#api-log-filter-more -->
                     <button onclick="window.loadApiAccessLogs()" title="Refresh log"
                         class="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-cyber-bg border border-slate-200 dark:border-cyber-outline hover:border-slate-400 dark:hover:border-white text-slate-700 dark:text-cyber-text text-xs font-semibold uppercase tracking-wider font-mono rounded-xl transition-all duration-150 active:scale-95 shadow-sm cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>

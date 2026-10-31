@@ -1,0 +1,454 @@
+/* ================================================================
+   vk-components.css — Komponen UI (§4 design-system.md), tahap 3
+   Aturan:
+   - Token dipakai apa adanya dari global.css; JANGAN definisikan ulang.
+   - Semua warna hanya via var(--color-*); tidak ada hex hardcode.
+   - Mode gelap otomatis via token (class .dark di <html>).
+   - Transisi 100–200ms (--dur-micro/--dur-short), hormati
+     prefers-reduced-motion. Tanpa gradient/glass berlebih, tanpa pulse.
+   - Class baru berprefiks vk-; class aplikasi existing hanya di-override
+     ringan memakai token.
+   ================================================================ */
+
+/* ---------------- 4.1 Badge & pill — SATU gaya pill ----------------
+   Mapping: .ms-badge (dipakai di modul video/webrtc) disatukan ke gaya
+   pill tunggal. Varian existing --online/--offline/--info/--neutral
+   dipetakan ke peran status token. */
+
+.vk-badge,
+.ms-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--vk-text-badge);      /* 11px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Varian peran — bg/text/border dari token status */
+.vk-badge--success,
+.ms-badge--online {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success);
+}
+.vk-badge--danger,
+.ms-badge--offline {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger);
+}
+.vk-badge--info,
+.ms-badge--info {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: var(--color-info);
+}
+.vk-badge--gray,
+.ms-badge--neutral {
+  background: var(--color-bg-hover);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+/* ---------------- 4.2 Tombol ----------------
+   Mapping: .btn-elegant (dipakai di banyak view PHP) diharmonisasi ke
+   token dengan metrik kompaknya tetap; class kanonis vk-btn mengikuti
+   spek §4.2 penuh. */
+
+.btn-elegant {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  background: var(--color-bg-content);
+}
+.btn-elegant:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-100);
+}
+.btn-elegant-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+.btn-elegant-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.vk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--vk-font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  transition: background var(--dur-short), border-color var(--dur-short),
+              color var(--dur-short), box-shadow var(--dur-short),
+              transform var(--dur-micro);
+}
+.vk-btn:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+.vk-btn:active { transform: scale(0.98); }
+.vk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.vk-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* .secondary — aksi pendamping */
+.vk-btn--secondary {
+  background: var(--color-bg-content);
+  border-color: var(--color-border);
+  color: var(--color-text-body);
+}
+.vk-btn--secondary:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* .btn-sm — 13px, min-height 32px */
+.vk-btn--sm {
+  font-size: 13px;
+  min-height: 32px;
+  padding: 0 14px;
+}
+
+/* Block penuh — untuk aksi di dalam panel mobile yang terbuka */
+.vk-btn--block { width: 100%; }
+
+/* ---------------- 4.3 Kartu status ----------------
+   Tidak ada padanan existing → class baru vk-. */
+
+.vk-card-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vk-card-status {
+  background: var(--color-danger-soft-bg);
+  border: 1px solid var(--color-danger-border-soft);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--color-text-body);
+  font-size: var(--vk-text-content);
+  line-height: 1.5;
+}
+.vk-card-status__title {
+  font-weight: 700;
+  color: var(--color-danger-text);
+  font-size: var(--vk-text-card-title);
+  margin: 0 0 2px;
+}
+.vk-card-status__desc { margin: 0; color: var(--color-text-muted); }
+
+/* ---------------- 4.4 Pagination ----------------
+   Mapping: .pagination-* existing → spek §4.4.
+   Desktop: tombol 35x32px, font 13px, lengkap.
+   Mobile (<=768px): tombol 40x40px, font 14px, gap 6px, hanya ‹ n ›. */
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pagination-nav,
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 35px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-content);
+  color: var(--color-text-muted);
+  font-family: var(--vk-font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-short), color var(--dur-short),
+              border-color var(--dur-short), transform var(--dur-micro);
+}
+.pagination-btn:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.pagination-btn:active:not(:disabled) { transform: scale(0.95); }
+.pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination-btn[aria-current="page"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+.pagination-meta { font-size: var(--vk-text-small); color: var(--color-text-muted); }
+
+@media (max-width: 768px) {
+  .pagination-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+  /* Varian ringkas: sembunyikan semua nomor kecuali halaman aktif,
+     sehingga selalu satu baris: ‹ n › */
+  .pagination-pages .pagination-btn:not([aria-current="page"]) {
+    display: none;
+  }
+}
+
+/* ---------------- 4.6 Form ----------------
+   Mapping: .field-input, .app-input, .ms-input (existing) — override
+   ringan ke token; label 14px/600; input 16px HANYA di mobile. */
+
+.vk-label,
+.panel-card label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-header);
+  margin-bottom: 6px;
+}
+
+.vk-input,
+.vk-select {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--vk-font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-body);
+  background: var(--color-bg-content);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: border-color var(--dur-short), box-shadow var(--dur-short);
+}
+.vk-input::placeholder { color: var(--color-text-muted); opacity: 1; }
+.vk-input:focus,
+.vk-select:focus,
+.field-input:focus,
+.app-input:focus,
+.ms-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+/* Cegah auto-zoom iOS: 16px hanya di mobile — desktop tidak berubah */
+@media (max-width: 768px) {
+  .vk-input,
+  .vk-select,
+  .field-input,
+  .app-input,
+  .ms-input {
+    font-size: 16px;
+  }
+}
+
+/* Aksi form sticky di bagian bawah pada mobile (opsional) */
+@media (max-width: 768px) {
+  .vk-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 8px;
+    padding: 12px var(--layout-gutter-sm, 20px)
+             calc(12px + env(safe-area-inset-bottom));
+    background: var(--color-bg-content);
+    border-top: 1px solid var(--color-border);
+    z-index: 20;
+  }
+  .vk-sticky-actions .vk-btn { flex: 1; }
+}
+
+/* ---------------- 4.7 Empty state & toast ---------------- */
+
+.vk-empty,
+.empty-data-text {
+  display: block;
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-muted);
+  font-size: var(--vk-text-content);
+  padding: 24px 16px;
+}
+
+.vk-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Di atas bottom nav 56px + jarak 16px + safe-area iPhone */
+  bottom: calc(56px + 16px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 12px 16px;
+  font-size: var(--vk-text-content);
+  font-weight: 600;
+  color: var(--color-text-body);
+  background: var(--color-bg-content);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card-hover);
+  z-index: 60;
+}
+.vk-toast--success {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.vk-toast--danger {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
+}
+.vk-toast--info {
+  background: var(--color-info-bg);
+  border-color: var(--color-info);
+  color: var(--color-info-text);
+}
+
+/* ---------------- 4.9 Toggle switch ----------------
+   Mapping: .ms-switch (dipakai di modals.php) → spek 48x28px, knob 22px,
+   geser 20px dalam 200ms, on = primer, focus-visible outline. */
+
+.ms-switch,
+.vk-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ms-switch input,
+.vk-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.ms-switch__track,
+.vk-switch__track {
+  position: absolute;
+  inset: 0;
+  background: var(--color-border);
+  border-radius: 999px;
+  transition: background var(--dur-short);
+}
+.ms-switch__track::before,
+.vk-switch__track::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--color-bg-content);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px var(--color-border);
+  transition: transform var(--dur-short);
+}
+.ms-switch input:checked + .ms-switch__track,
+.vk-switch input:checked + .vk-switch__track {
+  background: var(--color-primary);
+}
+.ms-switch input:checked + .ms-switch__track::before,
+.vk-switch input:checked + .vk-switch__track::before {
+  transform: translateX(20px);
+}
+.ms-switch input:focus-visible + .ms-switch__track,
+.vk-switch input:focus-visible + .vk-switch__track {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------------- 4.10 Progress bar ----------------
+   Tidak ada padanan existing → class baru vk-. */
+
+.vk-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.vk-progress__fill {
+  height: 100%;
+  width: 0;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width var(--dur-short);
+}
+/* Untuk daftar panjang: hindari layout thrash dengan scaleX */
+.vk-progress__fill--scale {
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform var(--dur-short);
+}
+
+/* ---------------- prefers-reduced-motion ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-btn, .vk-btn:active,
+  .pagination-btn, .pagination-btn:active,
+  .ms-switch__track, .ms-switch__track::before,
+  .vk-switch__track, .vk-switch__track::before,
+  .vk-input, .vk-select,
+  .vk-progress__fill, .vk-progress__fill--scale {
+    transition: none;
+  }
+}
+
+/* Anti-slop (§6 vibekoding): tanpa animasi denyut/pulse — titik status
+   cukup tampil statis. Override dari global.css (file ini dimuat setelahnya). */
+.ms-badge--online .ms-badge__dot,
+.ms-badge--rec .ms-badge__dot { animation: none; }
+.ms-badge__dot--pulse::after { display: none; }
+
+/* Judul modal: skala H2 vibekoding §2.2 (20px/700 desktop, 18px mobile).
+   Menggantikan gaya 13px uppercase lama; file ini dimuat setelah global.css. */
+.ms-modal__title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: -0.01em !important;
+  color: var(--color-text-header);
+}
+@media (max-width: 768px) {
+  .ms-modal__title { font-size: 18px !important; }
+}

@@ -41,15 +41,25 @@ if(!defined('SECURE_ACCESS')) {
             </div>
         </div>
 
-        <!-- Camera List Panel (Scrollable) -->
-        <div class="maps-camera-list" id="map-sidebar-cctv-list">
-            <!-- Loading indicator -->
-            <div class="flex items-center justify-center py-10 space-x-2 text-xs text-slate-500 dark:text-cyber-dim font-mono">
-                <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                <span>Loading...</span>
+        <!-- Sheet fold: kontrak vibekoding §3.1 (.m-item, mobile-only).
+             Judul + chevron; konten (daftar kamera) terlipat di mobile,
+             tampil penuh di desktop. Tile kamera di dalamnya SENGAJA bukan
+             accordion (keputusan user) — data-no-toggle menjaga klik item
+             kamera tidak ikut melipat sheet. -->
+        <div class="m-item maps-sheet-fold" aria-expanded="false">
+            <div class="m-filter-head m-item-title"><span>Daftar Kamera</span></div>
+            <div class="m-item-extra" data-no-toggle>
+                <!-- Camera List Panel (Scrollable) -->
+                <div class="maps-camera-list" id="map-sidebar-cctv-list">
+                    <!-- Loading indicator -->
+                    <div class="flex items-center justify-center py-10 space-x-2 text-xs text-slate-500 dark:text-cyber-dim font-mono">
+                        <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        <span>Loading...</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
