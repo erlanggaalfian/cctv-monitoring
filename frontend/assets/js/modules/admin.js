@@ -1668,13 +1668,13 @@
         const gridContainer = document.getElementById("custom-cctv-grid");
         if (gridContainer) {
             if (size === 1) {
-                gridContainer.className = "grid grid-cols-1 gap-4 transition-all duration-300";
+                gridContainer.className = `grid grid-cols-1 gap-4 w-full h-full content-start overflow-y-auto pr-1 transition-all duration-300`;
             } else if (size === 2) {
-                gridContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-300";
+                gridContainer.className = `grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full content-start overflow-y-auto pr-1 transition-all duration-300`;
             } else if (size === 3) {
-                gridContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300";
+                gridContainer.className = `grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full h-full content-start overflow-y-auto pr-1 transition-all duration-300`;
             } else if (size === 4) {
-                gridContainer.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-all duration-300";
+                gridContainer.className = `grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full h-full content-start overflow-y-auto pr-1 transition-all duration-300`;
             }
         }
 

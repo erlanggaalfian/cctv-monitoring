@@ -506,7 +506,7 @@ h2, h3, .hdr-title, .sidebar-section-lbl { font-family: var(--font-heading) !imp
 .dark #scan-progress-bar-track { background: rgba(255,255,255,0.16) !important; }
 
 .panel-card-desc { margin-top: 0.25rem; font-size: 0.6875rem; line-height: 1.45; color: var(--c-text-muted); }
-.field-label { display: block; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-dim); margin-bottom: 0.5rem; }
+.field-label { display: block; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-dim); margin-bottom: 0.625rem; }
 .field-input, .app-input, .panel-card select, .panel-card input[type="text"], .panel-card input[type="number"], .panel-card input[type="password"] { width: 100%; padding: 0.5rem 0.75rem; font-size: 0.75rem; line-height: 1.45; font-weight: 400; letter-spacing: normal; text-shadow: none; -webkit-font-smoothing: auto; color: var(--c-text); background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm); transition: border-color var(--t), box-shadow var(--t); }
 .field-input::placeholder, .app-input::placeholder { color: var(--c-text-dim); opacity: 1; text-shadow: none; }
 .field-input:focus, .app-input:focus, .panel-card select:focus, .panel-card input:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(var(--rgb-blue), 0.12); }
