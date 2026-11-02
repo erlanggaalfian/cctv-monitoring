@@ -976,6 +976,31 @@
                 videoElement.play().catch(() => {});
             };
 
+            // Pantau status koneksi: tanpa ini, ICE mati di tengah jalan (reset
+            // RTSP kamera, restart mediamtx, gangguan jaringan) membuat tile diam
+            // selamanya — tanpa overlay gagal, tanpa sambung ulang. Terbatas alami:
+            // kalau WHEP menolak, pc tak pernah 'failed' lagi, jadi tak ada siklus.
+            let dijadwalkanUlang = false;
+            pc.onconnectionstatechange = () => {
+                const state = pc.connectionState;
+                if (state !== "failed" && state !== "disconnected" && state !== "closed") return;
+                const pulihkan = () => {
+                    if (dijadwalkanUlang) return;
+                    // sudah digantikan/ditutup sengaja (ganti tab, popup) — jangan hidupkan lagi
+                    if (!window.peerConnections || window.peerConnections[pcKey] !== pc) return;
+                    if (pc.connectionState === "connected") return; // ICE pulih sendiri
+                    dijadwalkanUlang = true;
+                    try { pc.close(); } catch (e) {}
+                    if (window.peerConnections && window.peerConnections[pcKey] === pc) delete window.peerConnections[pcKey];
+                    window.autoReconnects = window.autoReconnects || {};
+                    window.autoReconnects[streamId] = 0;
+                    setTimeout(() => startNativeWebRTC(streamId, whepCandidates, elementId, videoOnly), 1500);
+                };
+                // "disconnected" sering pulih sendiri; beri jeda sebelum memutuskan
+                if (state === "disconnected") setTimeout(pulihkan, 5000);
+                else pulihkan();
+            };
+
             pc.addTransceiver("video", { direction: "recvonly" });
             if (!videoOnly) {
                 pc.addTransceiver("audio", { direction: "recvonly" });
@@ -1067,8 +1092,9 @@
 
             // Auto-trigger "Coba Hubungkan Paksa" silently once if WebRTC connection fails
             window.autoReconnects = window.autoReconnects || {};
-            if (!window.autoReconnects[streamId]) {
-                window.autoReconnects[streamId] = true;
+            const percobaanAuto = (window.autoReconnects[streamId] || 0) + 1;
+            if (percobaanAuto <= 5) {
+                window.autoReconnects[streamId] = percobaanAuto;
                 console.log(`[WebRTC] Connection failed. Auto-triggering silent force reconnect for stream_${streamId}...`);
 
                 try {
@@ -1084,7 +1110,7 @@
                             const retryUrls = buildWhepCandidates(stream?.webrtc_url || whepCandidates[0], streamId);
                             await startNativeWebRTC(streamId, retryUrls, elementId, videoOnly);
                             // R19: reset agar kegagalan berikutnya boleh auto-reconnect lagi.
-                            window.autoReconnects[streamId] = false;
+                            window.autoReconnects[streamId] = 0;
                             return;
                         }
                     }
